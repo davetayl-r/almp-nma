@@ -42,6 +42,9 @@ figure_3_clean <- figure_3_raw |>
       estimate == "cherryGrp" ~ "te_95_high",
       estimate == "kiwiGrp" ~ "te_95_low"
     ),
+    # correct scale
+    probability = probability/10,
+    # round months
     month = round(month, 0)
   ) |>
   # convert to wide format
@@ -148,6 +151,9 @@ figure_5_clean <- figure_5_raw |>
       estimate == "cherryGrp" ~ "te_95_high",
       estimate == "kiwiGrp" ~ "te_95_low"
     ),
+    # correct scale
+    probability = probability/10,
+    # round month
     month = round(month, 0)
   ) |>
   # convert to wide format
@@ -201,6 +207,9 @@ figure_6_clean <- figure_6_raw |>
       estimate == "cherryGrp" ~ "te_95_high",
       estimate == "kiwiGrp" ~ "te_95_low"
     ),
+    # correct scale
+    probability = probability/10,
+    # round month
     month = round(month, 0)
   ) |>
   # convert to wide format
