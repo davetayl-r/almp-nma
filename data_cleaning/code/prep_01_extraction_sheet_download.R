@@ -125,7 +125,16 @@ outcome_data <- read_sheet(
   data_extraction_google_sheet,
   sheet = "outcome_data"
 ) |>
-  slice(-1)
+  slice(
+    -1
+  ) |>
+  # rename vars to intuitive names
+  rename(
+    treatment_n = grp1n,
+    comparison_n = grp2n,
+    treatment_proportion = prop1event,
+    comparison_proportion = prop2event
+  )
 
 # export data
 saveRDS(
