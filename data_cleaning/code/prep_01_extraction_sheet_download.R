@@ -130,10 +130,50 @@ outcome_data <- read_sheet(
   ) |>
   # rename vars to intuitive names
   rename(
+    outcome = outcome_construct,
     treatment_n = grp1n,
     comparison_n = grp2n,
     treatment_proportion = prop1event,
-    comparison_proportion = prop2event
+    comparison_proportion = prop2event,
+    treatment_mean = grp1m,
+    treatment_sd = grp1sd,
+    treatment_se = grp1se,
+    comparison_mean = grp2m,
+    comparison_sd = grp2sd,
+    comparison_se = grp2se,
+    odds_ratio = or,
+    treatment_effect = te,
+    treatment_effect_se = te_se,
+    treatment_effect_ci_low = te_ci_low,
+    treatment_effect_ci_high = te_ci_high,
+    treatment_effect_p_value = te_p_value
+  ) |>
+  # drop redundant vars
+  select(
+    -baseline_rate,
+    -missing_data,
+    -missing_data_can_be_derived,
+    -required_information,
+    -pre1mean,
+    -pre1sd,
+    -post1mean,
+    -post1sd,
+    -pre2mean,
+    -pre2sd,
+    -post2mean,
+    -post2sd,
+    -gain1mean,
+    -gain1se,
+    -gain2mean,
+    -gain2se,
+    -f,
+    -b,
+    -beta,
+    -sdy,
+    -diff,
+    -diff_lower,
+    -diff_upper,
+    -diff_se
   )
 
 # export data

@@ -37,44 +37,24 @@ aeberhardt2022conditionalcashtransfers_outcome_data <- outcome_data |>
         comparison_n,
         treatment_proportion,
         comparison_proportion,
-        grp1m,
-        grp1sd,
-        grp1se,
-        grp2m,
-        grp2sd,
-        grp2se,
-        pre1mean,
-        pre1sd,
-        post1mean,
-        post1sd,
-        pre2mean,
-        pre2sd,
-        post2mean,
-        post2sd,
+        treatment_mean,
+        treatment_sd,
+        treatment_se,
+        comparison_mean,
+        comparison_sd,
+        comparison_se,
         pooled_sd,
-        gain1mean,
-        gain1se,
-        gain2mean,
-        gain2se,
-        or,
-        f,
+        odds_ratio,
         se,
         totaln,
-        b,
-        beta,
-        sdy,
         chisq,
         t,
         t_pvalue,
-        diff,
-        diff_lower,
-        diff_upper,
-        diff_se,
-        te,
-        te_se,
-        te_ci_low,
-        te_ci_high,
-        te_p_value
+        treatment_effect,
+        treatment_effect_se,
+        treatment_effect_ci_low,
+        treatment_effect_ci_high,
+        treatment_effect_p_value
       ),
       convert_input_data_to_numeric
     )
@@ -85,17 +65,94 @@ aeberhardt2022conditionalcashtransfers_outcome_data <- outcome_data |>
     comparison_n = round(comparison_n, 0)
   )
 
-test <- aeberhardt2022conditionalcashtransfers_outcome_data |>
-  mutate(
-    !!!proportion_to_smd(
-      .$treatment_n,
-      .$comparison_n,
-      .$treatment_proportion,
-      .$comparison_proportion,
-      method = "cox_logit",
-      mask = .$esc_type == "binary_proportions"
+# filter results reported as binary proportions and run function
+aeberhardt2022conditionalcashtransfers_binary_proportions <- aeberhardt2022conditionalcashtransfers_outcome_data |>
+  filter(
+    esc_type == "Binary proportions"
+  ) |>
+  # random custom function to allow custom functions to vectorise
+  (\(.) {
+    # implement binary proportions function
+    mutate(
+      .,
+      !!!proportion_to_smd(
+        .$treatment_n,
+        .$comparison_n,
+        .$treatment_proportion,
+        .$comparison_proportion,
+        method = "cox_logit",
+        mask = .$esc_type == "Binary proportions"
+      )
     )
+  })()
+
+# filter results reported as mean and pooled SD and run function
+aeberhardt2022conditionalcashtransfers_mean_pooled_sd <- aeberhardt2022conditionalcashtransfers_outcome_data |>
+  filter(
+    esc_type == "Mean SD (Pooled)"
+  ) |>
+  # random custom function to allow custom functions to vectorise
+  (\(.) {
+    # implement mean and pooled sd function
+    mutate(
+      .,
+      !!!mean_pooled_sd_to_smd(
+        .$treatment_n,
+        .$comparison_n,
+        .$treatment_mean,
+        .$comparison_mean,
+        .$pooled_sd,
+        mask = .$esc_type == "Mean SD (Pooled)"
+      )
+    )
+  })()
+
+# filter results reported as treatment effect continuous and run function
+aeberhardt2022conditionalcashtransfers_te_continuous <- aeberhardt2022conditionalcashtransfers_outcome_data |>
+  filter(
+    esc_type == "Treatment Effect (Continuous)"
+  ) |>
+  # random custom function to allow custom functions to vectorise
+  (\(.) {
+    # implement mean and pooled sd function
+    mutate(
+      .,
+      !!!treatment_effect_continuous_to_smdI(
+        .$treatment_n,
+        .$comparison_n,
+        .$treatment_effect,
+        .$pooled_sd,
+        mask = .$esc_type == "Treatment Effect (Continuous)"
+      )
+    )
+  })()
+
+# merge seperate data back together and filter for export
+aeberhardt2022conditionalcashtransfers_export <- bind_rows(
+  aeberhardt2022conditionalcashtransfers_binary_proportions,
+  aeberhardt2022conditionalcashtransfers_mean_pooled_sd,
+  aeberhardt2022conditionalcashtransfers_te_continuous
+) |>
+  select(
+    study_id,
+    outcome_domain,
+    outcome,
+    outcome_source,
+    favourable_direction,
+    outcome_timing,
+    estimand,
+    intention_to_treat,
+    conditional,
+    d,
+    d_se,
+    d_var,
+    g,
+    g_se,
+    g_var
   )
 
-
-View(aeberhardt2022conditionalcashtransfers_outcome_data)
+# export data
+saveRDS(
+  aeberhardt2022conditionalcashtransfers_export,
+  file = "./es_transformation/output/aeberhardt2022conditionalcashtransfers.RDS"
+)
