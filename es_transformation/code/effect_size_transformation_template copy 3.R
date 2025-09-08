@@ -113,7 +113,6 @@ almp_nma_study_identifier_mean_se <- almp_nma_study_identifier_outcome_data |>
   filter(
     esc_type == "Mean SE"
   ) |>
-  slice_sample(n = 1) |>
   # random custom function to allow custom functions to vectorise
   (\(.) {
     # implement mean and pooled sd function
@@ -152,21 +151,11 @@ almp_nma_study_identifier_mean_pooled_sd <- almp_nma_study_identifier_outcome_da
     )
   })()
 
-# test treatment effect binary and run function
+# filter results reported as treatment effect binary and run function
 almp_nma_study_identifier_te_binary <- almp_nma_study_identifier_outcome_data |>
   filter(
-    esc_type == "Treatment Effect (Continuous)"
+    esc_type == "Treatment Effect (Binary)"
   ) |>
-  mutate(
-    esc_type = case_when(
-      esc_type == "Binary proportions" ~ "Treatment Effect (Binary)"
-    )
-  ) |>
-  mutate(
-    treatment_effect = treatment_effect / 100,
-    treatment_effect_se = treatment_effect_se / 100
-  ) |>
-  slice(1) |>
   # random custom function to allow custom functions to vectorise
   (\(.) {
     # implement mean and pooled sd function
@@ -202,11 +191,33 @@ almp_nma_study_identifier_te_continuous <- almp_nma_study_identifier_outcome_dat
     )
   })()
 
+almp_nma_study_identifier_t_value <- almp_nma_study_identifier_outcome_data |>
+  filter(
+    esc_type == "T-value"
+  ) |>
+  # random custom function to allow custom functions to vectorise
+  (\(.) {
+    # implement mean and pooled sd function
+    mutate(
+      .,
+      !!!t_value_to_smd(
+        .$t,
+        .$treatment_n,
+        .$comparison_n,
+        mask = .$esc_type == "T-value"
+      )
+    )
+  })()
+
 # merge seperate data back together and filter for export
 almp_nma_study_identifier_export <- bind_rows(
   almp_nma_study_identifier_binary_proportions,
+  almp_nma_study_identifier_mean_se,
+  almp_nma_study_identifier_mean_sd,
   almp_nma_study_identifier_mean_pooled_sd,
-  almp_nma_study_identifier_te_continuous
+  almp_nma_study_identifier_te_binary,
+  almp_nma_study_identifier_te_continuous,
+  almp_nma_study_identifier_t_value
 ) |>
   select(
     study_id,

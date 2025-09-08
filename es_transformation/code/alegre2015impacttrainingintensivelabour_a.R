@@ -1,9 +1,9 @@
 #============================================================================================#
 # Project: ALMP NMA                                                                          #
 # Author: David Taylor                                                                       #
-# Date: 05/09/2025                                                                           #
+# Date: 08/09/2025                                                                           #
 # Purpose: transform reported results to a common effect size                                #
-# Study ID: aeberhardt2022conditionalcashtransfers                                           #
+# Study ID: alegre2015impacttrainingintensivelabour_a                                        #
 #============================================================================================#
 
 # load required packages
@@ -17,10 +17,10 @@ outcome_data_location <- "./es_transformation/inputs/almp_nma_outcome_data.rds"
 outcome_data <- readRDS(outcome_data_location)
 
 # prepare data for transformation
-aeberhardt2022conditionalcashtransfers_outcome_data <- outcome_data |>
+alegre2015impacttrainingintensivelabour_a_outcome_data <- outcome_data |>
   filter(
     # filter data by study id
-    study_id == "aeberhardt2022conditionalcashtransfers",
+    study_id == "alegre2015impacttrainingintensivelabour_a",
     # exclude outcomes with missing data
     is.na(exclude_missing_data) | exclude_missing_data != "Yes",
     # exclude outcomes that report duplicate constructs
@@ -65,74 +65,28 @@ aeberhardt2022conditionalcashtransfers_outcome_data <- outcome_data |>
     comparison_n = round(comparison_n, 0)
   )
 
-# filter results reported as binary proportions and run function
-aeberhardt2022conditionalcashtransfers_binary_proportions <- aeberhardt2022conditionalcashtransfers_outcome_data |>
+# filter results reported as treatment effect binary and run function
+alegre2015impacttrainingintensivelabour_a_te_binary <- alegre2015impacttrainingintensivelabour_a_outcome_data |>
   filter(
-    esc_type == "Binary proportions"
-  ) |>
-  # random custom function to allow custom functions to vectorise
-  (\(.) {
-    # implement binary proportions function
-    mutate(
-      .,
-      !!!proportion_to_smd(
-        treatment_n = .$treatment_n,
-        comparison_n = .$comparison_n,
-        treatment_proportion = .$treatment_proportion,
-        comparison_proportion = .$comparison_proportion,
-        method = "cox_logit",
-        mask = .$esc_type == "Binary proportions"
-      )
-    )
-  })()
-
-# filter results reported as mean and pooled SD and run function
-aeberhardt2022conditionalcashtransfers_mean_pooled_sd <- aeberhardt2022conditionalcashtransfers_outcome_data |>
-  filter(
-    esc_type == "Mean SD (Pooled)"
+    esc_type == "Treatment Effect (Binary)"
   ) |>
   # random custom function to allow custom functions to vectorise
   (\(.) {
     # implement mean and pooled sd function
     mutate(
       .,
-      !!!mean_pooled_sd_to_smd(
-        treatment_n = .$treatment_n,
-        comparison_n = .$comparison_n,
-        treatment_mean = .$treatment_mean,
-        comparison_mean = .$comparison_mean,
-        pooled_sd = .$pooled_sd,
-        mask = .$esc_type == "Mean SD (Pooled)"
-      )
-    )
-  })()
-
-# filter results reported as treatment effect continuous and run function
-aeberhardt2022conditionalcashtransfers_te_continuous <- aeberhardt2022conditionalcashtransfers_outcome_data |>
-  filter(
-    esc_type == "Treatment Effect (Continuous)"
-  ) |>
-  # random custom function to allow custom functions to vectorise
-  (\(.) {
-    # implement mean and pooled sd function
-    mutate(
-      .,
-      !!!treatment_effect_continuous_to_smdI(
+      !!!treatment_effect_binary_to_smd(
         treatment_n = .$treatment_n,
         comparison_n = .$comparison_n,
         treatment_effect = .$treatment_effect,
-        pooled_sd = .$pooled_sd,
-        mask = .$esc_type == "Treatment Effect (Continuous)"
+        treatment_effect_se = .$treatment_effect_se,
+        mask = .$esc_type == "Treatment Effect (Binary)"
       )
     )
   })()
 
 # merge seperate data back together and filter for export
-aeberhardt2022conditionalcashtransfers_export <- bind_rows(
-  aeberhardt2022conditionalcashtransfers_binary_proportions,
-  aeberhardt2022conditionalcashtransfers_mean_pooled_sd,
-  aeberhardt2022conditionalcashtransfers_te_continuous
-) |>
+alegre2015impacttrainingintensivelabour_a_export <- alegre2015impacttrainingintensivelabour_a_te_binary |>
   select(
     study_id,
     outcome_domain,
@@ -153,6 +107,6 @@ aeberhardt2022conditionalcashtransfers_export <- bind_rows(
 
 # export data
 saveRDS(
-  aeberhardt2022conditionalcashtransfers_export,
-  file = "./es_transformation/output/aeberhardt2022conditionalcashtransfers.RDS"
+  alegre2015impacttrainingintensivelabour_a_export,
+  file = "./es_transformation/output/alegre2015impacttrainingintensivelabour_a.RDS"
 )
