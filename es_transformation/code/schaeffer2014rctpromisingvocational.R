@@ -3,7 +3,7 @@
 # Author: David Taylor                                                                       #
 # Date: 09/09/2025                                                                           #
 # Purpose: transform reported results to a common effect size                                #
-# Study ID: schaeffer2014rctpromisingvocational                                                        #
+# Study ID: schaeffer2014rctpromisingvocational                                              #
 #============================================================================================#
 
 # load required packages
