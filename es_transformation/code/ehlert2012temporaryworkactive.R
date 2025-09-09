@@ -3,7 +3,7 @@
 # Author: David Taylor                                                                       #
 # Date: 08/09/2025                                                                           #
 # Purpose: transform reported results to a common effect size                                #
-# Study ID: carter2009evaluationmulticomponentintervention                                   #
+# Study ID: ehlert2012temporaryworkactive                                                    #
 #============================================================================================#
 
 # load required packages
@@ -17,10 +17,10 @@ outcome_data_location <- "./es_transformation/inputs/almp_nma_outcome_data.rds"
 outcome_data <- readRDS(outcome_data_location)
 
 # prepare data for transformation
-carter2009evaluationmulticomponentintervention_outcome_data <- outcome_data |>
+ehlert2012temporaryworkactive_outcome_data <- outcome_data |>
   filter(
     # filter data by study id
-    study_id == "carter2009evaluationmulticomponentintervention",
+    study_id == "ehlert2012temporaryworkactive",
     # exclude outcomes with missing data
     is.na(exclude_missing_data) | exclude_missing_data != "Yes",
     # exclude outcomes that report duplicate constructs
@@ -65,29 +65,27 @@ carter2009evaluationmulticomponentintervention_outcome_data <- outcome_data |>
     comparison_n = round(comparison_n, 0)
   )
 
-# filter results reported as binary proportions and run function
-carter2009evaluationmulticomponentintervention_binary_proportions <- carter2009evaluationmulticomponentintervention_outcome_data |>
+# filter results reported as t-value and run function
+ehlert2012temporaryworkactive_t_value <- ehlert2012temporaryworkactive_outcome_data |>
   filter(
-    esc_type == "Binary proportions"
+    esc_type == "T-value"
   ) |>
   # random custom function to allow custom functions to vectorise
   (\(.) {
-    # implement binary proportions function
+    # implement mean and pooled sd function
     mutate(
       .,
-      !!!proportion_to_smd(
+      !!!t_value_to_smd(
+        t_value = .$t,
         treatment_n = .$treatment_n,
         comparison_n = .$comparison_n,
-        treatment_proportion = .$treatment_proportion,
-        comparison_proportion = .$comparison_proportion,
-        method = "cox_logit",
-        mask = .$esc_type == "Binary proportions"
+        mask = .$esc_type == "T-value"
       )
     )
   })()
 
 # merge seperate data back together and filter for export
-carter2009evaluationmulticomponentintervention_export <- carter2009evaluationmulticomponentintervention_binary_proportions |>
+ehlert2012temporaryworkactive_export <- ehlert2012temporaryworkactive_t_value |>
   select(
     study_id,
     outcome_domain,
@@ -108,6 +106,6 @@ carter2009evaluationmulticomponentintervention_export <- carter2009evaluationmul
 
 # export data
 saveRDS(
-  carter2009evaluationmulticomponentintervention_export,
-  file = "./es_transformation/output/carter2009evaluationmulticomponentintervention.RDS"
+  ehlert2012temporaryworkactive_export,
+  file = "./es_transformation/output/ehlert2012temporaryworkactive.RDS"
 )
