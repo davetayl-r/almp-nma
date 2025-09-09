@@ -3,7 +3,7 @@
 # Author: David Taylor                                                                       #
 # Date: 09/09/2025                                                                           #
 # Purpose: template for es transformation                                                    #
-# Study ID: bratti2022vocationaltrainingunemployed                                           #
+# Study ID: brunetti2017workplacetrainingprograms                                            #
 #============================================================================================#
 
 # load required packages
@@ -17,10 +17,10 @@ outcome_data_location <- "./es_transformation/inputs/almp_nma_outcome_data.rds"
 outcome_data <- readRDS(outcome_data_location)
 
 # prepare data for transformation
-bratti2022vocationaltrainingunemployed_outcome_data <- outcome_data |>
+brunetti2017workplacetrainingprograms_outcome_data <- outcome_data |>
   filter(
     # filter data by study id
-    study_id == "bratti2022vocationaltrainingunemployed",
+    study_id == "brunetti2017workplacetrainingprograms",
     # exclude outcomes with missing data
     is.na(exclude_missing_data) | exclude_missing_data != "Yes",
     # exclude outcomes that report duplicate constructs
@@ -66,7 +66,7 @@ bratti2022vocationaltrainingunemployed_outcome_data <- outcome_data |>
   )
 
 # filter results reported as treatment effect continuous and run function
-bratti2022vocationaltrainingunemployed_te_continuous <- bratti2022vocationaltrainingunemployed_outcome_data |>
+brunetti2017workplacetrainingprograms_te_continuous <- brunetti2017workplacetrainingprograms_outcome_data |>
   filter(
     esc_type == "Treatment Effect (Continuous)"
   ) |>
@@ -87,7 +87,7 @@ bratti2022vocationaltrainingunemployed_te_continuous <- bratti2022vocationaltrai
   })()
 
 # merge seperate data back together and filter for export
-bratti2022vocationaltrainingunemployed_export <- bratti2022vocationaltrainingunemployed_te_continuous |>
+brunetti2017workplacetrainingprograms_export <- brunetti2017workplacetrainingprograms_te_continuous |>
   select(
     study_id,
     outcome_domain,
@@ -108,6 +108,6 @@ bratti2022vocationaltrainingunemployed_export <- bratti2022vocationaltrainingune
 
 # export data
 saveRDS(
-  bratti2022vocationaltrainingunemployed_export,
-  file = "./es_transformation/output/bratti2022vocationaltrainingunemployed.RDS"
+  brunetti2017workplacetrainingprograms_export,
+  file = "./es_transformation/output/brunetti2017workplacetrainingprograms.RDS"
 )
