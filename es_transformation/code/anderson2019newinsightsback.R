@@ -2,7 +2,7 @@
 # Project: ALMP NMA                                                                          #
 # Author: David Taylor                                                                       #
 # Date: 08/09/2025                                                                           #
-# Purpose: template for es transformation                                                    #
+# Purpose: transform reported results to a common effect size                                #
 # Study ID: anderson2019newinsightsback                                                      #
 #============================================================================================#
 

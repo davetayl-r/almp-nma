@@ -1,9 +1,9 @@
 #============================================================================================#
 # Project: ALMP NMA                                                                          #
 # Author: David Taylor                                                                       #
-# Date: 09/09/2025                                                                           #
+# Date: 08/09/2025                                                                           #
 # Purpose: transform reported results to a common effect size                                #
-# Study ID: cappellini2019aretraineeshipssteppingstones                                      #
+# Study ID: almp_nma_study_identifier                                                        #
 #============================================================================================#
 
 # load required packages
@@ -17,10 +17,10 @@ outcome_data_location <- "./es_transformation/inputs/almp_nma_outcome_data.rds"
 outcome_data <- readRDS(outcome_data_location)
 
 # prepare data for transformation
-cappellini2019aretraineeshipssteppingstones_outcome_data <- outcome_data |>
+almp_nma_study_identifier_outcome_data <- outcome_data |>
   filter(
     # filter data by study id
-    study_id == "cappellini2019aretraineeshipssteppingstones",
+    study_id == "almp_nma_study_identifier",
     # exclude outcomes with missing data
     is.na(exclude_missing_data) | exclude_missing_data != "Yes",
     # exclude outcomes that report duplicate constructs
@@ -66,7 +66,7 @@ cappellini2019aretraineeshipssteppingstones_outcome_data <- outcome_data |>
   )
 
 # filter results reported as binary proportions and run function
-cappellini2019aretraineeshipssteppingstones_binary_proportions <- cappellini2019aretraineeshipssteppingstones_outcome_data |>
+almp_nma_study_identifier_binary_proportions <- almp_nma_study_identifier_outcome_data |>
   filter(
     esc_type == "Binary proportions"
   ) |>
@@ -87,7 +87,7 @@ cappellini2019aretraineeshipssteppingstones_binary_proportions <- cappellini2019
   })()
 
 # filter results reported as mean and sd and run function
-cappellini2019aretraineeshipssteppingstones_mean_sd <- cappellini2019aretraineeshipssteppingstones_outcome_data |>
+almp_nma_study_identifier_mean_sd <- almp_nma_study_identifier_outcome_data |>
   filter(
     esc_type == "Mean SD"
   ) |>
@@ -109,7 +109,7 @@ cappellini2019aretraineeshipssteppingstones_mean_sd <- cappellini2019aretrainees
   })()
 
 # filter results reported as mean and se and run function
-cappellini2019aretraineeshipssteppingstones_mean_se <- cappellini2019aretraineeshipssteppingstones_outcome_data |>
+almp_nma_study_identifier_mean_se <- almp_nma_study_identifier_outcome_data |>
   filter(
     esc_type == "Mean SE"
   ) |>
@@ -131,7 +131,7 @@ cappellini2019aretraineeshipssteppingstones_mean_se <- cappellini2019aretrainees
   })()
 
 # filter results reported as mean and pooled SD and run function
-cappellini2019aretraineeshipssteppingstones_mean_pooled_sd <- cappellini2019aretraineeshipssteppingstones_outcome_data |>
+almp_nma_study_identifier_mean_pooled_sd <- almp_nma_study_identifier_outcome_data |>
   filter(
     esc_type == "Mean SD (Pooled)"
   ) |>
@@ -152,7 +152,7 @@ cappellini2019aretraineeshipssteppingstones_mean_pooled_sd <- cappellini2019aret
   })()
 
 # filter results reported as treatment effect binary and run function
-cappellini2019aretraineeshipssteppingstones_te_binary <- cappellini2019aretraineeshipssteppingstones_outcome_data |>
+almp_nma_study_identifier_te_binary <- almp_nma_study_identifier_outcome_data |>
   filter(
     esc_type == "Treatment Effect (Binary)"
   ) |>
@@ -172,7 +172,7 @@ cappellini2019aretraineeshipssteppingstones_te_binary <- cappellini2019aretraine
   })()
 
 # filter results reported as treatment effect continuous and run function
-cappellini2019aretraineeshipssteppingstones_te_continuous <- cappellini2019aretraineeshipssteppingstones_outcome_data |>
+almp_nma_study_identifier_te_continuous <- almp_nma_study_identifier_outcome_data |>
   filter(
     esc_type == "Treatment Effect (Continuous)"
   ) |>
@@ -192,7 +192,7 @@ cappellini2019aretraineeshipssteppingstones_te_continuous <- cappellini2019aretr
     )
   })()
 
-cappellini2019aretraineeshipssteppingstones_t_value <- cappellini2019aretraineeshipssteppingstones_outcome_data |>
+almp_nma_study_identifier_t_value <- almp_nma_study_identifier_outcome_data |>
   filter(
     esc_type == "T-value"
   ) |>
@@ -211,14 +211,14 @@ cappellini2019aretraineeshipssteppingstones_t_value <- cappellini2019aretrainees
   })()
 
 # merge seperate data back together and filter for export
-cappellini2019aretraineeshipssteppingstones_export <- bind_rows(
-  cappellini2019aretraineeshipssteppingstones_binary_proportions,
-  cappellini2019aretraineeshipssteppingstones_mean_se,
-  cappellini2019aretraineeshipssteppingstones_mean_sd,
-  cappellini2019aretraineeshipssteppingstones_mean_pooled_sd,
-  cappellini2019aretraineeshipssteppingstones_te_binary,
-  cappellini2019aretraineeshipssteppingstones_te_continuous,
-  cappellini2019aretraineeshipssteppingstones_t_value
+almp_nma_study_identifier_export <- bind_rows(
+  almp_nma_study_identifier_binary_proportions,
+  almp_nma_study_identifier_mean_se,
+  almp_nma_study_identifier_mean_sd,
+  almp_nma_study_identifier_mean_pooled_sd,
+  almp_nma_study_identifier_te_binary,
+  almp_nma_study_identifier_te_continuous,
+  almp_nma_study_identifier_t_value
 ) |>
   select(
     study_id,
@@ -240,6 +240,6 @@ cappellini2019aretraineeshipssteppingstones_export <- bind_rows(
 
 # export data
 saveRDS(
-  cappellini2019aretraineeshipssteppingstones_export,
-  file = "./es_transformation/output/cappellini2019aretraineeshipssteppingstones.RDS"
+  almp_nma_study_identifier_export,
+  file = "./es_transformation/output/almp_nma_study_identifier.RDS"
 )

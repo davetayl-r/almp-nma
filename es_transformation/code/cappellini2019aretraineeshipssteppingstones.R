@@ -1,9 +1,9 @@
 #============================================================================================#
 # Project: ALMP NMA                                                                          #
 # Author: David Taylor                                                                       #
-# Date: 09/09/2025                                                                           #
+# Date: 08/09/2025                                                                           #
 # Purpose: transform reported results to a common effect size                                #
-# Study ID: battisti2019canjobsearch                                                         #
+# Study ID: cappellini2019aretraineeshipssteppingstones                                      #
 #============================================================================================#
 
 # load required packages
@@ -17,10 +17,10 @@ outcome_data_location <- "./es_transformation/inputs/almp_nma_outcome_data.rds"
 outcome_data <- readRDS(outcome_data_location)
 
 # prepare data for transformation
-battisti2019canjobsearch_outcome_data <- outcome_data |>
+cappellini2019aretraineeshipssteppingstones_outcome_data <- outcome_data |>
   filter(
     # filter data by study id
-    study_id == "battisti2019canjobsearch",
+    study_id == "cappellini2019aretraineeshipssteppingstones",
     # exclude outcomes with missing data
     is.na(exclude_missing_data) | exclude_missing_data != "Yes",
     # exclude outcomes that report duplicate constructs
@@ -65,53 +65,28 @@ battisti2019canjobsearch_outcome_data <- outcome_data |>
     comparison_n = round(comparison_n, 0)
   )
 
-# filter results reported as binary proportions and run function
-battisti2019canjobsearch_binary_proportions <- battisti2019canjobsearch_outcome_data |>
+# filter results reported as treatment effect binary and run function
+cappellini2019aretraineeshipssteppingstones_te_binary <- cappellini2019aretraineeshipssteppingstones_outcome_data |>
   filter(
-    esc_type == "Binary proportions"
-  ) |>
-  # random custom function to allow custom functions to vectorise
-  (\(.) {
-    # implement binary proportions function
-    mutate(
-      .,
-      !!!proportion_to_smd(
-        treatment_n = .$treatment_n,
-        comparison_n = .$comparison_n,
-        treatment_proportion = .$treatment_proportion,
-        comparison_proportion = .$comparison_proportion,
-        method = "cox_logit",
-        mask = .$esc_type == "Binary proportions"
-      )
-    )
-  })()
-
-# filter results reported as treatment effect continuous and run function
-battisti2019canjobsearch_te_continuous <- battisti2019canjobsearch_outcome_data |>
-  filter(
-    esc_type == "Treatment Effect (Continuous)"
+    esc_type == "Treatment Effect (Binary)"
   ) |>
   # random custom function to allow custom functions to vectorise
   (\(.) {
     # implement mean and pooled sd function
     mutate(
       .,
-      !!!treatment_effect_continuous_to_smdI(
+      !!!treatment_effect_binary_to_smd(
         treatment_n = .$treatment_n,
         comparison_n = .$comparison_n,
         treatment_effect = .$treatment_effect,
-        pooled_sd = rep_len(NA_real_, nrow(.)),
         treatment_effect_se = .$treatment_effect_se,
-        mask = .$esc_type == "Treatment Effect (Continuous)"
+        mask = .$esc_type == "Treatment Effect (Binary)"
       )
     )
   })()
 
 # merge seperate data back together and filter for export
-battisti2019canjobsearch_export <- bind_rows(
-  battisti2019canjobsearch_binary_proportions,
-  battisti2019canjobsearch_te_continuous
-) |>
+cappellini2019aretraineeshipssteppingstones_export <- cappellini2019aretraineeshipssteppingstones_te_binary |>
   select(
     study_id,
     outcome_domain,
@@ -132,6 +107,6 @@ battisti2019canjobsearch_export <- bind_rows(
 
 # export data
 saveRDS(
-  battisti2019canjobsearch_export,
-  file = "./es_transformation/output/battisti2019canjobsearch.RDS"
+  cappellini2019aretraineeshipssteppingstones_export,
+  file = "./es_transformation/output/cappellini2019aretraineeshipssteppingstones.RDS"
 )
