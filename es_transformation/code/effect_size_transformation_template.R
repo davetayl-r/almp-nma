@@ -108,49 +108,6 @@ almp_nma_study_identifier_mean_sd <- almp_nma_study_identifier_outcome_data |>
     )
   })()
 
-# filter results reported as mean and se and run function
-almp_nma_study_identifier_mean_se <- almp_nma_study_identifier_outcome_data |>
-  filter(
-    esc_type == "Mean SE"
-  ) |>
-  # random custom function to allow custom functions to vectorise
-  (\(.) {
-    # implement mean and pooled sd function
-    mutate(
-      .,
-      !!!mean_se_to_smd(
-        treatment_n = .$treatment_n,
-        comparison_n = .$comparison_n,
-        treatment_mean = .$treatment_mean,
-        comparison_mean = .$comparison_mean,
-        treatment_se = .$treatment_se,
-        comparison_se = .$comparison_se,
-        mask = .$esc_type == "Mean SE"
-      )
-    )
-  })()
-
-# filter results reported as mean and pooled SD and run function
-almp_nma_study_identifier_mean_pooled_sd <- almp_nma_study_identifier_outcome_data |>
-  filter(
-    esc_type == "Mean SD (Pooled)"
-  ) |>
-  # random custom function to allow custom functions to vectorise
-  (\(.) {
-    # implement mean and pooled sd function
-    mutate(
-      .,
-      !!!mean_pooled_sd_to_smd(
-        treatment_n = .$treatment_n,
-        comparison_n = .$comparison_n,
-        treatment_mean = .$treatment_mean,
-        comparison_mean = .$comparison_mean,
-        pooled_sd = .$pooled_sd,
-        mask = .$esc_type == "Mean SD (Pooled)"
-      )
-    )
-  })()
-
 # filter results reported as treatment effect binary and run function
 almp_nma_study_identifier_te_binary <- almp_nma_study_identifier_outcome_data |>
   filter(
@@ -195,9 +152,6 @@ almp_nma_study_identifier_te_continuous <- almp_nma_study_identifier_outcome_dat
 # merge seperate data back together and filter for export
 almp_nma_study_identifier_export <- bind_rows(
   almp_nma_study_identifier_binary_proportions,
-  almp_nma_study_identifier_mean_se,
-  almp_nma_study_identifier_mean_sd,
-  almp_nma_study_identifier_mean_pooled_sd,
   almp_nma_study_identifier_te_binary,
   almp_nma_study_identifier_te_continuous
 ) |>
