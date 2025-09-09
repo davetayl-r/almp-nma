@@ -3,7 +3,7 @@
 # Author: David Taylor                                                                       #
 # Date: 09/09/2025                                                                           #
 # Purpose: template for es transformation                                                    #
-# Study ID: anne2020armynowevaluating                                                        #
+# Study ID: battisti2019canjobsearch                                                        #
 #============================================================================================#
 
 # load required packages
@@ -17,10 +17,10 @@ outcome_data_location <- "./es_transformation/inputs/almp_nma_outcome_data.rds"
 outcome_data <- readRDS(outcome_data_location)
 
 # prepare data for transformation
-anne2020armynowevaluating_outcome_data <- outcome_data |>
+battisti2019canjobsearch_outcome_data <- outcome_data |>
   filter(
     # filter data by study id
-    study_id == "anne2020armynowevaluating",
+    study_id == "battisti2019canjobsearch",
     # exclude outcomes with missing data
     is.na(exclude_missing_data) | exclude_missing_data != "Yes",
     # exclude outcomes that report duplicate constructs
@@ -65,8 +65,29 @@ anne2020armynowevaluating_outcome_data <- outcome_data |>
     comparison_n = round(comparison_n, 0)
   )
 
+# filter results reported as binary proportions and run function
+battisti2019canjobsearch_binary_proportions <- battisti2019canjobsearch_outcome_data |>
+  filter(
+    esc_type == "Binary proportions"
+  ) |>
+  # random custom function to allow custom functions to vectorise
+  (\(.) {
+    # implement binary proportions function
+    mutate(
+      .,
+      !!!proportion_to_smd(
+        treatment_n = .$treatment_n,
+        comparison_n = .$comparison_n,
+        treatment_proportion = .$treatment_proportion,
+        comparison_proportion = .$comparison_proportion,
+        method = "cox_logit",
+        mask = .$esc_type == "Binary proportions"
+      )
+    )
+  })()
+
 # filter results reported as treatment effect continuous and run function
-anne2020armynowevaluating_te_continuous <- anne2020armynowevaluating_outcome_data |>
+battisti2019canjobsearch_te_continuous <- battisti2019canjobsearch_outcome_data |>
   filter(
     esc_type == "Treatment Effect (Continuous)"
   ) |>
@@ -87,7 +108,10 @@ anne2020armynowevaluating_te_continuous <- anne2020armynowevaluating_outcome_dat
   })()
 
 # merge seperate data back together and filter for export
-anne2020armynowevaluating_export <- anne2020armynowevaluating_te_continuous |>
+battisti2019canjobsearch_export <- bind_rows(
+  battisti2019canjobsearch_binary_proportions,
+  battisti2019canjobsearch_te_continuous
+) |>
   select(
     study_id,
     outcome_domain,
@@ -108,6 +132,6 @@ anne2020armynowevaluating_export <- anne2020armynowevaluating_te_continuous |>
 
 # export data
 saveRDS(
-  anne2020armynowevaluating_export,
-  file = "./es_transformation/output/anne2020armynowevaluating.RDS"
+  battisti2019canjobsearch_export,
+  file = "./es_transformation/output/battisti2019canjobsearch.RDS"
 )
