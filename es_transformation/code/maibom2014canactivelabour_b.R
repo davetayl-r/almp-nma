@@ -3,7 +3,7 @@
 # Author: David Taylor                                                                       #
 # Date: 09/09/2025                                                                           #
 # Purpose: transform reported results to a common effect size                                #
-# Study ID: maibom2014canactivelabour_a                                                        #
+# Study ID: maibom2014canactivelabour_b                                                      #
 #============================================================================================#
 
 # load required packages
@@ -17,10 +17,10 @@ outcome_data_location <- "./es_transformation/inputs/almp_nma_outcome_data.rds"
 outcome_data <- readRDS(outcome_data_location)
 
 # prepare data for transformation
-maibom2014canactivelabour_a_outcome_data <- outcome_data |>
+maibom2014canactivelabour_b_outcome_data <- outcome_data |>
   filter(
     # filter data by study id
-    study_id == "maibom2014canactivelabour_a",
+    study_id == "maibom2014canactivelabour_b",
     # exclude outcomes with missing data
     is.na(exclude_missing_data) | exclude_missing_data != "Yes",
     # exclude outcomes that report duplicate constructs
@@ -66,7 +66,7 @@ maibom2014canactivelabour_a_outcome_data <- outcome_data |>
   )
 
 # filter results reported as t-value and run function
-maibom2014canactivelabour_a_t_value <- maibom2014canactivelabour_a_outcome_data |>
+maibom2014canactivelabour_b_t_value <- maibom2014canactivelabour_b_outcome_data |>
   filter(
     esc_type == "T-value"
   ) |>
@@ -85,7 +85,7 @@ maibom2014canactivelabour_a_t_value <- maibom2014canactivelabour_a_outcome_data 
   })()
 
 # merge seperate data back together and filter for export
-maibom2014canactivelabour_a_export <- maibom2014canactivelabour_a_t_value |>
+maibom2014canactivelabour_b_export <- maibom2014canactivelabour_b_t_value |>
   select(
     study_id,
     outcome_domain,
@@ -106,6 +106,6 @@ maibom2014canactivelabour_a_export <- maibom2014canactivelabour_a_t_value |>
 
 # export data
 saveRDS(
-  maibom2014canactivelabour_a_export,
-  file = "./es_transformation/output/maibom2014canactivelabour_a.RDS"
+  maibom2014canactivelabour_b_export,
+  file = "./es_transformation/output/maibom2014canactivelabour_b.RDS"
 )
