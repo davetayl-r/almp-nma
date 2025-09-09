@@ -76,10 +76,10 @@ almp_nma_study_identifier_binary_proportions <- almp_nma_study_identifier_outcom
     mutate(
       .,
       !!!proportion_to_smd(
-        .$treatment_n,
-        .$comparison_n,
-        .$treatment_proportion,
-        .$comparison_proportion,
+        treatment_n = .$treatment_n,
+        comparison_n = .$comparison_n,
+        treatment_proportion = .$treatment_proportion,
+        comparison_proportion = .$comparison_proportion,
         method = "cox_logit",
         mask = .$esc_type == "Binary proportions"
       )
@@ -97,12 +97,12 @@ almp_nma_study_identifier_mean_sd <- almp_nma_study_identifier_outcome_data |>
     mutate(
       .,
       !!!mean_sd_to_smd(
-        .$treatment_n,
-        .$comparison_n,
-        .$treatment_mean,
-        .$comparison_mean,
-        .$treatment_sd,
-        .$comparison_sd,
+        treatment_n = .$treatment_n,
+        comparison_n = .$comparison_n,
+        treatment_mean = .$treatment_mean,
+        comparison_mean = .$comparison_mean,
+        treatment_sd = .$treatment_sd,
+        comparison_sd = .$comparison_sd,
         mask = .$esc_type == "Mean SD"
       )
     )
@@ -119,12 +119,12 @@ almp_nma_study_identifier_mean_se <- almp_nma_study_identifier_outcome_data |>
     mutate(
       .,
       !!!mean_se_to_smd(
-        .$treatment_n,
-        .$comparison_n,
-        .$treatment_mean,
-        .$comparison_mean,
-        .$treatment_se,
-        .$comparison_se,
+        treatment_n = .$treatment_n,
+        comparison_n = .$comparison_n,
+        treatment_mean = .$treatment_mean,
+        comparison_mean = .$comparison_mean,
+        treatment_se = .$treatment_se,
+        comparison_se = .$comparison_se,
         mask = .$esc_type == "Mean SE"
       )
     )
@@ -141,11 +141,11 @@ almp_nma_study_identifier_mean_pooled_sd <- almp_nma_study_identifier_outcome_da
     mutate(
       .,
       !!!mean_pooled_sd_to_smd(
-        .$treatment_n,
-        .$comparison_n,
-        .$treatment_mean,
-        .$comparison_mean,
-        .$pooled_sd,
+        treatment_n = .$treatment_n,
+        comparison_n = .$comparison_n,
+        treatment_mean = .$treatment_mean,
+        comparison_mean = .$comparison_mean,
+        pooled_sd = .$pooled_sd,
         mask = .$esc_type == "Mean SD (Pooled)"
       )
     )
@@ -162,10 +162,10 @@ almp_nma_study_identifier_te_binary <- almp_nma_study_identifier_outcome_data |>
     mutate(
       .,
       !!!treatment_effect_binary_to_smd(
-        .$treatment_n,
-        .$comparison_n,
-        .$treatment_effect,
-        .$treatment_effect_se,
+        treatment_n = .$treatment_n,
+        comparison_n = .$comparison_n,
+        treatment_effect = .$treatment_effect,
+        treatment_effect_se = .$treatment_effect_se,
         mask = .$esc_type == "Treatment Effect (Binary)"
       )
     )
@@ -182,10 +182,11 @@ almp_nma_study_identifier_te_continuous <- almp_nma_study_identifier_outcome_dat
     mutate(
       .,
       !!!treatment_effect_continuous_to_smdI(
-        .$treatment_n,
-        .$comparison_n,
-        .$treatment_effect,
-        .$pooled_sd,
+        treatment_n = .$treatment_n,
+        comparison_n = .$comparison_n,
+        treatment_effect = .$treatment_effect,
+        pooled_sd = rep_len(NA_real_, nrow(.)),
+        treatment_effect_se = .$treatment_effect_se,
         mask = .$esc_type == "Treatment Effect (Continuous)"
       )
     )
@@ -201,9 +202,9 @@ almp_nma_study_identifier_t_value <- almp_nma_study_identifier_outcome_data |>
     mutate(
       .,
       !!!t_value_to_smd(
-        .$t,
-        .$treatment_n,
-        .$comparison_n,
+        t_value = .$t,
+        treatment_n = .$treatment_n,
+        comparison_n = .$comparison_n,
         mask = .$esc_type == "T-value"
       )
     )

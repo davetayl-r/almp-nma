@@ -612,14 +612,21 @@ treatment_effect_continuous_to_smdI <- function(
   md <- treatment_effect
   sp_reported <- pooled_sd
 
+  # robust mask handling — idea is to prevent NA/length issues when applying functiom across rows
+  k <- length(n1)
   if (is.null(mask)) {
-    mask <- rep(TRUE, length(n1))
+    mask <- rep(TRUE, k)
+  } else {
+    mask <- as.logical(mask)
+    if (length(mask) != k) {
+      mask <- rep_len(mask, k)
+    }
+    mask[is.na(mask)] <- FALSE
   }
 
-  k <- length(n1)
   d <- d_var <- d_se <- g <- g_var <- g_se <- rep(NA_real_, k)
 
-  # --- derive SE(Δ) if needed
+  # derive SE if needed
   se_md <- rep(NA_real_, k)
   if (!is.null(treatment_effect_se)) {
     se_md <- treatment_effect_se
@@ -657,12 +664,13 @@ treatment_effect_continuous_to_smdI <- function(
 
   # choose pooled SD: reported if valid, else derived from SE(Δ) under equal-variance assumption
   denom <- sqrt(1 / n1 + 1 / n2)
-  sp_derived <- se_md / denom
-  sp <- ifelse(
-    is.finite(sp_reported) & sp_reported > 0,
-    sp_reported,
-    sp_derived
+  denom_ok <- is.finite(denom) & denom > 0
+  sp_derived <- ifelse(denom_ok, abs(se_md) / denom, NA_real_)
+  use_reported <- dplyr::coalesce(
+    is.finite(sp_reported) & (sp_reported > 0),
+    FALSE
   )
+  sp <- ifelse(use_reported, sp_reported, sp_derived)
 
   ok <- mask &
     is.finite(n1) &

@@ -65,26 +65,6 @@ anne2020armynowevaluating_outcome_data <- outcome_data |>
     comparison_n = round(comparison_n, 0)
   )
 
-# filter results reported as treatment effect binary and run function
-anne2020armynowevaluating_te_binary <- anne2020armynowevaluating_outcome_data |>
-  filter(
-    esc_type == "Treatment Effect (Binary)"
-  ) |>
-  # random custom function to allow custom functions to vectorise
-  (\(.) {
-    # implement mean and pooled sd function
-    mutate(
-      .,
-      !!!treatment_effect_binary_to_smd(
-        treatment_n = .$treatment_n,
-        comparison_n = .$comparison_n,
-        treatment_effect = .$treatment_effect,
-        treatment_effect_se = .$treatment_effect_se,
-        mask = .$esc_type == "Treatment Effect (Binary)"
-      )
-    )
-  })()
-
 # filter results reported as treatment effect continuous and run function
 anne2020armynowevaluating_te_continuous <- anne2020armynowevaluating_outcome_data |>
   filter(
@@ -99,7 +79,7 @@ anne2020armynowevaluating_te_continuous <- anne2020armynowevaluating_outcome_dat
         treatment_n = .$treatment_n,
         comparison_n = .$comparison_n,
         treatment_effect = .$treatment_effect,
-        pooled_sd = NA_real_,
+        pooled_sd = rep_len(NA_real_, nrow(.)),
         treatment_effect_se = .$treatment_effect_se,
         mask = .$esc_type == "Treatment Effect (Continuous)"
       )
@@ -107,10 +87,7 @@ anne2020armynowevaluating_te_continuous <- anne2020armynowevaluating_outcome_dat
   })()
 
 # merge seperate data back together and filter for export
-anne2020armynowevaluating_export <- bind_rows(
-  anne2020armynowevaluating_te_binary,
-  anne2020armynowevaluating_te_continuous
-) |>
+anne2020armynowevaluating_export <- anne2020armynowevaluating_te_continuous |>
   select(
     study_id,
     outcome_domain,
