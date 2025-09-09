@@ -192,24 +192,6 @@ almp_nma_study_identifier_te_continuous <- almp_nma_study_identifier_outcome_dat
     )
   })()
 
-almp_nma_study_identifier_t_value <- almp_nma_study_identifier_outcome_data |>
-  filter(
-    esc_type == "T-value"
-  ) |>
-  # random custom function to allow custom functions to vectorise
-  (\(.) {
-    # implement mean and pooled sd function
-    mutate(
-      .,
-      !!!t_value_to_smd(
-        t_value = .$t,
-        treatment_n = .$treatment_n,
-        comparison_n = .$comparison_n,
-        mask = .$esc_type == "T-value"
-      )
-    )
-  })()
-
 # merge seperate data back together and filter for export
 almp_nma_study_identifier_export <- bind_rows(
   almp_nma_study_identifier_binary_proportions,
@@ -217,8 +199,7 @@ almp_nma_study_identifier_export <- bind_rows(
   almp_nma_study_identifier_mean_sd,
   almp_nma_study_identifier_mean_pooled_sd,
   almp_nma_study_identifier_te_binary,
-  almp_nma_study_identifier_te_continuous,
-  almp_nma_study_identifier_t_value
+  almp_nma_study_identifier_te_continuous
 ) |>
   select(
     study_id,
