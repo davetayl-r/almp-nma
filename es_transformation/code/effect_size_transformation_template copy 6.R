@@ -1,7 +1,7 @@
 #============================================================================================#
 # Project: ALMP NMA                                                                          #
 # Author: David Taylor                                                                       #
-# Date: 09/09/2025                                                                           #
+# Date: 10/09/2025                                                                           #
 # Purpose: transform reported results to a common effect size                                #
 # Study ID: almp_nma_study_identifier                                                        #
 #============================================================================================#
@@ -82,28 +82,6 @@ almp_nma_study_identifier_binary_proportions <- almp_nma_study_identifier_outcom
         comparison_proportion = .$comparison_proportion,
         method = "cox_logit",
         mask = .$esc_type == "Binary proportions"
-      )
-    )
-  })()
-
-# filter results reported as mean and sd and run function
-almp_nma_study_identifier_mean_sd <- almp_nma_study_identifier_outcome_data |>
-  filter(
-    esc_type == "Mean SD"
-  ) |>
-  # random custom function to allow custom functions to vectorise
-  (\(.) {
-    # implement mean and pooled sd function
-    mutate(
-      .,
-      !!!mean_sd_to_smd(
-        treatment_n = .$treatment_n,
-        comparison_n = .$comparison_n,
-        treatment_mean = .$treatment_mean,
-        comparison_mean = .$comparison_mean,
-        treatment_sd = .$treatment_sd,
-        comparison_sd = .$comparison_sd,
-        mask = .$esc_type == "Mean SD"
       )
     )
   })()

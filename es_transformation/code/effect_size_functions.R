@@ -706,3 +706,60 @@ treatment_effect_continuous_to_smdI <- function(
     g_var = g_var
   )
 }
+
+# estimate treatment effect se from reported p values or confidence intervals
+derive_treatment_effect_se <- function(
+  dat,
+  ci_level = 0.95,
+  p_is_two_sided = TRUE
+) {
+  z_ci <- qnorm(1 - (1 - ci_level) / 2)
+
+  dat %>%
+    mutate(
+      treatment_effect_se = {
+        # logicals for scope
+        in_scope <- esc_type %in%
+          c("Treatment Effect (Continuous)", "Treatment Effect (Binary)")
+
+        has_reported_se <- in_scope & is.finite(treatment_effect_se)
+        need_se <- in_scope & !has_reported_se
+
+        # p-value route
+        p_is_valid <- need_se &
+          is.finite(treatment_effect) &
+          is.finite(treatment_effect_p_value) &
+          dplyr::between(treatment_effect_p_value, .Machine$double.eps, 1)
+
+        z_from_p <- if (p_is_two_sided) {
+          qnorm(pmax(1 - treatment_effect_p_value / 2, .Machine$double.eps))
+        } else {
+          qnorm(pmax(1 - treatment_effect_p_value, .Machine$double.eps))
+        }
+
+        se_from_p <- ifelse(
+          p_is_valid,
+          abs(treatment_effect) / z_from_p,
+          NA_real_
+        )
+
+        # CI route
+        ci_is_valid <- need_se &
+          is.finite(treatment_effect_ci_low) &
+          is.finite(treatment_effect_ci_high)
+
+        se_from_ci <- ifelse(
+          ci_is_valid,
+          (treatment_effect_ci_high - treatment_effect_ci_low) / (2 * z_ci),
+          NA_real_
+        )
+
+        # final: prefer reported, then p-value, then CI
+        ifelse(
+          need_se,
+          coalesce(se_from_p, se_from_ci, treatment_effect_se),
+          treatment_effect_se
+        )
+      }
+    )
+}
