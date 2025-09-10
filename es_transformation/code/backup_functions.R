@@ -1,5 +1,144 @@
 # backups
 
+# estimate treatment effect se from reported p values or confidence intervals
+derive_treatment_effect_se <- function(
+  dat,
+  ci_level = 0.95,
+  p_is_two_sided = TRUE
+) {
+  z_ci <- qnorm(1 - (1 - ci_level) / 2)
+
+  dat %>%
+    mutate(
+      treatment_effect_se = {
+        # logicals for scope
+        in_scope <- esc_type %in%
+          c("Treatment Effect (Continuous)", "Treatment Effect (Binary)")
+
+        has_reported_se <- in_scope & is.finite(treatment_effect_se)
+        need_se <- in_scope & !has_reported_se
+
+        # p-value route
+        p_is_valid <- need_se &
+          is.finite(treatment_effect) &
+          is.finite(treatment_effect_p_value) &
+          dplyr::between(treatment_effect_p_value, .Machine$double.eps, 1)
+
+        z_from_p <- if (p_is_two_sided) {
+          qnorm(pmax(1 - treatment_effect_p_value / 2, .Machine$double.eps))
+        } else {
+          qnorm(pmax(1 - treatment_effect_p_value, .Machine$double.eps))
+        }
+
+        se_from_p <- ifelse(
+          p_is_valid,
+          abs(treatment_effect) / z_from_p,
+          NA_real_
+        )
+
+        # CI route
+        ci_is_valid <- need_se &
+          is.finite(treatment_effect_ci_low) &
+          is.finite(treatment_effect_ci_high)
+
+        se_from_ci <- ifelse(
+          ci_is_valid,
+          (treatment_effect_ci_high - treatment_effect_ci_low) / (2 * z_ci),
+          NA_real_
+        )
+
+        # final: prefer reported, then p-value, then CI
+        ifelse(
+          need_se,
+          coalesce(se_from_p, se_from_ci, treatment_effect_se),
+          treatment_effect_se
+        )
+      }
+    )
+}
+
+
+# convert results reported as a continuous treatment effect to SMD
+treatment_effect_continuous_to_smd <- function(
+  treatment_n,
+  comparison_n,
+  treatment_effect,
+  # pooled SD is preferred by the function
+  pooled_sd,
+  # SE for TE if no pooled SD is reported
+  treatment_effect_se = NULL,
+  mask = NULL
+) {
+  n1 <- treatment_n
+  n2 <- comparison_n
+  md <- treatment_effect
+  sp_reported <- pooled_sd
+
+  # robust mask handling — idea is to prevent NA/length issues when applying functiom across rows
+  k <- length(n1)
+  if (is.null(mask)) {
+    mask <- rep(TRUE, k)
+  } else {
+    mask <- as.logical(mask)
+    if (length(mask) != k) {
+      mask <- rep_len(mask, k)
+    }
+    mask[is.na(mask)] <- FALSE
+  }
+
+  d <- d_var <- d_se <- g <- g_var <- g_se <- rep(NA_real_, k)
+
+  # derive SE if needed
+  se_md <- rep(NA_real_, k)
+  if (!is.null(treatment_effect_se)) {
+    se_md <- treatment_effect_se
+  }
+
+  # choose pooled SD: reported if valid, else derived from SE(Δ) under equal-variance assumption
+  denom <- sqrt(1 / n1 + 1 / n2)
+  denom_ok <- is.finite(denom) & denom > 0
+  sp_derived <- ifelse(denom_ok, abs(se_md) / denom, NA_real_)
+  use_reported <- dplyr::coalesce(
+    is.finite(sp_reported) & (sp_reported > 0),
+    FALSE
+  )
+  sp <- ifelse(use_reported, sp_reported, sp_derived)
+
+  ok <- mask &
+    is.finite(n1) &
+    n1 > 1 &
+    is.finite(n2) &
+    n2 > 1 &
+    is.finite(md) &
+    is.finite(sp) &
+    sp > 0
+
+  if (any(ok)) {
+    i <- which(ok)
+    df <- n1[i] + n2[i] - 2
+
+    # Cohen's d from MD and pooled SD
+    d[i] <- md[i] / sp[i]
+    d_var[i] <- (n1[i] + n2[i]) / (n1[i] * n2[i]) + d[i]^2 / (2 * df)
+    d_se[i] <- sqrt(d_var[i])
+
+    # Hedges' g small-sample correction
+    J <- 1 - 3 / (4 * df - 1)
+    g[i] <- J * d[i]
+    g_var[i] <- (J^2) * d_var[i]
+    g_se[i] <- sqrt(g_var[i])
+  }
+
+  list(
+    d = d,
+    d_se = d_se,
+    d_var = d_var,
+    g = g,
+    g_se = g_se,
+    g_var = g_var
+  )
+}
+
 # convert results reported as a continuous treatment effect to SMD
 treatment_effect_continuous_to_smd <- function(
   treatment_n,

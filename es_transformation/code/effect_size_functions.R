@@ -589,7 +589,7 @@ treatment_effect_continuous_to_smd <- function(
 
   d <- d_var <- d_se <- g <- g_var <- g_se <- rep(NA_real_, k)
 
-  # derive SE if needed
+  # derive SE if needed (already precomputed upstream is preferred)
   se_md <- rep(NA_real_, k)
   if (!is.null(treatment_effect_se)) {
     se_md <- treatment_effect_se
@@ -605,12 +605,14 @@ treatment_effect_continuous_to_smd <- function(
   )
   sp <- ifelse(use_reported, sp_reported, sp_derived)
 
+  # allow md to be NA or 0, provided we can compute sp
+  md_available_or_zero <- is.finite(md) | is.na(md)
   ok <- mask &
     is.finite(n1) &
     n1 > 1 &
     is.finite(n2) &
     n2 > 1 &
-    is.finite(md) &
+    md_available_or_zero &
     is.finite(sp) &
     sp > 0
 
@@ -618,8 +620,12 @@ treatment_effect_continuous_to_smd <- function(
     i <- which(ok)
     df <- n1[i] + n2[i] - 2
 
-    # Cohen's d from MD and pooled SD
-    d[i] <- md[i] / sp[i]
+    # If md is NA, treat as 0 (only for rows where SD is computable)
+    md_used <- md[i]
+    md_used[!is.finite(md_used)] <- 0
+
+    # Cohen's d from (possibly zero) MD and pooled SD
+    d[i] <- md_used / sp[i]
     d_var[i] <- (n1[i] + n2[i]) / (n1[i] * n2[i]) + d[i]^2 / (2 * df)
     d_se[i] <- sqrt(d_var[i])
 
@@ -644,14 +650,102 @@ treatment_effect_continuous_to_smd <- function(
 derive_treatment_effect_se <- function(
   dat,
   ci_level = 0.95,
-  p_is_two_sided = TRUE
+  p_is_two_sided = TRUE,
+  assumed_dp = 2, # <- NEW: assume TE printed to k dp when exact string isn't available
+  zero_te_tol = 1e-12 # <- NEW: tolerance to treat TE as "effectively zero"
 ) {
   z_ci <- qnorm(1 - (1 - ci_level) / 2)
 
+  # epsilon implied by reporting precision: 0.5 * 10^-k
+  eps_effect <- 0.5 * 10^(-assumed_dp)
+
   dat %>%
-    mutate(
+    dplyr::mutate(
       treatment_effect_se = {
-        # logicals for scope
+        in_scope <- esc_type %in%
+          c("Treatment Effect (Continuous)", "Treatment Effect (Binary)")
+
+        has_reported_se <- in_scope & is.finite(treatment_effect_se)
+        need_se <- in_scope & !has_reported_se
+
+        # p-value route --------------------------------------------------------
+        p_is_valid <- need_se &
+          is.finite(treatment_effect) &
+          is.finite(treatment_effect_p_value) &
+          dplyr::between(treatment_effect_p_value, .Machine$double.eps, 1)
+
+        p_comp <- if (p_is_two_sided) {
+          1 - treatment_effect_p_value / 2
+        } else {
+          1 - treatment_effect_p_value
+        }
+        p_comp <- pmin(
+          pmax(p_comp, .Machine$double.eps),
+          1 - .Machine$double.eps
+        )
+        z_from_p <- qnorm(p_comp)
+
+        # standard route (non-zero effect)
+        se_from_p_std <- ifelse(
+          p_is_valid &
+            abs(treatment_effect) > zero_te_tol &
+            is.finite(z_from_p) &
+            z_from_p != 0,
+          abs(treatment_effect) / z_from_p,
+          NA_real_
+        )
+
+        # fallback route for printed-zero effects: use epsilon inferred from dp
+        se_from_p_eps <- ifelse(
+          p_is_valid &
+            (abs(treatment_effect) <= zero_te_tol) &
+            is.finite(z_from_p) &
+            z_from_p != 0,
+          eps_effect / z_from_p, # upper-bound SE (conservative)
+          NA_real_
+        )
+
+        se_from_p <- dplyr::coalesce(se_from_p_std, se_from_p_eps)
+
+        # CI route -------------------------------------------------------------
+        ci_is_valid <- need_se &
+          is.finite(treatment_effect_ci_low) &
+          is.finite(treatment_effect_ci_high)
+
+        se_from_ci <- ifelse(
+          ci_is_valid,
+          (treatment_effect_ci_high - treatment_effect_ci_low) / (2 * z_ci),
+          NA_real_
+        )
+
+        # final: prefer reported, then p-value (std/eps), then CI
+        ifelse(
+          need_se,
+          dplyr::coalesce(se_from_p, se_from_ci, treatment_effect_se),
+          treatment_effect_se
+        )
+      }
+    )
+}
+
+# estimate treatment effect se from reported p values or confidence intervals
+derive_treatment_effect_se <- function(
+  dat,
+  ci_level = 0.95,
+  p_is_two_sided = TRUE,
+  # assume TE printed to k dp when exact string isn't available
+  assumed_dp = 2,
+  # tolerance to treat TE as "effectively zero"
+  zero_te_tol = 1e-12
+) {
+  z_ci <- qnorm(1 - (1 - ci_level) / 2)
+
+  # epsilon implied by reporting precision: 0.5 * 10^-k
+  eps_effect <- 0.5 * 10^(-assumed_dp)
+
+  dat %>%
+    dplyr::mutate(
+      treatment_effect_se = {
         in_scope <- esc_type %in%
           c("Treatment Effect (Continuous)", "Treatment Effect (Binary)")
 
@@ -664,17 +758,38 @@ derive_treatment_effect_se <- function(
           is.finite(treatment_effect_p_value) &
           dplyr::between(treatment_effect_p_value, .Machine$double.eps, 1)
 
-        z_from_p <- if (p_is_two_sided) {
-          qnorm(pmax(1 - treatment_effect_p_value / 2, .Machine$double.eps))
+        p_comp <- if (p_is_two_sided) {
+          1 - treatment_effect_p_value / 2
         } else {
-          qnorm(pmax(1 - treatment_effect_p_value, .Machine$double.eps))
+          1 - treatment_effect_p_value
         }
+        p_comp <- pmin(
+          pmax(p_comp, .Machine$double.eps),
+          1 - .Machine$double.eps
+        )
+        z_from_p <- qnorm(p_comp)
 
-        se_from_p <- ifelse(
-          p_is_valid,
+        # standard route (non-zero effect)
+        se_from_p_std <- ifelse(
+          p_is_valid &
+            abs(treatment_effect) > zero_te_tol &
+            is.finite(z_from_p) &
+            z_from_p != 0,
           abs(treatment_effect) / z_from_p,
           NA_real_
         )
+
+        # fallback route for printed-zero effects: use epsilon inferred from dp
+        se_from_p_eps <- ifelse(
+          p_is_valid &
+            (abs(treatment_effect) <= zero_te_tol) &
+            is.finite(z_from_p) &
+            z_from_p != 0,
+          eps_effect / z_from_p, # upper-bound SE (conservative)
+          NA_real_
+        )
+
+        se_from_p <- dplyr::coalesce(se_from_p_std, se_from_p_eps)
 
         # CI route
         ci_is_valid <- need_se &
@@ -687,10 +802,10 @@ derive_treatment_effect_se <- function(
           NA_real_
         )
 
-        # final: prefer reported, then p-value, then CI
+        # final: prefer reported, then p-value (std/eps), then CI
         ifelse(
           need_se,
-          coalesce(se_from_p, se_from_ci, treatment_effect_se),
+          dplyr::coalesce(se_from_p, se_from_ci, treatment_effect_se),
           treatment_effect_se
         )
       }
