@@ -3,7 +3,7 @@
 # Author: David Taylor                                                                       #
 # Date: 10/09/2025                                                                           #
 # Purpose: transform reported results to a common effect size                                #
-# Study ID: almp_nma_study_identifier                                                        #
+# Study ID: webb2016targetingtaxrelief                                                       #
 #============================================================================================#
 
 # load required packages
@@ -17,10 +17,10 @@ outcome_data_location <- "./es_transformation/inputs/almp_nma_outcome_data.rds"
 outcome_data <- readRDS(outcome_data_location)
 
 # prepare data for transformation
-almp_nma_study_identifier_outcome_data <- outcome_data |>
+webb2016targetingtaxrelief_outcome_data <- outcome_data |>
   filter(
     # filter data by study id
-    study_id == "almp_nma_study_identifier",
+    study_id == "webb2016targetingtaxrelief",
     # exclude outcomes with missing data
     is.na(exclude_missing_data) | exclude_missing_data != "Yes",
     # exclude outcomes that report duplicate constructs
@@ -65,49 +65,14 @@ almp_nma_study_identifier_outcome_data <- outcome_data |>
     comparison_n = round(comparison_n, 0)
   )
 
-# filter results reported as binary proportions and run function
-almp_nma_study_identifier_binary_proportions <- almp_nma_study_identifier_outcome_data |>
-  filter(
-    esc_type == "Binary proportions"
-  ) |>
-  # random custom function to allow custom functions to vectorise
-  (\(.) {
-    # implement binary proportions function
-    mutate(
-      .,
-      !!!proportion_to_smd(
-        treatment_n = .$treatment_n,
-        comparison_n = .$comparison_n,
-        treatment_proportion = .$treatment_proportion,
-        comparison_proportion = .$comparison_proportion,
-        method = "cox_logit",
-        mask = .$esc_type == "Binary proportions"
-      )
-    )
-  })()
-
-# filter results reported as treatment effect binary and run function
-almp_nma_study_identifier_te_binary <- almp_nma_study_identifier_outcome_data |>
-  filter(
-    esc_type == "Treatment Effect (Binary)"
-  ) |>
-  # random custom function to allow custom functions to vectorise
-  (\(.) {
-    # implement mean and pooled sd function
-    mutate(
-      .,
-      !!!treatment_effect_binary_to_smd(
-        treatment_n = .$treatment_n,
-        comparison_n = .$comparison_n,
-        treatment_effect = .$treatment_effect,
-        treatment_effect_se = .$treatment_effect_se,
-        mask = .$esc_type == "Treatment Effect (Binary)"
-      )
-    )
-  })()
-
 # filter results reported as treatment effect continuous and run function
-almp_nma_study_identifier_te_continuous <- almp_nma_study_identifier_outcome_data |>
+webb2016targetingtaxrelief_te_continuous <- webb2016targetingtaxrelief_outcome_data |>
+  # preprocess data before running transformation functions
+  derive_treatment_effect_se(
+    ci_level = 0.95,
+    p_is_two_sided = TRUE
+  ) |>
+  # and go ahead with the main event
   filter(
     esc_type == "Treatment Effect (Continuous)"
   ) |>
@@ -128,11 +93,7 @@ almp_nma_study_identifier_te_continuous <- almp_nma_study_identifier_outcome_dat
   })()
 
 # merge seperate data back together and filter for export
-almp_nma_study_identifier_export <- bind_rows(
-  almp_nma_study_identifier_binary_proportions,
-  almp_nma_study_identifier_te_binary,
-  almp_nma_study_identifier_te_continuous
-) |>
+webb2016targetingtaxrelief_export <- webb2016targetingtaxrelief_te_continuous |>
   select(
     study_id,
     outcome_domain,
@@ -153,6 +114,6 @@ almp_nma_study_identifier_export <- bind_rows(
 
 # export data
 saveRDS(
-  almp_nma_study_identifier_export,
-  file = "./es_transformation/output/almp_nma_study_identifier.RDS"
+  webb2016targetingtaxrelief_export,
+  file = "./es_transformation/output/webb2016targetingtaxrelief.RDS"
 )
