@@ -3,7 +3,7 @@
 # Author: David Taylor                                                                       #
 # Date: 10/09/2025                                                                           #
 # Purpose: transform reported results to a common effect size                                #
-# Study ID: almp_nma_study_identifier                                                        #
+# Study ID: fraker2018threeyeareffectsyouth_f                                                #
 #============================================================================================#
 
 # load required packages
@@ -17,10 +17,10 @@ outcome_data_location <- "./es_transformation/inputs/almp_nma_outcome_data.rds"
 outcome_data <- readRDS(outcome_data_location)
 
 # prepare data for transformation
-almp_nma_study_identifier_outcome_data <- outcome_data |>
+fraker2018threeyeareffectsyouth_f_outcome_data <- outcome_data |>
   filter(
     # filter data by study id
-    study_id == "almp_nma_study_identifier",
+    study_id == "fraker2018threeyeareffectsyouth_f",
     # exclude outcomes with missing data
     is.na(exclude_missing_data) | exclude_missing_data != "Yes",
     # exclude outcomes that report duplicate constructs
@@ -66,7 +66,7 @@ almp_nma_study_identifier_outcome_data <- outcome_data |>
   )
 
 # filter results reported as binary proportions and run function
-almp_nma_study_identifier_binary_proportions <- almp_nma_study_identifier_outcome_data |>
+fraker2018threeyeareffectsyouth_f_binary_proportions <- fraker2018threeyeareffectsyouth_f_outcome_data |>
   filter(
     esc_type == "Binary proportions"
   ) |>
@@ -86,28 +86,14 @@ almp_nma_study_identifier_binary_proportions <- almp_nma_study_identifier_outcom
     )
   })()
 
-# filter results reported as treatment effect binary and run function
-almp_nma_study_identifier_te_binary <- almp_nma_study_identifier_outcome_data |>
-  filter(
-    esc_type == "Treatment Effect (Binary)"
-  ) |>
-  # random custom function to allow custom functions to vectorise
-  (\(.) {
-    # implement mean and pooled sd function
-    mutate(
-      .,
-      !!!treatment_effect_binary_to_smd(
-        treatment_n = .$treatment_n,
-        comparison_n = .$comparison_n,
-        treatment_effect = .$treatment_effect,
-        treatment_effect_se = .$treatment_effect_se,
-        mask = .$esc_type == "Treatment Effect (Binary)"
-      )
-    )
-  })()
-
 # filter results reported as treatment effect continuous and run function
-almp_nma_study_identifier_te_continuous <- almp_nma_study_identifier_outcome_data |>
+fraker2018threeyeareffectsyouth_f_te_continuous <- fraker2018threeyeareffectsyouth_f_outcome_data |>
+  # preprocess data before running transformation functions
+  derive_treatment_effect_se(
+    ci_level = 0.95,
+    p_is_two_sided = TRUE
+  ) |>
+  # and go ahead with the main event
   filter(
     esc_type == "Treatment Effect (Continuous)"
   ) |>
@@ -128,10 +114,9 @@ almp_nma_study_identifier_te_continuous <- almp_nma_study_identifier_outcome_dat
   })()
 
 # merge seperate data back together and filter for export
-almp_nma_study_identifier_export <- bind_rows(
-  almp_nma_study_identifier_binary_proportions,
-  almp_nma_study_identifier_te_binary,
-  almp_nma_study_identifier_te_continuous
+fraker2018threeyeareffectsyouth_f_export <- bind_rows(
+  fraker2018threeyeareffectsyouth_f_binary_proportions,
+  fraker2018threeyeareffectsyouth_f_te_continuous
 ) |>
   select(
     study_id,
@@ -153,6 +138,6 @@ almp_nma_study_identifier_export <- bind_rows(
 
 # export data
 saveRDS(
-  almp_nma_study_identifier_export,
-  file = "./es_transformation/output/almp_nma_study_identifier.RDS"
+  fraker2018threeyeareffectsyouth_f_export,
+  file = "./es_transformation/output/fraker2018threeyeareffectsyouth_f.RDS"
 )
