@@ -472,11 +472,7 @@ treatment_effect_binary_to_smd <- function(
   treatment_n,
   comparison_n,
   treatment_effect,
-  treatment_effect_se = NULL,
-  treatment_effect_p_value = NULL,
-  treatment_effect_ci_low = NULL,
-  treatment_effect_ci_high = NULL,
-  ci_level = 0.95,
+  treatment_effect_se,
   mask = NULL
 ) {
   n1 <- treatment_n
@@ -494,33 +490,6 @@ treatment_effect_binary_to_smd <- function(
   se <- rep(NA_real_, k)
   if (!is.null(treatment_effect_se)) {
     se <- treatment_effect_se
-  }
-
-  # from p-value (follows two-sided normal approx)
-  if (!is.null(treatment_effect_p_value)) {
-    idx <- mask &
-      is.finite(att) &
-      is.finite(treatment_effect_p_value) &
-      treatment_effect_p_value > 0 &
-      treatment_effect_p_value <= 1
-    if (any(idx)) {
-      z <- qnorm(1 - treatment_effect_p_value[idx] / 2)
-      se[idx] <- abs(att[idx]) / z
-    }
-  }
-
-  # from confidence intervals
-  if (!is.null(treatment_effect_ci_low) && !is.null(treatment_effect_ci_high)) {
-    idx <- mask &
-      is.finite(att) &
-      is.finite(treatment_effect_ci_low) &
-      is.finite(treatment_effect_ci_high)
-    if (any(idx)) {
-      z <- qnorm(1 - (1 - ci_level) / 2)
-      se[idx] <- (treatment_effect_ci_high[idx] -
-        treatment_effect_ci_low[idx]) /
-        (2 * z)
-    }
   }
 
   ok <- mask &
@@ -591,7 +560,7 @@ treatment_effect_binary_to_smd <- function(
 }
 
 # convert results reported as a continuous treatment effect to SMD
-treatment_effect_continuous_to_smdI <- function(
+treatment_effect_continuous_to_smd <- function(
   treatment_n,
   comparison_n,
   treatment_effect,
@@ -599,12 +568,6 @@ treatment_effect_continuous_to_smdI <- function(
   pooled_sd,
   # SE for TE if no pooled SD is reported
   treatment_effect_se = NULL,
-  # p-value for TE if no SE reported
-  treatment_effect_p_value = NULL,
-  # confidence intervals for TE is no SE is reported
-  treatment_effect_ci_low = NULL,
-  treatment_effect_ci_high = NULL,
-  ci_level = 0.95,
   mask = NULL
 ) {
   n1 <- treatment_n
@@ -630,36 +593,6 @@ treatment_effect_continuous_to_smdI <- function(
   se_md <- rep(NA_real_, k)
   if (!is.null(treatment_effect_se)) {
     se_md <- treatment_effect_se
-  }
-
-  # from p-value (two-sided normal approx)
-  if (!is.null(treatment_effect_p_value)) {
-    idx <- mask &
-      is.finite(md) &
-      is.finite(treatment_effect_p_value) &
-      treatment_effect_p_value > 0 &
-      treatment_effect_p_value <= 1
-    if (any(idx)) {
-      z <- qnorm(pmax(
-        1 - treatment_effect_p_value[idx] / 2,
-        .Machine$double.eps
-      ))
-      se_md[idx] <- abs(md[idx]) / z
-    }
-  }
-
-  # from confidence intervals
-  if (!is.null(treatment_effect_ci_low) && !is.null(treatment_effect_ci_high)) {
-    idx <- mask &
-      is.finite(treatment_effect_ci_low) &
-      is.finite(treatment_effect_ci_high)
-    if (any(idx)) {
-      z <- qnorm(1 - (1 - ci_level) / 2)
-      se_md[idx] <- (treatment_effect_ci_high[idx] -
-        treatment_effect_ci_low[idx]) /
-        (2 * z)
-      # if md itself is missing, you could also set md[idx] <- (high+low)/2, but we leave md as provided
-    }
   }
 
   # choose pooled SD: reported if valid, else derived from SE(Δ) under equal-variance assumption
