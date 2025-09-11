@@ -98,6 +98,8 @@ behaghel2014privatepublicprovision_b_export <- behaghel2014privatepublicprovisio
     estimand,
     intention_to_treat,
     conditional,
+    treatment_n,
+    comparison_n,
     d,
     d_se,
     d_var,

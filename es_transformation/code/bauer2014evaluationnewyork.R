@@ -98,6 +98,8 @@ bauer2014evaluationnewyork_export <- bauer2014evaluationnewyork_binary_proportio
     estimand,
     intention_to_treat,
     conditional,
+    treatment_n,
+    comparison_n,
     d,
     d_se,
     d_var,

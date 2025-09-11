@@ -98,6 +98,8 @@ brunetti2017workplacetrainingprograms_export <- brunetti2017workplacetrainingpro
     estimand,
     intention_to_treat,
     conditional,
+    treatment_n,
+    comparison_n,
     d,
     d_se,
     d_var,
