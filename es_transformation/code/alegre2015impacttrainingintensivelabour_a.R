@@ -97,6 +97,8 @@ alegre2015impacttrainingintensivelabour_a_export <- alegre2015impacttraininginte
     estimand,
     intention_to_treat,
     conditional,
+    treatment_n,
+    comparison_n,
     d,
     d_se,
     d_var,

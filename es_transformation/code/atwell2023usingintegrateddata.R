@@ -98,6 +98,8 @@ atwell2023usingintegrateddata_export <- atwell2023usingintegrateddata_binary_pro
     estimand,
     intention_to_treat,
     conditional,
+    treatment_n,
+    comparison_n,
     d,
     d_se,
     d_var,

@@ -3,7 +3,7 @@
 # Author: David Taylor                                                                       #
 # Date: 10/09/2025                                                                           #
 # Purpose: transform reported results to a common effect size                                #
-# Study ID: hollenbeck2006netimpactbenefitcost                                               #
+# Study ID: hollenbeck2006netimpactestimates                                                 #
 #============================================================================================#
 
 # load required packages
@@ -17,10 +17,10 @@ outcome_data_location <- "./es_transformation/inputs/almp_nma_outcome_data.rds"
 outcome_data <- readRDS(outcome_data_location)
 
 # prepare data for transformation
-hollenbeck2006netimpactbenefitcost_outcome_data <- outcome_data |>
+hollenbeck2006netimpactestimates_outcome_data <- outcome_data |>
   filter(
     # filter data by study id
-    str_detect(study_id, "hollenbeck2006netimpactbenefitcost"),
+    str_detect(study_id, "hollenbeck2006netimpactestimates"),
     # exclude outcomes with missing data
     is.na(exclude_missing_data) | exclude_missing_data != "Yes",
     # exclude outcomes that report duplicate constructs
@@ -66,7 +66,7 @@ hollenbeck2006netimpactbenefitcost_outcome_data <- outcome_data |>
   )
 
 # filter results reported as binary proportions and run function
-hollenbeck2006netimpactbenefitcost_binary_proportions <- hollenbeck2006netimpactbenefitcost_outcome_data |>
+hollenbeck2006netimpactestimates_binary_proportions <- hollenbeck2006netimpactestimates_outcome_data |>
   filter(
     esc_type == "Binary proportions"
   ) |>
@@ -87,7 +87,7 @@ hollenbeck2006netimpactbenefitcost_binary_proportions <- hollenbeck2006netimpact
   })()
 
 # merge seperate data back together and filter for export
-hollenbeck2006netimpactbenefitcost_export <- hollenbeck2006netimpactbenefitcost_binary_proportions |>
+hollenbeck2006netimpactestimates_export <- hollenbeck2006netimpactestimates_binary_proportions |>
   select(
     study_id,
     outcome_domain,
@@ -108,6 +108,6 @@ hollenbeck2006netimpactbenefitcost_export <- hollenbeck2006netimpactbenefitcost_
 
 # export data
 saveRDS(
-  hollenbeck2006netimpactbenefitcost_export,
-  file = "./es_transformation/output/hollenbeck2006netimpactbenefitcost.RDS"
+  hollenbeck2006netimpactestimates_export,
+  file = "./es_transformation/output/hollenbeck2006netimpactestimates.RDS"
 )
