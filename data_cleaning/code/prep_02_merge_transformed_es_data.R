@@ -34,6 +34,10 @@ effect_size_count
 study_count[1]
 
 # per cent complete
+est_es <- 2210
+percent_es_complete <- effect_size_count / est_es
+percent_es_complete
+
 est_studies <- (288 - 5) - 40
 percent_complete <- study_count[1] / est_studies
 percent_complete

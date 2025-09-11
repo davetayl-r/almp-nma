@@ -1,9 +1,9 @@
 #============================================================================================#
 # Project: ALMP NMA                                                                          #
 # Author: David Taylor                                                                       #
-# Date: 10/09/2025                                                                           #
+# Date: 11/09/2025                                                                           #
 # Purpose: transform reported results to a common effect size                                #
-# Study ID: almp_nma_study_identifier                                                        #
+# Study ID: stefanik2024supportingrightworkplace                                             #
 #============================================================================================#
 
 # load required packages
@@ -17,10 +17,10 @@ outcome_data_location <- "./es_transformation/inputs/almp_nma_outcome_data.rds"
 outcome_data <- readRDS(outcome_data_location)
 
 # prepare data for transformation
-almp_nma_study_identifier_outcome_data <- outcome_data |>
+stefanik2024supportingrightworkplace_outcome_data <- outcome_data |>
   filter(
     # filter data by study id
-    study_id == "almp_nma_study_identifier",
+    str_detect(study_id, "stefanik2024supportingrightworkplace"),
     # exclude outcomes with missing data
     is.na(exclude_missing_data) | exclude_missing_data != "Yes",
     # exclude outcomes that report duplicate constructs
@@ -65,49 +65,8 @@ almp_nma_study_identifier_outcome_data <- outcome_data |>
     comparison_n = round(comparison_n, 0)
   )
 
-# filter results reported as binary proportions and run function
-almp_nma_study_identifier_binary_proportions <- almp_nma_study_identifier_outcome_data |>
-  filter(
-    esc_type == "Binary proportions"
-  ) |>
-  # random custom function to allow custom functions to vectorise
-  (\(.) {
-    # implement binary proportions function
-    mutate(
-      .,
-      !!!proportion_to_smd(
-        treatment_n = .$treatment_n,
-        comparison_n = .$comparison_n,
-        treatment_proportion = .$treatment_proportion,
-        comparison_proportion = .$comparison_proportion,
-        method = "cox_logit",
-        mask = .$esc_type == "Binary proportions"
-      )
-    )
-  })()
-
-# filter results reported as treatment effect binary and run function
-almp_nma_study_identifier_te_binary <- almp_nma_study_identifier_outcome_data |>
-  filter(
-    esc_type == "Treatment Effect (Binary)"
-  ) |>
-  # random custom function to allow custom functions to vectorise
-  (\(.) {
-    # implement mean and pooled sd function
-    mutate(
-      .,
-      !!!treatment_effect_binary_to_smd(
-        treatment_n = .$treatment_n,
-        comparison_n = .$comparison_n,
-        treatment_effect = .$treatment_effect,
-        treatment_effect_se = .$treatment_effect_se,
-        mask = .$esc_type == "Treatment Effect (Binary)"
-      )
-    )
-  })()
-
 # filter results reported as treatment effect continuous and run function
-almp_nma_study_identifier_te_continuous <- almp_nma_study_identifier_outcome_data |>
+stefanik2024supportingrightworkplace_te_continuous <- stefanik2024supportingrightworkplace_outcome_data |>
   filter(
     esc_type == "Treatment Effect (Continuous)"
   ) |>
@@ -127,11 +86,30 @@ almp_nma_study_identifier_te_continuous <- almp_nma_study_identifier_outcome_dat
     )
   })()
 
+# filter results reported as treatment effect binary and run function
+stefanik2024supportingrightworkplace_te_binary <- stefanik2024supportingrightworkplace_outcome_data |>
+  filter(
+    esc_type == "Treatment Effect (Binary)"
+  ) |>
+  # random custom function to allow custom functions to vectorise
+  (\(.) {
+    # implement mean and pooled sd function
+    mutate(
+      .,
+      !!!treatment_effect_binary_to_smd(
+        treatment_n = .$treatment_n,
+        comparison_n = .$comparison_n,
+        treatment_effect = .$treatment_effect,
+        treatment_effect_se = .$treatment_effect_se,
+        mask = .$esc_type == "Treatment Effect (Binary)"
+      )
+    )
+  })()
+
 # merge seperate data back together and filter for export
-almp_nma_study_identifier_export <- bind_rows(
-  almp_nma_study_identifier_binary_proportions,
-  almp_nma_study_identifier_te_binary,
-  almp_nma_study_identifier_te_continuous
+stefanik2024supportingrightworkplace_export <- bind_rows(
+  stefanik2024supportingrightworkplace_te_continuous,
+  stefanik2024supportingrightworkplace_te_binary
 ) |>
   select(
     study_id,
@@ -153,6 +131,6 @@ almp_nma_study_identifier_export <- bind_rows(
 
 # export data
 saveRDS(
-  almp_nma_study_identifier_export,
-  file = "./es_transformation/output/almp_nma_study_identifier.RDS"
+  stefanik2024supportingrightworkplace_export,
+  file = "./es_transformation/output/stefanik2024supportingrightworkplace.RDS"
 )
