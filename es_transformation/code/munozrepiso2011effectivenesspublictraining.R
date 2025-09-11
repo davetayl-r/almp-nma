@@ -1,9 +1,9 @@
 #============================================================================================#
 # Project: ALMP NMA                                                                          #
 # Author: David Taylor                                                                       #
-# Date: 10/09/2025                                                                           #
+# Date: 11/09/2025                                                                           #
 # Purpose: transform reported results to a common effect size                                #
-# Study ID: rodriguez_planas2012longertermimpactsmentoring                                   #
+# Study ID: munozrepiso2011effectivenesspublictraining                                       #
 #============================================================================================#
 
 # load required packages
@@ -17,10 +17,10 @@ outcome_data_location <- "./es_transformation/inputs/almp_nma_outcome_data.rds"
 outcome_data <- readRDS(outcome_data_location)
 
 # prepare data for transformation
-rodriguez_planas2012longertermimpactsmentoring_outcome_data <- outcome_data |>
+munozrepiso2011effectivenesspublictraining_outcome_data <- outcome_data |>
   filter(
     # filter data by study id
-    study_id == "rodriguez-planas2012longertermimpactsmentoring",
+    study_id == "munozrepiso2011effectivenesspublictraining",
     # exclude outcomes with missing data
     is.na(exclude_missing_data) | exclude_missing_data != "Yes",
     # exclude outcomes that report duplicate constructs
@@ -65,29 +65,8 @@ rodriguez_planas2012longertermimpactsmentoring_outcome_data <- outcome_data |>
     comparison_n = round(comparison_n, 0)
   )
 
-# filter results reported as binary proportions and run function
-rodriguez_planas2012longertermimpactsmentoring_binary_proportions <- rodriguez_planas2012longertermimpactsmentoring_outcome_data |>
-  filter(
-    esc_type == "Binary proportions"
-  ) |>
-  # random custom function to allow custom functions to vectorise
-  (\(.) {
-    # implement binary proportions function
-    mutate(
-      .,
-      !!!proportion_to_smd(
-        treatment_n = .$treatment_n,
-        comparison_n = .$comparison_n,
-        treatment_proportion = .$treatment_proportion,
-        comparison_proportion = .$comparison_proportion,
-        method = "cox_logit",
-        mask = .$esc_type == "Binary proportions"
-      )
-    )
-  })()
-
 # filter results reported as treatment effect continuous and run function
-rodriguez_planas2012longertermimpactsmentoring_te_continuous <- rodriguez_planas2012longertermimpactsmentoring_outcome_data |>
+munozrepiso2011effectivenesspublictraining_te_continuous <- munozrepiso2011effectivenesspublictraining_outcome_data |>
   filter(
     esc_type == "Treatment Effect (Continuous)"
   ) |>
@@ -108,10 +87,7 @@ rodriguez_planas2012longertermimpactsmentoring_te_continuous <- rodriguez_planas
   })()
 
 # merge seperate data back together and filter for export
-rodriguez_planas2012longertermimpactsmentoring_export <- bind_rows(
-  rodriguez_planas2012longertermimpactsmentoring_binary_proportions,
-  rodriguez_planas2012longertermimpactsmentoring_te_continuous
-) |>
+munozrepiso2011effectivenesspublictraining_export <- munozrepiso2011effectivenesspublictraining_te_continuous |>
   select(
     study_id,
     outcome_domain,
@@ -132,6 +108,6 @@ rodriguez_planas2012longertermimpactsmentoring_export <- bind_rows(
 
 # export data
 saveRDS(
-  rodriguez_planas2012longertermimpactsmentoring_export,
-  file = "./es_transformation/output/rodriguez_planas2012longertermimpactsmentoring.RDS"
+  munozrepiso2011effectivenesspublictraining_export,
+  file = "./es_transformation/output/munozrepiso2011effectivenesspublictraining.RDS"
 )
