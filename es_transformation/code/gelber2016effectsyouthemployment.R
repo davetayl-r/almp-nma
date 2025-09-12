@@ -98,6 +98,8 @@ gelber2016effectsyouthemployment_export <- gelber2016effectsyouthemployment_te_c
     estimand,
     intention_to_treat,
     conditional,
+    treatment_n,
+    comparison_n,
     d,
     d_se,
     d_var,

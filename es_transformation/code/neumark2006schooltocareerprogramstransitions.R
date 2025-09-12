@@ -98,6 +98,8 @@ neumark2006schooltocareerprogramstransitions_export <- neumark2006schooltocareer
     estimand,
     intention_to_treat,
     conditional,
+    treatment_n,
+    comparison_n,
     d,
     d_se,
     d_var,

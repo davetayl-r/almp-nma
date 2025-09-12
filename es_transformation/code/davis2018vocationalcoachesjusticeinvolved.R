@@ -98,6 +98,8 @@ davis2018vocationalcoachesjusticeinvolved_export <- davis2018vocationalcoachesju
     estimand,
     intention_to_treat,
     conditional,
+    treatment_n,
+    comparison_n,
     d,
     d_se,
     d_var,

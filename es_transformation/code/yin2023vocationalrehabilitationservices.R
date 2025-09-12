@@ -65,17 +65,11 @@ yin2023vocationalrehabilitationservices_outcome_data <- outcome_data |>
     comparison_n = round(comparison_n, 0)
   )
 
-## -----------------------------
-## Yin et al. (2023) – LATE -> ITT -> SMD (d, g)
-## -----------------------------
-
-library(dplyr)
-library(tibble)
+# convert reported LATE -> ITT
 
 # specify inputs from data frame
 n1 <- yin2023vocationalrehabilitationservices_outcome_data$treatment_n[1]
 n2 <- yin2023vocationalrehabilitationservices_outcome_data$comparison_n[1]
-
 
 ## Inputs from the paper (instrumented/LATE estimates, post-closure window)
 ## Employment is in percentage points (probability units); earnings in 2018 $.
@@ -155,6 +149,8 @@ yin2023vocationalrehabilitationservices_export <-
     ~estimand,
     ~intention_to_treat,
     ~conditional,
+    ~treatment_n,
+    ~comparison_n,
     ~d,
     ~d_se,
     ~d_var,
@@ -173,6 +169,8 @@ yin2023vocationalrehabilitationservices_export <-
     yin2023vocationalrehabilitationservices_outcome_data$estimand[1],
     yin2023vocationalrehabilitationservices_outcome_data$intention_to_treat[1],
     yin2023vocationalrehabilitationservices_outcome_data$conditional[1],
+    yin2023vocationalrehabilitationservices_outcome_data$treatment_n[1],
+    yin2023vocationalrehabilitationservices_outcome_data$comparison_n[1],
     d_emp,
     d_emp_se,
     d_emp_var,
@@ -191,6 +189,8 @@ yin2023vocationalrehabilitationservices_export <-
     yin2023vocationalrehabilitationservices_outcome_data$estimand[2],
     yin2023vocationalrehabilitationservices_outcome_data$intention_to_treat[2],
     yin2023vocationalrehabilitationservices_outcome_data$conditional[2],
+    yin2023vocationalrehabilitationservices_outcome_data$treatment_n[2],
+    yin2023vocationalrehabilitationservices_outcome_data$comparison_n[2],
     d_earn,
     d_earn_se,
     d_earn_var,
@@ -201,7 +201,8 @@ yin2023vocationalrehabilitationservices_export <-
   mutate(
     estimand = case_when(
       estimand == "Local Average Treatment Effect (LATE)" ~
-        "Average Treatment Effect on the Treated (ATT)"
+        "Average Treatment Effect on the Treated (ATT)",
+      TRUE ~ estimand
     )
   )
 

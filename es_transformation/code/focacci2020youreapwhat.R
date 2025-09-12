@@ -97,6 +97,8 @@ focacci2020youreapwhat_export <- focacci2020youreapwhat_te_binary |>
     estimand,
     intention_to_treat,
     conditional,
+    treatment_n,
+    comparison_n,
     d,
     d_se,
     d_var,

@@ -3,7 +3,7 @@
 # Author: David Taylor                                                                       #
 # Date: 10/09/2025                                                                           #
 # Purpose: transform reported results to a common effect size                                #
-# Study ID: crepon2013labormarketpolicies                                                        #
+# Study ID: crepon2013labormarketpolicies                                                    #
 #============================================================================================#
 
 # load required packages
@@ -98,6 +98,8 @@ crepon2013labormarketpolicies_export <- crepon2013labormarketpolicies_binary_pro
     estimand,
     intention_to_treat,
     conditional,
+    treatment_n,
+    comparison_n,
     d,
     d_se,
     d_var,

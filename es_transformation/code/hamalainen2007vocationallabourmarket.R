@@ -98,6 +98,8 @@ hamalainen2007vocationallabourmarket_export <- hamalainen2007vocationallabourmar
     estimand,
     intention_to_treat,
     conditional,
+    treatment_n,
+    comparison_n,
     d,
     d_se,
     d_var,

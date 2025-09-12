@@ -3,7 +3,7 @@
 # Author: David Taylor                                                                       #
 # Date: 10/09/2025                                                                           #
 # Purpose: transform reported results to a common effect size                                #
-# Study ID: departmentforworkandpensions2012impactscostsbenefits                                                        #
+# Study ID: departmentforworkandpensions2012impactscostsbenefits                             #
 #============================================================================================#
 
 # load required packages
@@ -98,6 +98,8 @@ departmentforworkandpensions2012impactscostsbenefits_export <- departmentforwork
     estimand,
     intention_to_treat,
     conditional,
+    treatment_n,
+    comparison_n,
     d,
     d_se,
     d_var,

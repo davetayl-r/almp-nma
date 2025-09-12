@@ -98,6 +98,8 @@ mocostabella2017highschoolgraduates_export <- mocostabella2017highschoolgraduate
     estimand,
     intention_to_treat,
     conditional,
+    treatment_n,
+    comparison_n,
     d,
     d_se,
     d_var,

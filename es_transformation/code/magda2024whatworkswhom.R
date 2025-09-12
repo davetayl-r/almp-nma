@@ -98,6 +98,8 @@ magda2024whatworkswhom_export <- magda2024whatworkswhom_te_continuous |>
     estimand,
     intention_to_treat,
     conditional,
+    treatment_n,
+    comparison_n,
     d,
     d_se,
     d_var,

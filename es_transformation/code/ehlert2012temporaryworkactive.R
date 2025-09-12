@@ -96,6 +96,8 @@ ehlert2012temporaryworkactive_export <- ehlert2012temporaryworkactive_t_value |>
     estimand,
     intention_to_treat,
     conditional,
+    treatment_n,
+    comparison_n,
     d,
     d_se,
     d_var,

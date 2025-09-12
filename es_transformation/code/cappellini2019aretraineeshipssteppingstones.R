@@ -97,6 +97,8 @@ cappellini2019aretraineeshipssteppingstones_export <- cappellini2019aretraineesh
     estimand,
     intention_to_treat,
     conditional,
+    treatment_n,
+    comparison_n,
     d,
     d_se,
     d_var,

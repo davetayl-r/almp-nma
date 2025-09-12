@@ -98,6 +98,8 @@ henderson2021transitionworkfinal_export <- henderson2021transitionworkfinal_bina
     estimand,
     intention_to_treat,
     conditional,
+    treatment_n,
+    comparison_n,
     d,
     d_se,
     d_var,

@@ -98,6 +98,8 @@ geckeler2017helpingdropoutyouth_export <- geckeler2017helpingdropoutyouth_binary
     estimand,
     intention_to_treat,
     conditional,
+    treatment_n,
+    comparison_n,
     d,
     d_se,
     d_var,

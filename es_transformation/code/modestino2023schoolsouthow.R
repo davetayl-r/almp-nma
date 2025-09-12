@@ -98,6 +98,8 @@ modestino2023schoolsouthow_export <- modestino2023schoolsouthow_te_continuous |>
     estimand,
     intention_to_treat,
     conditional,
+    treatment_n,
+    comparison_n,
     d,
     d_se,
     d_var,

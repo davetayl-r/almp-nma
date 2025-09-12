@@ -98,6 +98,8 @@ graversen2008activatingunemployedworkers_export <- graversen2008activatingunempl
     estimand,
     intention_to_treat,
     conditional,
+    treatment_n,
+    comparison_n,
     d,
     d_se,
     d_var,

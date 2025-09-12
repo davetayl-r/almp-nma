@@ -3,7 +3,7 @@
 # Author: David Taylor                                                                       #
 # Date: 10/09/2025                                                                           #
 # Purpose: transform reported results to a common effect size                                #
-# Study ID: dwp2024kickstartschemequantitative                                                        #
+# Study ID: dwp2024kickstartschemequantitative                                               #
 #============================================================================================#
 
 # load required packages
@@ -98,6 +98,8 @@ dwp2024kickstartschemequantitative_export <- dwp2024kickstartschemequantitative_
     estimand,
     intention_to_treat,
     conditional,
+    treatment_n,
+    comparison_n,
     d,
     d_se,
     d_var,

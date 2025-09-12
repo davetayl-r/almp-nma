@@ -98,6 +98,8 @@ pastore2020assessingimpactoffthejob_export <- pastore2020assessingimpactoffthejo
     estimand,
     intention_to_treat,
     conditional,
+    treatment_n,
+    comparison_n,
     d,
     d_se,
     d_var,

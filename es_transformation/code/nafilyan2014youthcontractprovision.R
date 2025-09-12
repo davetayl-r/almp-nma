@@ -98,6 +98,8 @@ nafilyan2014youthcontractprovision_export <- nafilyan2014youthcontractprovision_
     estimand,
     intention_to_treat,
     conditional,
+    treatment_n,
+    comparison_n,
     d,
     d_se,
     d_var,

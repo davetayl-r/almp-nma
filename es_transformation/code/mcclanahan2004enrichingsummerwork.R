@@ -98,6 +98,8 @@ mcclanahan2004enrichingsummerwork_export <- mcclanahan2004enrichingsummerwork_bi
     estimand,
     intention_to_treat,
     conditional,
+    treatment_n,
+    comparison_n,
     d,
     d_se,
     d_var,

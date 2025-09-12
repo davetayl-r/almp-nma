@@ -96,6 +96,8 @@ maibom2014canactivelabour_b_export <- maibom2014canactivelabour_b_t_value |>
     estimand,
     intention_to_treat,
     conditional,
+    treatment_n,
+    comparison_n,
     d,
     d_se,
     d_var,

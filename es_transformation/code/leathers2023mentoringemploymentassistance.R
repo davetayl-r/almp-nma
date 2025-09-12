@@ -123,6 +123,8 @@ leathers2023mentoringemploymentassistance_export <- bind_rows(
     estimand,
     intention_to_treat,
     conditional,
+    treatment_n,
+    comparison_n,
     d,
     d_se,
     d_var,

@@ -97,6 +97,8 @@ canzian2020activelabourmarket_export <- canzian2020activelabourmarket_te_binary 
     estimand,
     intention_to_treat,
     conditional,
+    treatment_n,
+    comparison_n,
     d,
     d_se,
     d_var,

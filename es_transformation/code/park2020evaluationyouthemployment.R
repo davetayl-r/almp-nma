@@ -98,6 +98,8 @@ park2020evaluationyouthemployment_export <- park2020evaluationyouthemployment_te
     estimand,
     intention_to_treat,
     conditional,
+    treatment_n,
+    comparison_n,
     d,
     d_se,
     d_var,

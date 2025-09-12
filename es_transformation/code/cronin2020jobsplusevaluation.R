@@ -98,6 +98,8 @@ cronin2020jobsplusevaluation_export <- cronin2020jobsplusevaluation_binary_propo
     estimand,
     intention_to_treat,
     conditional,
+    treatment_n,
+    comparison_n,
     d,
     d_se,
     d_var,

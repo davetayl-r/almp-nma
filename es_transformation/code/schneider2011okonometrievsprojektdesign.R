@@ -98,6 +98,8 @@ schneider2011okonometrievsprojektdesign_export <- schneider2011okonometrievsproj
     estimand,
     intention_to_treat,
     conditional,
+    treatment_n,
+    comparison_n,
     d,
     d_se,
     d_var,

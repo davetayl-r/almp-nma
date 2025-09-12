@@ -104,6 +104,8 @@ oecd2024impactevaluationactive_export <- oecd2024impactevaluationactive_te_conti
     estimand,
     intention_to_treat,
     conditional,
+    treatment_n,
+    comparison_n,
     d,
     d_se,
     d_var,

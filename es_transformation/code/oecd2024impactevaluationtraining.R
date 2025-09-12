@@ -98,6 +98,8 @@ oecd2024impactevaluationtraining_export <- oecd2024impactevaluationtraining_bina
     estimand,
     intention_to_treat,
     conditional,
+    treatment_n,
+    comparison_n,
     d,
     d_se,
     d_var,

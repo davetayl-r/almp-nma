@@ -100,6 +100,8 @@ kim2019estimatingeffectsindependent_export <- kim2019estimatingeffectsindependen
     estimand,
     intention_to_treat,
     conditional,
+    treatment_n,
+    comparison_n,
     d,
     d_se,
     d_var,

@@ -98,6 +98,8 @@ mcleod2016evaluationimpactyouth_export <- mcleod2016evaluationimpactyouth_te_con
     estimand,
     intention_to_treat,
     conditional,
+    treatment_n,
+    comparison_n,
     d,
     d_se,
     d_var,

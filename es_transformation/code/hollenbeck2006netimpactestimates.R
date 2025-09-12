@@ -98,6 +98,8 @@ hollenbeck2006netimpactestimates_export <- hollenbeck2006netimpactestimates_bina
     estimand,
     intention_to_treat,
     conditional,
+    treatment_n,
+    comparison_n,
     d,
     d_se,
     d_var,
