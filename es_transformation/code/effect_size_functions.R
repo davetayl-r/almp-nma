@@ -811,3 +811,303 @@ derive_treatment_effect_se <- function(
       }
     )
 }
+
+#-------------------------------------------------------------------------------
+# 3. Pool studies across subgroups
+#-------------------------------------------------------------------------------
+
+pool_studies <- function(dat, study_ids, output_study_id) {
+  # Requires: dplyr, stringr
+  # - dat: data.frame/tibble with your ALMP NMA schema
+  # - study_ids: character vector of base IDs
+  # - output_study_id: single character; becomes the final pooled study_id
+
+  # helper function
+  wmean_safe <- function(x, w) {
+    keep <- is.finite(x) & is.finite(w)
+    if (!any(keep)) {
+      return(NA_real_)
+    }
+    if (sum(w[keep], na.rm = TRUE) <= 0) {
+      return(NA_real_)
+    }
+    stats::weighted.mean(x[keep], w = w[keep], na.rm = TRUE)
+  }
+
+  # identify rows to pool: match either exact ID or base ID (suffix "_[a-z]" dropped)
+  rows_to_pool <- dat %>%
+    dplyr::mutate(
+      base_from_data = stringr::str_remove(.data$study_id, "_[a-z]$")
+    ) %>%
+    dplyr::filter(
+      .data$study_id %in% study_ids | .data$base_from_data %in% study_ids
+    ) %>%
+    dplyr::select(-.data$base_from_data)
+
+  if (nrow(rows_to_pool) == 0L) {
+    return(dplyr::tibble()) # nothing to pool
+  }
+
+  # standardise base id to the requested output id and create per-row weights
+  dat_sub <- rows_to_pool %>%
+    dplyr::mutate(
+      base_study_id = output_study_id,
+      weight_d = 1 / .data$d_var,
+      weight_g = 1 / .data$g_var,
+      w_treat = dplyr::coalesce(.data$treatment_n, 0),
+      w_comp = dplyr::coalesce(.data$comparison_n, 0),
+      w_total = .data$w_treat + .data$w_comp,
+      study_age_mean_filled = dplyr::coalesce(
+        .data$study_age_mean,
+        dplyr::if_else(
+          is.finite(.data$study_age_min) & is.finite(.data$study_age_max),
+          (.data$study_age_min + .data$study_age_max) / 2,
+          NA_real_
+        )
+      )
+    )
+
+  # constant per-study female proportion (treatment-n weighted across ALL rows)
+  female_props <- dat_sub %>%
+    dplyr::group_by(.data$base_study_id) %>%
+    dplyr::summarise(
+      proportion_female_treatment_study = wmean_safe(
+        .data$proportion_female_treatment,
+        .data$w_treat
+      ),
+      .groups = "drop"
+    )
+
+  # pool within (study, outcome_domain, outcome, outcome_timing)
+  pooled <- dat_sub %>%
+    dplyr::left_join(female_props, by = "base_study_id") %>%
+    dplyr::group_by(
+      .data$base_study_id,
+      .data$outcome_domain,
+      .data$outcome,
+      .data$outcome_timing
+    ) %>%
+    dplyr::summarise(
+      # inverse-variance pooled effects
+      d = sum(.data$d * .data$weight_d, na.rm = TRUE) /
+        sum(.data$weight_d, na.rm = TRUE),
+      g = sum(.data$g * .data$weight_g, na.rm = TRUE) /
+        sum(.data$weight_g, na.rm = TRUE),
+      d_se = sqrt(1 / sum(.data$weight_d, na.rm = TRUE)),
+      g_se = sqrt(1 / sum(.data$weight_g, na.rm = TRUE)),
+      d_var = 1 / sum(.data$weight_d, na.rm = TRUE),
+      g_var = 1 / sum(.data$weight_g, na.rm = TRUE),
+
+      # sample sizes
+      treatment_n = sum(.data$w_treat, na.rm = TRUE),
+      comparison_n = sum(.data$w_comp, na.rm = TRUE),
+
+      # subgroup-sensitive descriptors
+      proportion_female_treatment = dplyr::first(
+        .data$proportion_female_treatment_study
+      ),
+      study_age_min = {
+        m <- suppressWarnings(min(.data$study_age_min, na.rm = TRUE))
+        if (is.infinite(m)) NA_real_ else m
+      },
+      study_age_max = {
+        M <- suppressWarnings(max(.data$study_age_max, na.rm = TRUE))
+        if (is.infinite(M)) NA_real_ else M
+      },
+      study_age_mean = {
+        wmean_safe(.data$study_age_mean_filled, .data$w_total)
+      },
+
+      # invariant-ish metadata
+      outcome_source = dplyr::first(.data$outcome_source),
+      favourable_direction = dplyr::first(.data$favourable_direction),
+      estimand = dplyr::first(.data$estimand),
+      intention_to_treat = dplyr::first(.data$intention_to_treat),
+      conditional = dplyr::first(.data$conditional),
+      year_published = dplyr::first(.data$year_published),
+      source = dplyr::first(.data$source),
+      peer_reviewed = dplyr::first(.data$peer_reviewed),
+      study_design_type = dplyr::first(.data$study_design_type),
+      study_design_detail = dplyr::first(.data$study_design_detail),
+      location = dplyr::first(.data$location),
+      year_start = dplyr::first(.data$year_start),
+      intervention_length_n = dplyr::first(.data$intervention_length_n),
+      intervention_intensity_n = dplyr::first(.data$intervention_intensity_n),
+      youth_focused = dplyr::first(.data$youth_focused),
+      intervention_developer = dplyr::first(.data$intervention_developer),
+      intervention_implementor = dplyr::first(.data$intervention_implementor),
+      program_scope = dplyr::first(.data$program_scope),
+      intervention_funding = dplyr::first(.data$intervention_funding),
+      conditionality = dplyr::first(.data$conditionality),
+      incentives = dplyr::first(.data$incentives),
+      certification = dplyr::first(.data$certification),
+      study_funding = dplyr::first(.data$study_funding),
+      evaluator = dplyr::first(.data$evaluator),
+      int_basic_skills_training = dplyr::first(.data$int_basic_skills_training),
+      int_soft_skills_training = dplyr::first(.data$int_soft_skills_training),
+      int_behavioural_skills_training = dplyr::first(
+        .data$int_behavioural_skills_training
+      ),
+      int_job_specific_technical_skills_off_job_training = dplyr::first(
+        .data$int_job_specific_technical_skills_off_job_training
+      ),
+      int_business_skills_training = dplyr::first(
+        .data$int_business_skills_training
+      ),
+      int_business_advisory_and_mentoring = dplyr::first(
+        .data$int_business_advisory_and_mentoring
+      ),
+      int_financial_and_start_up_support = dplyr::first(
+        .data$int_financial_and_start_up_support
+      ),
+      int_job_search_preparation = dplyr::first(
+        .data$int_job_search_preparation
+      ),
+      int_job_search_assistance = dplyr::first(.data$int_job_search_assistance),
+      int_employment_counselling = dplyr::first(
+        .data$int_employment_counselling
+      ),
+      int_employment_coaching = dplyr::first(.data$int_employment_coaching),
+      int_financial_assistance = dplyr::first(.data$int_financial_assistance),
+      int_job_specific_technical_skills_on_job_training = dplyr::first(
+        .data$int_job_specific_technical_skills_on_job_training
+      ),
+      int_paid_temporary_work_experience = dplyr::first(
+        .data$int_paid_temporary_work_experience
+      ),
+      int_unpaid_temporary_work_experience = dplyr::first(
+        .data$int_unpaid_temporary_work_experience
+      ),
+      int_wage_subsidies = dplyr::first(.data$int_wage_subsidies),
+      int_public_works = dplyr::first(.data$int_public_works),
+      int_other_active_component_nec = dplyr::first(
+        .data$int_other_active_component_nec
+      ),
+      com_services_as_usual = dplyr::first(.data$com_services_as_usual),
+      com_basic_skills_training = dplyr::first(.data$com_basic_skills_training),
+      com_soft_skills_training = dplyr::first(.data$com_soft_skills_training),
+      com_behavioural_skills_training = dplyr::first(
+        .data$com_behavioural_skills_training
+      ),
+      com_job_specific_technical_skills_off_job_training = dplyr::first(
+        .data$com_job_specific_technical_skills_off_job_training
+      ),
+      com_business_skills_training = dplyr::first(
+        .data$com_business_skills_training
+      ),
+      com_business_advisory_and_mentoring = dplyr::first(
+        .data$com_business_advisory_and_mentoring
+      ),
+      com_financial_and_start_up_support = dplyr::first(
+        .data$com_financial_and_start_up_support
+      ),
+      com_job_search_preparation = dplyr::first(
+        .data$com_job_search_preparation
+      ),
+      com_job_search_assistance = dplyr::first(.data$com_job_search_assistance),
+      com_employment_counselling = dplyr::first(
+        .data$com_employment_counselling
+      ),
+      com_employment_coaching = dplyr::first(.data$com_employment_coaching),
+      com_financial_assistance = dplyr::first(.data$com_financial_assistance),
+      com_job_specific_technical_skills_on_job_training = dplyr::first(
+        .data$com_job_specific_technical_skills_on_job_training
+      ),
+      com_paid_temporary_work_experience = dplyr::first(
+        .data$com_paid_temporary_work_experience
+      ),
+      com_unpaid_temporary_work_experience = dplyr::first(
+        .data$com_unpaid_temporary_work_experience
+      ),
+      com_wage_subsidies = dplyr::first(.data$com_wage_subsidies),
+      com_public_works = dplyr::first(.data$com_public_works),
+      com_other_active_component_nec = dplyr::first(
+        .data$com_other_active_component_nec
+      ),
+      low_study_quality = dplyr::first(.data$low_study_quality),
+      .groups = "drop"
+    ) %>%
+    dplyr::rename(study_id = .data$base_study_id) %>%
+    dplyr::select(
+      study_id,
+      outcome_domain,
+      outcome,
+      outcome_source,
+      favourable_direction,
+      outcome_timing,
+      estimand,
+      intention_to_treat,
+      conditional,
+      treatment_n,
+      comparison_n,
+      d,
+      d_se,
+      d_var,
+      g,
+      g_se,
+      g_var,
+      year_published,
+      source,
+      peer_reviewed,
+      study_design_type,
+      study_design_detail,
+      proportion_female_treatment,
+      study_age_min,
+      study_age_max,
+      study_age_mean,
+      location,
+      year_start,
+      intervention_length_n,
+      intervention_intensity_n,
+      youth_focused,
+      intervention_developer,
+      intervention_implementor,
+      program_scope,
+      intervention_funding,
+      conditionality,
+      incentives,
+      certification,
+      study_funding,
+      evaluator,
+      int_basic_skills_training,
+      int_soft_skills_training,
+      int_behavioural_skills_training,
+      int_job_specific_technical_skills_off_job_training,
+      int_business_skills_training,
+      int_business_advisory_and_mentoring,
+      int_financial_and_start_up_support,
+      int_job_search_preparation,
+      int_job_search_assistance,
+      int_employment_counselling,
+      int_employment_coaching,
+      int_financial_assistance,
+      int_job_specific_technical_skills_on_job_training,
+      int_paid_temporary_work_experience,
+      int_unpaid_temporary_work_experience,
+      int_wage_subsidies,
+      int_public_works,
+      int_other_active_component_nec,
+      com_services_as_usual,
+      com_basic_skills_training,
+      com_soft_skills_training,
+      com_behavioural_skills_training,
+      com_job_specific_technical_skills_off_job_training,
+      com_business_skills_training,
+      com_business_advisory_and_mentoring,
+      com_financial_and_start_up_support,
+      com_job_search_preparation,
+      com_job_search_assistance,
+      com_employment_counselling,
+      com_employment_coaching,
+      com_financial_assistance,
+      com_job_specific_technical_skills_on_job_training,
+      com_paid_temporary_work_experience,
+      com_unpaid_temporary_work_experience,
+      com_wage_subsidies,
+      com_public_works,
+      com_other_active_component_nec,
+      low_study_quality
+    )
+
+  pooled
+}

@@ -1,7 +1,7 @@
 #============================================================================================#
 # Project: ALMP NMA                                                                          #
 # Author: David Taylor                                                                       #
-# Date: 09/09/2025                                                                           #
+# Date: 12/09/2025                                                                           #
 # Purpose: consolidate effect size data with study-level data                                #
 #============================================================================================#
 
@@ -79,6 +79,6 @@ almp_nma_combined_data <- almp_effect_size_data |>
 
 # export data
 saveRDS(
-  combined_study_quality_assessments,
-  "./data_cleaning/outputs/almp_nma_study_quality_assessments.RDS"
+  almp_nma_combined_data,
+  "./data_cleaning/outputs/almp_nma_combined_study_data.RDS"
 )
