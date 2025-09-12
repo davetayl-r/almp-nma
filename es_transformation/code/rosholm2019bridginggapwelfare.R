@@ -96,7 +96,7 @@ rosholm2019bridginggapwelfare_te_continuous <- rosholm2019bridginggapwelfare_out
     # implement mean and pooled sd function
     mutate(
       .,
-      !!!treatment_effect_continuous_to_smdI(
+      !!!treatment_effect_continuous_to_smd(
         treatment_n = .$treatment_n,
         comparison_n = .$comparison_n,
         treatment_effect = .$treatment_effect,

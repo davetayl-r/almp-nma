@@ -8,6 +8,9 @@
 # load required packages
 library(tidyverse)
 
+# load custom functions
+source("./es_transformation/code/effect_size_functions.R")
+
 # read all relevant data
 almp_study_level_data_location <- "./data_cleaning/outputs/almp_nma_study_details.rds"
 almp_study_level_data <- readRDS(almp_study_level_data_location)

@@ -102,7 +102,7 @@ courtney2019experimentalevaluationtransitional_te_continuous <- courtney2019expe
     # implement mean and pooled sd function
     mutate(
       .,
-      !!!treatment_effect_continuous_to_smdI(
+      !!!treatment_effect_continuous_to_smd(
         treatment_n = .$treatment_n,
         comparison_n = .$comparison_n,
         treatment_effect = .$treatment_effect,
