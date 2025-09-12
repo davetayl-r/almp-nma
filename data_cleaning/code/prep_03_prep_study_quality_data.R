@@ -85,10 +85,12 @@ qa_non_randomised_clean <- qa_non_randomised_raw |>
 # 3. Merge, process and export data
 #-------------------------------------------------------------------------------
 
+# combine data
 combined_study_quality_assessments <- bind_rows(
   qa_randomised_clean,
   qa_non_randomised_clean
 ) |>
+  # convert to binary
   mutate(
     low_study_quality = case_when(
       summary_quality_assessment == "Low quality" ~ 1,
@@ -96,11 +98,13 @@ combined_study_quality_assessments <- bind_rows(
     ),
     low_study_quality = as.numeric(low_study_quality)
   ) |>
+  # subset data
   select(
     study_id,
     low_study_quality
   )
 
+# export
 saveRDS(
   combined_study_quality_assessments,
   "./data_cleaning/outputs/almp_nma_study_quality_assessments.RDS"
