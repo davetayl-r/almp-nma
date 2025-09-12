@@ -28,7 +28,7 @@ qa_randomised_clean <- qa_randomised_raw |>
   ) |>
   # calculate summary measure
   mutate(
-    summary_quality_assessmemt = case_when(
+    summary_quality_assessment = case_when(
       # any "No" across retained items
       rowSums(across(starts_with("question_"), ~ .x == "No"), na.rm = TRUE) >=
         1 ~
@@ -46,7 +46,7 @@ qa_randomised_clean <- qa_randomised_raw |>
   # subset study_id and summary_measure
   select(
     study_id,
-    summary_quality_assessmemt
+    summary_quality_assessment
   )
 
 #-------------------------------------------------------------------------------
@@ -60,7 +60,7 @@ qa_non_randomised_clean <- qa_non_randomised_raw |>
   ) |>
   # calculate summary measure
   mutate(
-    summary_quality_assessmemt = case_when(
+    summary_quality_assessment = case_when(
       # any "No" across retained items
       rowSums(across(starts_with("question_"), ~ .x == "No"), na.rm = TRUE) >=
         1 ~
@@ -78,7 +78,7 @@ qa_non_randomised_clean <- qa_non_randomised_raw |>
   # subset study_id and summary_measure
   select(
     study_id,
-    summary_quality_assessmemt
+    summary_quality_assessment
   )
 
 #-------------------------------------------------------------------------------
@@ -91,7 +91,7 @@ combined_study_quality_assessments <- bind_rows(
 ) |>
   mutate(
     low_study_quality = case_when(
-      summary_quality_assessmemt == "Low quality" ~ 1,
+      summary_quality_assessment == "Low quality" ~ 1,
       TRUE ~ 0
     ),
     low_study_quality = as.numeric(low_study_quality)

@@ -23,9 +23,8 @@ almp_intervention_components_data <- readRDS(
   almp_intervention_components_data_location
 )
 
-
-#almp_study_quality_data_location <- ""
-#almp_study_quality_data <- readRDS(almp_study_quality_data_location)
+almp_study_quality_data_location <- "./data_cleaning/outputs/almp_nma_study_quality_assessments.rds"
+almp_study_quality_data <- readRDS(almp_study_quality_data_location)
 
 # start with effect size data
 almp_nma_combined_data <- almp_effect_size_data |>
@@ -38,6 +37,12 @@ almp_nma_combined_data <- almp_effect_size_data |>
   left_join(
     almp_intervention_components_data,
     by = "study_id"
+  ) |>
+  # add study quality
+  left_join(
+    almp_study_quality_data,
+    by = "study_id",
+    relationship = "many-to-many"
   ) |>
   # drop unrequired variables
   select(
