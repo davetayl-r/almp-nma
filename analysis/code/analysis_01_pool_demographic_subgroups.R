@@ -23,15 +23,22 @@ almp_nma_combined_data_raw <- readRDS(almp_nma_combined_data_raw_location)
 almp_nma_combined_data_subset <- almp_nma_combined_data_raw |>
   # exclude study ids that will subsequently be pooled
   filter(
-    str_detect(study_id, "stefanik2024supportingrightworkplace"),
-    str_detect(study_id, "bloom1993nationaljtpastudy")
+    !str_detect(study_id, "bloom1993nationaljtpastudy"),
+    !str_detect(study_id, "caliendo2005employmenteffectsjob"),
+    !str_detect(study_id, "caliendo2011fightingyouthunemployment"),
+    !str_detect(study_id, "cammeraat2022preventingneetsgreat"),
+    !str_detect(study_id, "cronin2020jobsplusevaluation"),
+    !str_detect(study_id, "oecd2024impactevaluationtraining"),
+    !str_detect(study_id, "oecd2025impactevaluationwage"),
+    !str_detect(study_id, "stefanik2024supportingrightworkplace"),
   )
 
 #-------------------------------------------------------------------------------
 # 2. Pool studies across subgroups
 #-------------------------------------------------------------------------------
 
-# pool studies of 'JPTA (classroom training) from bloom1993nationaljtpastudy
+# pool studies of 'JPTA (classroom training)' from bloom1993nationaljtpastudy
+# note: these results are split by sex
 bloom1993nationaljtpastudy_a <- pool_studies(
   dat = almp_nma_combined_data_raw,
   study_ids = c(
@@ -41,7 +48,8 @@ bloom1993nationaljtpastudy_a <- pool_studies(
   output_study_id = "bloom1993nationaljtpastudy_a"
 )
 
-# pool studies of 'JPTA (OJT/JSA) from bloom1993nationaljtpastudy
+# pool studies of 'JPTA (OJT/JSA)' from bloom1993nationaljtpastudy
+# note: these results are split by sex
 bloom1993nationaljtpastudy_b <- pool_studies(
   dat = almp_nma_combined_data_raw,
   study_ids = c(
@@ -51,17 +59,169 @@ bloom1993nationaljtpastudy_b <- pool_studies(
   output_study_id = "bloom1993nationaljtpastudy_b"
 )
 
-# pool studies of 'JPTA (Other services) from bloom1993nationaljtpastudy
+# pool studies of 'JPTA (Other services)' from bloom1993nationaljtpastudy
+# note: these results are split by sex
 bloom1993nationaljtpastudy_c <- pool_studies(
   dat = almp_nma_combined_data_raw,
   study_ids = c(
-    "bloom1993nationaljtpastudy",
-    "bloom1993nationaljtpastudy"
+    "bloom1993nationaljtpastudy_c",
+    "bloom1993nationaljtpastudy_f"
   ),
   output_study_id = "bloom1993nationaljtpastudy_c"
 )
 
+# pool studies of 'Job Creation Schemes (JCS)' from caliendo2005employmenteffectsjob
+# note: these results are split by sex and region (former East vs. West Germany)
+caliendo2005employmenteffectsjob <- pool_studies(
+  dat = almp_nma_combined_data_raw,
+  study_ids = c(
+    "caliendo2005employmenteffectsjob_a",
+    "caliendo2005employmenteffectsjob_b",
+    "caliendo2005employmenteffectsjob_c",
+    "caliendo2005employmenteffectsjob_d"
+  ),
+  output_study_id = "caliendo2005employmenteffectsjob"
+)
+
+# pool studies of 'Job Search and Assessment of Employability' from caliendo2011fightingyouthunemployment
+# note: these results are split by region (former East vs. West Germany)
+caliendo2011fightingyouthunemployment_a <- pool_studies(
+  dat = almp_nma_combined_data_raw,
+  study_ids = c(
+    "caliendo2005employmenteffectsjob_a",
+    "caliendo2005employmenteffectsjob_b"
+  ),
+  output_study_id = "caliendo2011fightingyouthunemployment_a"
+)
+
+# pool studies of 'Short-term Training' from caliendo2011fightingyouthunemployment
+# note: these results are split by region (former East vs. West Germany)
+caliendo2011fightingyouthunemployment_b <- pool_studies(
+  dat = almp_nma_combined_data_raw,
+  study_ids = c(
+    "caliendo2005employmenteffectsjob_c",
+    "caliendo2005employmenteffectsjob_d"
+  ),
+  output_study_id = "caliendo2011fightingyouthunemployment_b"
+)
+
+# pool studies of 'JUMP Wage Subsidies' from caliendo2011fightingyouthunemployment
+# note: these results are split by region (former East vs. West Germany)
+caliendo2011fightingyouthunemployment_c <- pool_studies(
+  dat = almp_nma_combined_data_raw,
+  study_ids = c(
+    "caliendo2005employmenteffectsjob_e",
+    "caliendo2005employmenteffectsjob_f"
+  ),
+  output_study_id = "caliendo2011fightingyouthunemployment_c"
+)
+
+# pool studies of 'SGB III Wage Subsidies' from caliendo2011fightingyouthunemployment
+# note: these results are split by region (former East vs. West Germany)
+caliendo2011fightingyouthunemployment_d <- pool_studies(
+  dat = almp_nma_combined_data_raw,
+  study_ids = c(
+    "caliendo2005employmenteffectsjob_g",
+    "caliendo2005employmenteffectsjob_h"
+  ),
+  output_study_id = "caliendo2011fightingyouthunemployment_d"
+)
+
+# pool studies of 'Job Creation Schemes' from caliendo2011fightingyouthunemployment
+# note: these results are split by region (former East vs. West Germany)
+caliendo2011fightingyouthunemployment_e <- pool_studies(
+  dat = almp_nma_combined_data_raw,
+  study_ids = c(
+    "caliendo2005employmenteffectsjob_i",
+    "caliendo2005employmenteffectsjob_j"
+  ),
+  output_study_id = "caliendo2011fightingyouthunemployment_e"
+)
+
+# pool studies of 'Further Training Measures' from caliendo2011fightingyouthunemployment
+# note: these results are split by region (former East vs. West Germany)
+caliendo2011fightingyouthunemployment_f <- pool_studies(
+  dat = almp_nma_combined_data_raw,
+  study_ids = c(
+    "caliendo2005employmenteffectsjob_k",
+    "caliendo2005employmenteffectsjob_l"
+  ),
+  output_study_id = "caliendo2011fightingyouthunemployment_f"
+)
+
+# pool studies of 'Preparatory Training' from caliendo2011fightingyouthunemployment
+# note: these results are split by region (former East vs. West Germany)
+caliendo2011fightingyouthunemployment_g <- pool_studies(
+  dat = almp_nma_combined_data_raw,
+  study_ids = c(
+    "caliendo2005employmenteffectsjob_m",
+    "caliendo2005employmenteffectsjob_n"
+  ),
+  output_study_id = "caliendo2011fightingyouthunemployment_g"
+)
+
+# pool studies of 'WIJ' from cammeraat2022preventingneetsgreat
+# note: these results are split by sex
+cammeraat2022preventingneetsgreat <- pool_studies(
+  dat = almp_nma_combined_data_raw,
+  study_ids = c(
+    "cammeraat2022preventingneetsgreat_a",
+    "cammeraat2022preventingneetsgreat_b",
+    "cammeraat2022preventingneetsgreat_c"
+  ),
+  output_study_id = "cammeraat2022preventingneetsgreat"
+)
+
+# pool studies of 'Jobs Plus' from cronin2020jobsplusevaluation
+# note: these results are split by age and time since intervention was implemented
+cronin2020jobsplusevaluation <- pool_studies(
+  dat = almp_nma_combined_data_raw,
+  study_ids = c(
+    "cronin2020jobsplusevaluation_a",
+    "cronin2020jobsplusevaluation_b",
+    "cronin2020jobsplusevaluation_c",
+    "cronin2020jobsplusevaluation_d",
+    "cronin2020jobsplusevaluation_e",
+    "cronin2020jobsplusevaluation_f"
+  ),
+  output_study_id = "cronin2020jobsplusevaluation"
+)
+
+# pool studies of 'Wage Subsidies' from oecd2024impactevaluationtraining
+# note: these results are split by sex
+oecd2024impactevaluationtraining_a <- pool_studies(
+  dat = almp_nma_combined_data_raw,
+  study_ids = c(
+    "oecd2024impactevaluationtraining_a",
+    "oecd2024impactevaluationtraining_b"
+  ),
+  output_study_id = "oecd2024impactevaluationtraining_a"
+)
+
+# pool studies of 'Training Programs' from oecd2024impactevaluationtraining
+# note: these results are split by sex
+oecd2024impactevaluationtraining_b <- pool_studies(
+  dat = almp_nma_combined_data_raw,
+  study_ids = c(
+    "oecd2024impactevaluationtraining_c",
+    "oecd2024impactevaluationtraining_d"
+  ),
+  output_study_id = "oecd2024impactevaluationtraining_b"
+)
+
+# pool studies of 'Training Programs' from oecd2025impactevaluationwage
+# note: these results are split by sex
+oecd2025impactevaluationwage <- pool_studies(
+  dat = almp_nma_combined_data_raw,
+  study_ids = c(
+    "oecd2025impactevaluationwage_a",
+    "oecd2025impactevaluationwage_b"
+  ),
+  output_study_id = "oecd2025impactevaluationwage"
+)
+
 # pool studies of 'graduate practice' from stefanik2024supportingrightworkplace
+# note: these results are split by sex and length of prior unemployment
 stefanik2024supportingrightworkplace_a <- pool_studies(
   dat = almp_nma_combined_data_raw,
   study_ids = c(
@@ -76,6 +236,7 @@ stefanik2024supportingrightworkplace_a <- pool_studies(
 )
 
 # pool studies of 'activation works' from stefanik2024supportingrightworkplace
+# note: these results are split by sex and length of prior unemployment
 stefanik2024supportingrightworkplace_b <- pool_studies(
   dat = almp_nma_combined_data_raw,
   study_ids = c(
@@ -90,6 +251,7 @@ stefanik2024supportingrightworkplace_b <- pool_studies(
 )
 
 # pool studies of 'voluntary activation works' from stefanik2024supportingrightworkplace
+# note: these results are split by sex and length of prior unemployment
 stefanik2024supportingrightworkplace_c <- pool_studies(
   dat = almp_nma_combined_data_raw,
   study_ids = c(
@@ -109,10 +271,23 @@ stefanik2024supportingrightworkplace_c <- pool_studies(
 
 # combine pooled studies with study data
 almp_nma_combined_data_clean <- bind_rows(
-  almp_nma_combined_data_subset,
+  #almp_nma_combined_data_subset,
   bloom1993nationaljtpastudy_a,
   bloom1993nationaljtpastudy_b,
   bloom1993nationaljtpastudy_c,
+  caliendo2005employmenteffectsjob,
+  caliendo2011fightingyouthunemployment_a,
+  caliendo2011fightingyouthunemployment_b,
+  caliendo2011fightingyouthunemployment_c,
+  caliendo2011fightingyouthunemployment_d,
+  caliendo2011fightingyouthunemployment_e,
+  caliendo2011fightingyouthunemployment_f,
+  caliendo2011fightingyouthunemployment_g,
+  cammeraat2022preventingneetsgreat,
+  cronin2020jobsplusevaluation,
+  oecd2024impactevaluationtraining_a,
+  oecd2024impactevaluationtraining_b,
+  oecd2025impactevaluationwage,
   stefanik2024supportingrightworkplace_a,
   stefanik2024supportingrightworkplace_b,
   stefanik2024supportingrightworkplace_c
