@@ -375,5 +375,5 @@ almp_nma_combined_data_clean <- bind_rows(
 # export
 saveRDS(
   almp_nma_combined_data_clean,
-  file = "./data_cleaning/outputs/almp_nma_analysis_data.rds"
+  file = "./data_cleaning/outputs/almp_nma_pooled_analysis_data.rds"
 )
