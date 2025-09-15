@@ -20,6 +20,23 @@ qa_non_randomised_raw <- readRDS(qa_non_randomised_raw_location)
 #-------------------------------------------------------------------------------
 
 qa_randomised_clean <- qa_randomised_raw |>
+  rename(
+    qa_randomised_q1 = question_1,
+    qa_randomised_q2 = question_2,
+    qa_randomised_q3 = question_3,
+    qa_randomised_q4 = question_4,
+    qa_randomised_q5 = question_5,
+    qa_randomised_q6 = question_6,
+    qa_randomised_q7 = question_7,
+    qa_randomised_q8 = question_8,
+    qa_randomised_q9 = question_9,
+    qa_randomised_q10 = question_10,
+    qa_randomised_q11 = question_11,
+    qa_randomised_q12 = question_12,
+    qa_randomised_q13 = question_13
+  )
+
+qa_randomised_summary <- qa_randomised_raw |>
   # drop constructs that are irrelevant to ALMP RCTs
   select(
     -question_4, # participant blinding
@@ -54,6 +71,19 @@ qa_randomised_clean <- qa_randomised_raw |>
 #-------------------------------------------------------------------------------
 
 qa_non_randomised_clean <- qa_non_randomised_raw |>
+  rename(
+    qa_non_randomised_q1 = question_1,
+    qa_non_randomised_q2 = question_2,
+    qa_non_randomised_q3 = question_3,
+    qa_non_randomised_q4 = question_4,
+    qa_non_randomised_q5 = question_5,
+    qa_non_randomised_q6 = question_6,
+    qa_non_randomised_q7 = question_7,
+    qa_non_randomised_q8 = question_8,
+    qa_non_randomised_q9 = question_9
+  )
+
+qa_non_randomised_summary <- qa_non_randomised_raw |>
   # drop constructs that are irrelevant to ALMP QEDs
   select(
     -question_5, # pre/post testing
@@ -87,8 +117,8 @@ qa_non_randomised_clean <- qa_non_randomised_raw |>
 
 # combine data
 combined_study_quality_assessments <- bind_rows(
-  qa_randomised_clean,
-  qa_non_randomised_clean
+  qa_randomised_summary,
+  qa_non_randomised_summary
 ) |>
   # convert to binary
   mutate(
@@ -102,6 +132,16 @@ combined_study_quality_assessments <- bind_rows(
   select(
     study_id,
     low_study_quality
+  ) |>
+  # add detailed randomised quality assessments
+  left_join(
+    qa_randomised_clean,
+    by = "study_id"
+  ) |>
+  # add detailed non-randomised quality assessments
+  left_join(
+    qa_non_randomised_clean,
+    by = "study_id"
   )
 
 # export

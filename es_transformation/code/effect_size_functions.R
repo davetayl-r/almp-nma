@@ -659,7 +659,7 @@ derive_treatment_effect_se <- function(
   # epsilon implied by reporting precision: 0.5 * 10^-k
   eps_effect <- 0.5 * 10^(-assumed_dp)
 
-  dat %>%
+  dat |>
     dplyr::mutate(
       treatment_effect_se = {
         in_scope <- esc_type %in%
@@ -743,7 +743,7 @@ derive_treatment_effect_se <- function(
   # epsilon implied by reporting precision: 0.5 * 10^-k
   eps_effect <- 0.5 * 10^(-assumed_dp)
 
-  dat %>%
+  dat |>
     dplyr::mutate(
       treatment_effect_se = {
         in_scope <- esc_type %in%
@@ -835,21 +835,21 @@ pool_studies <- function(dat, study_ids, output_study_id) {
   }
 
   # identify rows to pool: match either exact ID or base ID (suffix "_[a-z]" dropped)
-  rows_to_pool <- dat %>%
+  rows_to_pool <- dat |>
     dplyr::mutate(
       base_from_data = stringr::str_remove(.data$study_id, "_[a-z]$")
-    ) %>%
+    ) |>
     dplyr::filter(
       .data$study_id %in% study_ids | .data$base_from_data %in% study_ids
-    ) %>%
-    dplyr::select(-.data$base_from_data)
+    ) |>
+    dplyr::select(-base_from_data)
 
   if (nrow(rows_to_pool) == 0L) {
     return(dplyr::tibble()) # nothing to pool
   }
 
   # standardise base id to the requested output id and create per-row weights
-  dat_sub <- rows_to_pool %>%
+  dat_sub <- rows_to_pool |>
     dplyr::mutate(
       base_study_id = output_study_id,
       weight_d = 1 / .data$d_var,
@@ -868,8 +868,8 @@ pool_studies <- function(dat, study_ids, output_study_id) {
     )
 
   # constant per-study female proportion (treatment-n weighted across ALL rows)
-  female_props <- dat_sub %>%
-    dplyr::group_by(.data$base_study_id) %>%
+  female_props <- dat_sub |>
+    dplyr::group_by(.data$base_study_id) |>
     dplyr::summarise(
       proportion_female_treatment_study = wmean_safe(
         .data$proportion_female_treatment,
@@ -879,14 +879,14 @@ pool_studies <- function(dat, study_ids, output_study_id) {
     )
 
   # pool within (study, outcome_domain, outcome, outcome_timing)
-  pooled <- dat_sub %>%
-    dplyr::left_join(female_props, by = "base_study_id") %>%
+  pooled <- dat_sub |>
+    dplyr::left_join(female_props, by = "base_study_id") |>
     dplyr::group_by(
-      .data$base_study_id,
-      .data$outcome_domain,
-      .data$outcome,
-      .data$outcome_timing
-    ) %>%
+      base_study_id,
+      outcome_domain,
+      outcome,
+      outcome_timing
+    ) |>
     dplyr::summarise(
       # inverse-variance pooled effects
       d = sum(.data$d * .data$weight_d, na.rm = TRUE) /
@@ -1026,8 +1026,8 @@ pool_studies <- function(dat, study_ids, output_study_id) {
       ),
       low_study_quality = dplyr::first(.data$low_study_quality),
       .groups = "drop"
-    ) %>%
-    dplyr::rename(study_id = .data$base_study_id) %>%
+    ) |>
+    dplyr::rename(study_id = base_study_id) |>
     dplyr::select(
       study_id,
       outcome_domain,

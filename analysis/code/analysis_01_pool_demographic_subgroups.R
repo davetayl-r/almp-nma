@@ -28,6 +28,12 @@ almp_nma_combined_data_subset <- almp_nma_combined_data_raw |>
     !str_detect(study_id, "caliendo2011fightingyouthunemployment"),
     !str_detect(study_id, "cammeraat2022preventingneetsgreat"),
     !str_detect(study_id, "cronin2020jobsplusevaluation"),
+    !str_detect(study_id, "dorsett2022preapprenticeshiptrainingyoung"),
+    !str_detect(study_id, "dwp2025sectorbasedworkacademy"),
+    !str_detect(study_id, "hollenbeck2006netimpactestimates"),
+    !str_detect(study_id, "hollenbeck2016netimpactbenefitcost"),
+    !str_detect(study_id, "mamede2015esfsupportingyouth"),
+    !str_detect(study_id, "nafilyan2014youthcontractprovision"),
     !str_detect(study_id, "oecd2024impactevaluationtraining"),
     !str_detect(study_id, "oecd2025impactevaluationwage"),
     !str_detect(study_id, "stefanik2024supportingrightworkplace"),
@@ -187,6 +193,73 @@ cronin2020jobsplusevaluation <- pool_studies(
   output_study_id = "cronin2020jobsplusevaluation"
 )
 
+# pool studies of 'UK Traineeships program' from dorsett2022preapprenticeshiptrainingyoung
+# note: these results are split by age
+dorsett2022preapprenticeshiptrainingyoung <- pool_studies(
+  dat = almp_nma_combined_data_raw,
+  study_ids = c(
+    "dorsett2022preapprenticeshiptrainingyoung_a",
+    "dorsett2022preapprenticeshiptrainingyoung_b"
+  ),
+  output_study_id = "dorsett2022preapprenticeshiptrainingyoung"
+)
+
+# pool studies of 'Sector-based Work Academy Programme' from dorsett2022preapprenticeshiptrainingyoung
+# note: these results are split by age
+dwp2025sectorbasedworkacademy <- pool_studies(
+  dat = almp_nma_combined_data_raw,
+  study_ids = c(
+    "dwp2025sectorbasedworkacademy_a",
+    "dwp2025sectorbasedworkacademy_b"
+  ),
+  output_study_id = "dwp2025sectorbasedworkacademy"
+)
+
+# pool studies of 'WIA Title 1-B Youth Programs' from hollenbeck2006netimpactestimates
+# note: these results are split by cohort/year
+hollenbeck2006netimpactestimates <- pool_studies(
+  dat = almp_nma_combined_data_raw,
+  study_ids = c(
+    "hollenbeck2006netimpactestimates_a",
+    "hollenbeck2006netimpactestimates_b"
+  ),
+  output_study_id = "hollenbeck2006netimpactestimates"
+)
+
+# pool studies of 'WIA Youth Program' from hollenbeck2016netimpactbenefitcost
+# note: these results are split by cohort/year
+hollenbeck2016netimpactbenefitcost <- pool_studies(
+  dat = almp_nma_combined_data_raw,
+  study_ids = c(
+    "hollenbeck2016netimpactbenefitcost_a",
+    "hollenbeck2016netimpactbenefitcost_b"
+  ),
+  output_study_id = "hollenbeck2016netimpactbenefitcost"
+)
+
+# pool studies of 'The Traineeship Programme' from mamede2015esfsupportingyouth
+# note: these results are split by sex
+mamede2015esfsupportingyouth <- pool_studies(
+  dat = almp_nma_combined_data_raw,
+  study_ids = c(
+    "mamede2015esfsupportingyouth_a",
+    "mamede2015esfsupportingyouth_b"
+  ),
+  output_study_id = "mamede2015esfsupportingyouth"
+)
+
+# 'Youth Contract' from nafilyan2014youthcontractprovision
+# note: these results are split by location and sex
+nafilyan2014youthcontractprovision <- pool_studies(
+  dat = almp_nma_combined_data_raw,
+  study_ids = c(
+    "nafilyan2014youthcontractprovision_a",
+    "nafilyan2014youthcontractprovision_b",
+    "nafilyan2014youthcontractprovision_c"
+  ),
+  output_study_id = "nafilyan2014youthcontractprovision"
+)
+
 # pool studies of 'Wage Subsidies' from oecd2024impactevaluationtraining
 # note: these results are split by sex
 oecd2024impactevaluationtraining_a <- pool_studies(
@@ -271,7 +344,7 @@ stefanik2024supportingrightworkplace_c <- pool_studies(
 
 # combine pooled studies with study data
 almp_nma_combined_data_clean <- bind_rows(
-  #almp_nma_combined_data_subset,
+  almp_nma_combined_data_subset,
   bloom1993nationaljtpastudy_a,
   bloom1993nationaljtpastudy_b,
   bloom1993nationaljtpastudy_c,
@@ -285,6 +358,12 @@ almp_nma_combined_data_clean <- bind_rows(
   caliendo2011fightingyouthunemployment_g,
   cammeraat2022preventingneetsgreat,
   cronin2020jobsplusevaluation,
+  dorsett2022preapprenticeshiptrainingyoung,
+  dwp2025sectorbasedworkacademy,
+  hollenbeck2006netimpactestimates,
+  hollenbeck2016netimpactbenefitcost,
+  mamede2015esfsupportingyouth,
+  nafilyan2014youthcontractprovision,
   oecd2024impactevaluationtraining_a,
   oecd2024impactevaluationtraining_b,
   oecd2025impactevaluationwage,

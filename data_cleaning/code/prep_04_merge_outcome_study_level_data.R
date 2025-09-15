@@ -13,10 +13,14 @@ source("./es_transformation/code/effect_size_functions.R")
 
 # read all relevant data
 almp_study_level_data_location <- "./data_cleaning/outputs/almp_nma_study_details.rds"
-almp_study_level_data <- readRDS(almp_study_level_data_location)
+almp_study_level_data <- readRDS(
+  almp_study_level_data_location
+)
 
 almp_effect_size_data_location <- "./es_transformation/output/almp_nma_combined_effect_size_data.rds"
-almp_effect_size_data <- readRDS(almp_effect_size_data_location)
+almp_effect_size_data <- readRDS(
+  almp_effect_size_data_location
+)
 
 almp_intervention_components_data_location <- "./data_cleaning/outputs/almp_nma_intervention_components.rds"
 almp_intervention_components_data <- readRDS(
@@ -24,7 +28,9 @@ almp_intervention_components_data <- readRDS(
 )
 
 almp_study_quality_data_location <- "./data_cleaning/outputs/almp_nma_study_quality_assessments.rds"
-almp_study_quality_data <- readRDS(almp_study_quality_data_location)
+almp_study_quality_data <- readRDS(
+  almp_study_quality_data_location
+)
 
 #-------------------------------------------------------------------------------
 # 1. Combine data
