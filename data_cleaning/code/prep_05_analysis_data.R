@@ -245,16 +245,19 @@ almp_nma_analysis_data <- almp_nma_combined_data_clean |>
     almp_nma_consolidated_component_data,
     by = "study_id"
   ) |>
-  # impute missing average age data from reported minimum and maximum age ranges
   mutate(
+    # impute missing average age data from reported minimum and maximum age ranges
     study_age_mean = case_when(
       is.na(study_age_mean) & !is.na(study_age_min) & !is.na(study_age_max) ~
         (study_age_min + study_age_max) / 2,
       TRUE ~ study_age_mean
-    )
-  ) |>
-  # convert location into a USA binary
-  mutate(
+    ),
+    # centre age around mean
+    prop_female_centred = proportion_female_treatment -
+      mean(proportion_female_treatment),
+    # centre sex around mean
+    study_age_mean_centred = study_age_mean,
+    # convert location into a USA binary
     united_states = case_when(
       location == "United States" ~ 1,
       TRUE ~ 0

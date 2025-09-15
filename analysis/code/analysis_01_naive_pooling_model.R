@@ -28,53 +28,60 @@ almp_nma_additive_model_data <- readRDS(almp_nma_additive_model_data_location)
 # 1. Subset data for model
 #-------------------------------------------------------------------------------
 
-almp_cnma_model_one <- almp_nma_additive_model_data |>
+almp_nma_model_one_data <- almp_nma_additive_model_data |>
   # focus on labour market outcomes when first reported
   filter(
     outcome_id == 1,
     outcome_domain == "Labour Force Status"
-  ) |>
+  )
 
-  #-------------------------------------------------------------------------------
-  # 2. Specify model formula
-  #-------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
+# 2. Specify model formula
+#-------------------------------------------------------------------------------
 
-  # specify formula for the additive component model
-  multivariate_hpsb_cnma_formula <- bf(
-  es | se(es_se) ~
+# specify formula for the additive component model
+almp_nma_model_one_formula <- bf(
+  delta | se(delta_se) ~
     0 +
       # component x outcome effects
-      outcome:comp_cognitive_behaviour_therapy_group +
-      outcome:comp_cognitive_behaviour_therapy_individual +
-      outcome:comp_family_therapy +
-      outcome:comp_sex_education +
-      outcome:comp_relapse_prevention +
-      outcome:comp_social_skills_training +
-      outcome:comp_multisystemtic_therapy +
-      outcome:comp_individual_therapy +
-      outcome:comp_group_therapy +
-      outcome:comp_adventure_therapy +
-      outcome:comp_exercise +
-      outcome:comp_mode_deactivation_therapy +
-      outcome:comp_play_therapy +
-      outcome:comp_other +
+      outcome:comp_basic_skills_training +
+      outcome:comp_soft_skills_training +
+      outcome:comp_behavioural_skills_training +
+      outcome:comp_business_skills_training +
+      outcome:comp_business_advisory_and_mentoring +
+      outcome:comp_financial_and_start_up_support +
+      outcome:comp_job_specific_technical_skills_off_job_training +
+      outcome:comp_job_search_preparation +
+      outcome:comp_job_search_assistance +
+      outcome:comp_employment_counselling +
+      outcome:comp_employment_coaching +
+      outcome:comp_financial_assistance +
+      outcome:comp_job_specific_technical_skills_on_job_training +
+      outcome:comp_paid_temporary_work_experience +
+      outcome:comp_unpaid_temporary_work_experience +
+      outcome:comp_wage_subsidies +
+      outcome:comp_public_works +
+      outcome:comp_other_active_component_nec +
       # random effects for each study
       (0 + outcome | p | study)
 )
 
-# fit the Bayesian additive CNMA model
-multivariate_hpsb_cnma_model <- brm(
-  formula = multivariate_hpsb_cnma_formula,
-  data = hpsb_cnma_data,
+#-------------------------------------------------------------------------------
+# 3. Fit the Bayesian additive CNMA model
+#-------------------------------------------------------------------------------
+
+almp_nma_model_one <- brm(
+  formula = almp_nma_model_one_formula,
+  data = almp_nma_model_one_data,
   prior = c(
     # Component effects
     prior(normal(0, 0.4), class = "b"),
     # Study-level heterogeneity
     prior(normal(0, 0.25), class = "sd", group = "study")
   ),
-  chains = 4,
-  warmup = 4000,
-  iter = 10000,
+  chains = 2,
+  warmup = 2000,
+  iter = 4000,
   cores = 8,
   backend = "cmdstanr",
   refresh = 250,
@@ -87,13 +94,21 @@ multivariate_hpsb_cnma_model <- brm(
   seed = 12345
 )
 
+#-------------------------------------------------------------------------------
+# 4. Inspect the results
+#-------------------------------------------------------------------------------
+
 # inspect the results
-summary(multivariate_hpsb_cnma_model)
+summary(almp_nma_model_one)
 
 # inspect diagnostic plots
-plot(multivariate_hpsb_cnma_model)
+#plot(almp_nma_model_one)
 
-pp_check(multivariate_hpsb_cnma_model)
+pp_check(almp_nma_model_one)
+
+#-------------------------------------------------------------------------------
+# 5. Clean up output
+#-------------------------------------------------------------------------------
 
 # The component effects are the b_ parameters (excluding intercept if any)
 component_draws <- multivariate_hpsb_cnma_model |>
@@ -195,6 +210,10 @@ component_summary <- component_draws |>
     .lower = format(round(.lower, 2), nsmall = 2),
     .upper = format(round(.upper, 2), nsmall = 2)
   )
+
+#-------------------------------------------------------------------------------
+# 6. Visualise results
+#-------------------------------------------------------------------------------
 
 # create forest plot
 forest_plot_harmful_sexual_behaviour_outcomes <- component_draws |>
@@ -317,11 +336,11 @@ forest_plot_harmful_sexual_behaviour_outcomes <- component_draws |>
 forest_plot_harmful_sexual_behaviour_outcomes
 
 # export plot
-ggsave(
-  plot = forest_plot_harmful_sexual_behaviour_outcomes,
-  filename = "./output/figures/hpsb_cnma_forest_plot_harmful_sexual_behaviour_outcomes.png",
-  height = 7,
-  width = 16,
-  device = "png",
-  type = "cairo-png"
-)
+#ggsave(
+#  plot = forest_plot_harmful_sexual_behaviour_outcomes,
+#  filename = "./output/figures/hpsb_cnma_forest_plot_harmful_sexual_behaviour_outcomes.png",
+#  height = 7,
+#  width = 16,
+#  device = "png",
+#  type = "cairo-png"
+#)
