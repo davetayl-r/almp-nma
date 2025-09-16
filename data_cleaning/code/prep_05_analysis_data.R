@@ -371,31 +371,29 @@ saveRDS(
 # 6. Prepare additive modelling data
 #-------------------------------------------------------------------------------
 
-# create the component matrix
-almp_nma_component_matrix <- create_component_matrix(almp_nma_analysis_data)
+# Create component matrix
+almp_component_matrix <- create_component_matrix(almp_nma_analysis_data)
 
-# Difference the components in the intervention and comparison groups
-additive_component_matrix <- almp_nma_analysis_data
+# Create working copy of data
+almp_working_data <- almp_nma_analysis_data
 
-for (component in colnames(almp_nma_component_matrix)) {
+# Add component variables
+for (component in colnames(almp_component_matrix)) {
   comp_col_name <- paste0("comp_", component)
-
-  additive_component_matrix[[comp_col_name]] <- sapply(
+  almp_working_data[[comp_col_name]] <- sapply(
     1:nrow(almp_nma_analysis_data),
     function(i) {
       intervention <- almp_nma_analysis_data$intervention[i]
       comparison <- almp_nma_analysis_data$comparison[i]
-
-      intervention_comp <- almp_nma_component_matrix[intervention, component]
-      comparison_comp <- almp_nma_component_matrix[comparison, component]
-
+      intervention_comp <- almp_component_matrix[intervention, component]
+      comparison_comp <- almp_component_matrix[comparison, component]
       return(intervention_comp - comparison_comp)
     }
   )
 }
 
 # prepare data for export
-almp_nma_additive_model_data <- additive_component_matrix |>
+almp_nma_additive_model_data <- almp_working_data |>
   # drop redundant vars
   select(
     -intervention,
@@ -415,12 +413,35 @@ almp_nma_additive_model_data <- additive_component_matrix |>
   mutate(
     outcome_id = row_number()
   ) |>
-  ungroup() |>
-  # convert outcome and component data to factor vars
-  mutate(
-    outcome = factor(outcome),
-    component = factor(component)
+  ungroup()
+
+
+# coverage table to see how much you keep
+outcome_coverage <- outcome_candidates |>
+  summarise(
+    n_studies = n_distinct(study),
+    n_within = n_distinct(study[within]),
+    prop_within = n_within / n_studies,
+    .by = outcome_domain
+  ) |>
+  arrange(desc(prop_within))
+
+outcome_coverage
+
+# ---- 4) Hand-off dataset for the model (one row per study × domain)
+# Keep the chosen follow-up and mark whether it fell outside the window (for sensitivity).
+single_timepoint <- outcome_selected |>
+  transmute(
+    study,
+    outcome_domain,
+    outcome_timing_outcome_selected = outcome_timing,
+    anchor_target_months = target,
+    anchor_window_months = window,
+    distance_months = dist,
+    outcome_selected_outside_window = outside_window
   )
+
+# write_rds(single_timepoint, "./analysis/outputs/almp_nma_single_timepoint.rds")
 
 saveRDS(
   almp_nma_additive_model_data,
