@@ -194,6 +194,7 @@ almp_nma_consolidated_component_data <- almp_nma_combined_data_clean |>
     com_public_works,
     com_other_active_component_nec
   ) |>
+  # consolidate
   # convert treatment components to long format
   pivot_longer(
     cols = starts_with("int_"),
