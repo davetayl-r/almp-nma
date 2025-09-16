@@ -194,7 +194,32 @@ almp_nma_consolidated_component_data <- almp_nma_combined_data_clean |>
     com_public_works,
     com_other_active_component_nec
   ) |>
-  # consolidate
+  # consolidate self employment support
+  mutate(
+    int_self_employment_support = case_when(
+      int_business_skills_training == 1 |
+        int_business_advisory_and_mentoring == 1 |
+        int_financial_and_start_up_support == 1 ~
+        1,
+      TRUE ~ 0
+    ),
+    com_self_employment_support = case_when(
+      com_business_skills_training == 1 |
+        com_business_advisory_and_mentoring == 1 |
+        com_financial_and_start_up_support == 1 ~
+        1,
+      TRUE ~ 0
+    )
+  ) |>
+  select(
+    -int_business_skills_training,
+    -int_business_advisory_and_mentoring,
+    -int_financial_and_start_up_support,
+    -com_business_skills_training,
+    -com_business_advisory_and_mentoring,
+    -com_financial_and_start_up_support
+  ) |>
+  distinct() |>
   # convert treatment components to long format
   pivot_longer(
     cols = starts_with("int_"),
@@ -267,6 +292,8 @@ almp_nma_analysis_data <- almp_nma_combined_data_clean |>
   ) |>
   # drop data that is not required
   select(
+    -treatment_n,
+    -comparison_n,
     -study_age_min,
     -study_age_max,
     -location,
@@ -278,6 +305,7 @@ almp_nma_analysis_data <- almp_nma_combined_data_clean |>
     -int_business_skills_training,
     -int_business_advisory_and_mentoring,
     -int_financial_and_start_up_support,
+    #-int_self_employment_support,
     -int_job_search_preparation,
     -int_job_search_assistance,
     -int_employment_counselling,
@@ -297,6 +325,7 @@ almp_nma_analysis_data <- almp_nma_combined_data_clean |>
     -com_business_skills_training,
     -com_business_advisory_and_mentoring,
     -com_financial_and_start_up_support,
+    #-com_self_employment_support,
     -com_job_search_preparation,
     -com_job_search_assistance,
     -com_employment_counselling,
@@ -332,6 +361,11 @@ almp_nma_analysis_data <- almp_nma_combined_data_clean |>
     -qa_non_randomised_q9
   )
 
+# export data to use for network map
+saveRDS(
+  almp_nma_analysis_data,
+  "./visualisation/inputs/almp_nma_network_map_data.RDS"
+)
 
 #-------------------------------------------------------------------------------
 # 6. Prepare additive modelling data

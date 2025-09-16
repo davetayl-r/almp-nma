@@ -1,9 +1,9 @@
-#============================================================================================#
+#----------------------------------------------------------------------------================#
 # Project: ALMP NMA                                                                          #
 # Author: David Taylor                                                                       #
 # Date: 16/09/2025                                                                           #
 # Purpose: visualise network map                                                             #
-#============================================================================================#
+#----------------------------------------------------------------------------================#
 
 # load required packages
 library(tidyverse)
@@ -13,211 +13,256 @@ library(ggrepel)
 library(ggpp)
 
 # read data
-hpsb_meta_analysis_data_location <- "./data/hpsb_meta_04_effect_size_intervention_components_study_level_data.RDS"
-hpsb_meta_analysis_data <- readRDS(hpsb_meta_analysis_data_location)
+almp_nma_network_raw_data_location <- "./visualisation/inputs/almp_nma_network_map_data.RDS"
+almp_nma_network_raw_data <- readRDS(almp_nma_network_raw_data_location)
 
 # set seed
 set.seed(345)
 
 # prepare data for plot
-hpsb_meta_network_data <- hpsb_meta_analysis_data |>
-  # merge cbt groups
+almp_nma_network_data <- almp_nma_network_raw_data |>
+  select(
+    study_id,
+    intervention,
+    comparison,
+    outcome_domain
+  ) |>
+  # rename groups into readable keys
   mutate(
-    treatment = str_replace_all(
-      treatment,
-      "adventure_therapy",
-      "AT"
+    intervention = str_replace_all(
+      intervention,
+      "basic_skills_training",
+      "BST"
     ),
-    treatment = str_replace_all(
-      treatment,
-      "cognitive_behaviour_therapy_group",
-      "CBT(G)"
+    intervention = str_replace_all(
+      intervention,
+      "soft_skills_training",
+      "SST"
     ),
-    comparison = str_replace_all(
-      comparison,
-      "cognitive_behaviour_therapy_group",
-      "CBT(G)"
+    intervention = str_replace_all(
+      intervention,
+      "behavioural_skills_training",
+      "BeST"
     ),
-    treatment = str_replace_all(
-      treatment,
-      "cognitive_behaviour_therapy_individual",
-      "CBT(I)"
+    intervention = str_replace_all(
+      intervention,
+      "job_specific_technical_skills_off_job_training",
+      "Off-JT"
     ),
-    comparison = str_replace_all(
-      comparison,
-      "cognitive_behaviour_therapy_individual",
-      "CBT(I)"
+    intervention = str_replace_all(
+      intervention,
+      "self_employment_support",
+      "SES"
     ),
-    treatment = str_replace_all(
-      treatment,
-      "exercise",
-      "EX"
+    intervention = str_replace_all(
+      intervention,
+      "job_search_preparation",
+      "JSP"
     ),
-    treatment = str_replace_all(
-      treatment,
-      "functional_family_therapy",
-      "FFT"
+    intervention = str_replace_all(
+      intervention,
+      "job_search_assistance",
+      "JSA"
     ),
-    treatment = str_replace_all(
-      treatment,
-      "family_therapy",
-      "FT"
+    intervention = str_replace_all(
+      intervention,
+      "employment_counselling",
+      "Emp-counsel"
     ),
-    comparison = str_replace_all(
-      comparison,
-      "family_therapy",
-      "FT"
+    intervention = str_replace_all(
+      intervention,
+      "employment_coaching",
+      "Emp-coach"
     ),
-    treatment = str_replace_all(
-      treatment,
-      "group_therapy",
-      "GT"
+    intervention = str_replace_all(
+      intervention,
+      "financial_assistance",
+      "FIN"
     ),
-    comparison = str_replace_all(
-      comparison,
-      "group_therapy",
-      "GT"
+    intervention = str_replace_all(
+      intervention,
+      "job_specific_technical_skills_on_job_training",
+      "On-JT"
     ),
-    treatment = str_replace_all(
-      treatment,
-      "individual_therapy",
-      "IT"
+    intervention = str_replace_all(
+      intervention,
+      "paid_temporary_work_experience",
+      "Paid-WE"
     ),
-    comparison = str_replace_all(
-      comparison,
-      "individual_therapy",
-      "IT"
+    intervention = str_replace_all(
+      intervention,
+      "unpaid_temporary_work_experience",
+      "Unpaid-WE"
     ),
-    treatment = str_replace_all(
-      treatment,
-      "other",
-      "OTH"
+    intervention = str_replace_all(
+      intervention,
+      "wage_subsidies",
+      "WS"
     ),
-    comparison = str_replace_all(
-      comparison,
-      "other",
-      "OTH"
+    intervention = str_replace_all(
+      intervention,
+      "public_works",
+      "PW"
     ),
-    treatment = str_replace_all(
-      treatment,
-      "mode_deactivation_therapy",
-      "MST"
-    ),
-    treatment = str_replace_all(
-      treatment,
-      "multisystemtic_therapy",
-      "MST"
+    intervention = str_replace_all(
+      intervention,
+      "other_active_component_nec",
+      "Oth"
     ),
     comparison = str_replace_all(
       comparison,
-      "play_therapy",
-      "PT"
-    ),
-    treatment = str_replace_all(
-      treatment,
-      "relapse_prevention",
-      "RP"
+      "basic_skills_training",
+      "BST"
     ),
     comparison = str_replace_all(
       comparison,
-      "relapse_prevention",
-      "RP"
-    ),
-    treatment = str_replace_all(
-      treatment,
-      "sex_education",
-      "SE"
-    ),
-    comparison = str_replace_all(
-      comparison,
-      "sex_education",
-      "SE"
-    ),
-    treatment = str_replace_all(
-      treatment,
-      "social_skills_training",
+      "soft_skills_training",
       "SST"
     ),
     comparison = str_replace_all(
       comparison,
-      "social_skills_training",
-      "SST"
+      "behavioural_skills_training",
+      "BeST"
     ),
     comparison = str_replace_all(
       comparison,
-      "tau",
-      "TAU"
+      "job_specific_technical_skills_off_job_training",
+      "Off-JT"
     ),
-    treatment = str_replace_all(
-      treatment,
+    comparison = str_replace_all(
+      comparison,
+      "self_employment_support",
+      "SES"
+    ),
+    comparison = str_replace_all(
+      comparison,
+      "job_search_preparation",
+      "JSP"
+    ),
+    comparison = str_replace_all(
+      comparison,
+      "job_search_assistance",
+      "JSA"
+    ),
+    comparison = str_replace_all(
+      comparison,
+      "employment_counselling",
+      "Emp-counsel"
+    ),
+    comparison = str_replace_all(
+      comparison,
+      "employment_coaching",
+      "Emp-coach"
+    ),
+    comparison = str_replace_all(
+      comparison,
+      "financial_assistance",
+      "FIN"
+    ),
+    comparison = str_replace_all(
+      comparison,
+      "job_specific_technical_skills_on_job_training",
+      "On-JT"
+    ),
+    comparison = str_replace_all(
+      comparison,
+      "paid_temporary_work_experience",
+      "Paid-WE"
+    ),
+    comparison = str_replace_all(
+      comparison,
+      "unpaid_temporary_work_experience",
+      "Unpaid-WE"
+    ),
+    comparison = str_replace_all(
+      comparison,
+      "wage_subsidies",
+      "WS"
+    ),
+    comparison = str_replace_all(
+      comparison,
+      "public_works",
+      "PW"
+    ),
+    comparison = str_replace_all(
+      comparison,
+      "other_active_component_nec",
+      "Oth"
+    ),
+    comparison = str_replace_all(
+      comparison,
+      "services_as_usual",
+      "SAU"
+    ),
+    intervention = str_replace_all(
+      intervention,
       "\\+",
       " + "
     ),
-    treatment = str_wrap(treatment, 30),
-    comparison = str_wrap(comparison, 30),
-    study_design = case_when(
-      study_design_type == "Randomised study design" ~ "Randomised",
-      .default = "Non-randomised"
-    )
+    comparison = str_replace_all(
+      comparison,
+      "\\+",
+      " + "
+    ),
+    intervention = str_wrap(intervention, 30),
+    comparison = str_wrap(comparison, 30)
   ) |>
   select(
     study_id,
-    treatment,
+    intervention,
     comparison,
-    study_design,
-    outcome_domain,
-    outcome_construct
+    outcome_domain
   ) |>
   distinct()
 
-# ============================================================================
-# STEP 1: Create nodes (unique treatments + comparisons)
-# ============================================================================
+# ----------------------------------------------------------------------------
+# STEP 1: Create nodes (unique interventions + comparisons)
+# ----------------------------------------------------------------------------
 
-treatment_nodes <- hpsb_meta_network_data |>
-  select(intervention = treatment) |>
+intervention_nodes <- almp_nma_network_data |>
+  select(intervention = intervention) |>
   distinct()
 
-comparison_nodes <- hpsb_meta_network_data |>
+comparison_nodes <- almp_nma_network_data |>
   select(intervention = comparison) |>
   distinct()
 
 # Combine all unique interventions
-all_nodes <- bind_rows(treatment_nodes, comparison_nodes) |>
+all_nodes <- bind_rows(intervention_nodes, comparison_nodes) |>
   distinct() |>
   mutate(node_id = row_number())
 
-# ============================================================================
+# ----------------------------------------------------------------------------
 # STEP 2: Identify the most common comparator
-# ============================================================================
+# ----------------------------------------------------------------------------
 
 # Count how often each intervention appears as a comparison
-comparison_frequency <- hpsb_meta_network_data |>
+comparison_frequency <- almp_nma_network_data |>
   count(comparison, name = "comparison_count") |>
   arrange(desc(comparison_count))
 
-# Also count treatment frequency for completeness
-treatment_frequency <- hpsb_meta_network_data |>
-  count(treatment, name = "treatment_count") |>
-  arrange(desc(treatment_count))
+# Also count intervention frequency for completeness
+intervention_frequency <- almp_nma_network_data |>
+  count(intervention, name = "intervention_count") |>
+  arrange(desc(intervention_count))
 
 # Combined frequency (total appearances)
-total_frequency <- hpsb_meta_network_data |>
-  select(intervention = treatment) |>
-  bind_rows(hpsb_meta_network_data |> select(intervention = comparison)) |>
+total_frequency <- almp_nma_network_data |>
+  select(intervention = intervention) |>
+  bind_rows(almp_nma_network_data |> select(intervention = comparison)) |>
   count(intervention, name = "total_appearances") |>
   arrange(desc(total_appearances))
 
 # Identify the reference intervention (most common comparator)
 reference_intervention <- comparison_frequency$comparison[1]
 
-# ============================================================================
+# ----------------------------------------------------------------------------
 # STEP 3: Create edges (direct comparisons between interventions)
-# ============================================================================
+# ----------------------------------------------------------------------------
 
 # Create edge list from study comparisons
-edges_raw <- hpsb_meta_network_data |>
-  select(study_id, study_design, treatment, comparison, outcome_domain)
+edges_raw <- almp_nma_network_data |>
+  select(study_id, intervention, comparison, outcome_domain)
 
 # Create both directions for undirected network (optional - depends on your preference)
 edges_bidirectional <- bind_rows(
@@ -225,29 +270,25 @@ edges_bidirectional <- bind_rows(
   edges_raw |>
     select(
       study_id,
-      study_design,
       outcome_domain,
-      treatment = comparison,
-      comparison = treatment
+      intervention = comparison,
+      comparison = intervention
     )
 )
 
 # Count studies for each comparison AND outcome domain
 edges <- edges_bidirectional |>
-  group_by(treatment, comparison, outcome_domain) |>
+  group_by(intervention, comparison, outcome_domain) |>
   summarise(
     n_studies = n_distinct(study_id),
-    study_design_types = paste(unique(study_design), collapse = ", "),
-    has_rct = any(study_design == "Randomised"),
-    has_qed = any(study_design == "Non-randomised"),
     .groups = "drop"
   ) |>
-  filter(treatment != comparison) |> # Remove self-loops
+  filter(intervention != comparison) |> # Remove self-loops
   # Remove duplicate edges (keep only one direction for undirected graph)
   rowwise() |>
   mutate(
     edge_id = paste(
-      sort(c(treatment, comparison)),
+      sort(c(intervention, comparison)),
       outcome_domain,
       collapse = " -- "
     )
@@ -256,27 +297,22 @@ edges <- edges_bidirectional |>
   distinct(edge_id, .keep_all = TRUE) |>
   select(-edge_id)
 
-# ============================================================================
+# ----------------------------------------------------------------------------
 # STEP 4: Add node metadata (study design info, frequency, etc.)
-# ============================================================================
+# ----------------------------------------------------------------------------
 
 # For each intervention, count unique studies (not total appearances)
-node_metadata <- hpsb_meta_network_data |>
-  select(intervention = treatment, study_design, study_id) |>
+node_metadata <- almp_nma_network_data |>
+  select(intervention = intervention, study_id) |>
   bind_rows(
-    hpsb_meta_network_data |>
-      select(intervention = comparison, study_design, study_id)
+    almp_nma_network_data |>
+      select(intervention = comparison, study_id)
   ) |>
-  group_by(intervention, study_design) |>
+  group_by(intervention) |>
   summarise(study_count = n_distinct(study_id), .groups = "drop") |>
   group_by(intervention) |>
   summarise(
     total_unique_studies = sum(study_count),
-    primary_design = study_design[which.max(study_count)],
-    design_mix = case_when(
-      n_distinct(study_design) > 1 ~ "Mixed",
-      TRUE ~ primary_design
-    ),
     .groups = "drop"
   )
 
@@ -302,14 +338,14 @@ nodes_with_metadata <- all_nodes |>
     is_reference = replace_na(is_reference, FALSE)
   )
 
-# ============================================================================
+# ----------------------------------------------------------------------------
 # STEP 5: Create igraph object
-# ============================================================================
+# ----------------------------------------------------------------------------
 
 hpsb_meta_igraph_object <- graph_from_data_frame(
   d = edges |>
     select(
-      from = treatment,
+      from = intervention,
       to = comparison,
       weight = n_studies
     ),
@@ -321,9 +357,9 @@ hpsb_meta_igraph_object <- graph_from_data_frame(
   directed = FALSE
 )
 
-# ============================================================================
+# ----------------------------------------------------------------------------
 # STEP 6: Calculate layout with special positioning for reference
-# ============================================================================
+# ----------------------------------------------------------------------------
 
 # Start with a standard layout
 layout_coords_initial <- layout_with_fr(hpsb_meta_igraph_object)
@@ -333,9 +369,9 @@ ref_index <- which(V(hpsb_meta_igraph_object)$name == reference_intervention)
 layout_coords <- layout_coords_initial
 layout_coords[ref_index, ] <- c(0, 0)
 
-# ============================================================================
+# ----------------------------------------------------------------------------
 # STEP 7: Add coordinates to nodes
-# ============================================================================
+# ----------------------------------------------------------------------------
 
 nodes_with_coords <- nodes_with_metadata |>
   mutate(
@@ -343,9 +379,9 @@ nodes_with_coords <- nodes_with_metadata |>
     y = layout_coords[, 2]
   )
 
-# ============================================================================
+# ----------------------------------------------------------------------------
 # STEP 8: Prepare edges for ggplot
-# ============================================================================
+# ----------------------------------------------------------------------------
 
 edges_for_plot <- edges |>
   left_join(
@@ -356,7 +392,7 @@ edges_for_plot <- edges |>
         y
       ),
     by = c(
-      "treatment" = "intervention"
+      "intervention" = "intervention"
     )
   ) |>
   rename(
@@ -389,7 +425,7 @@ edges_for_plot <- edges |>
   ) |>
   # Add stacking offset for multiple outcome domains
   group_by(
-    treatment,
+    intervention,
     comparison
   ) |>
   mutate(
@@ -409,9 +445,9 @@ edges_for_plot <- edges |>
   ) |>
   ungroup()
 
-# ============================================================================
+# ----------------------------------------------------------------------------
 # STEP 9: Create the ggplot
-# ============================================================================
+# ----------------------------------------------------------------------------
 
 network_map <- ggplot() +
   # Add edges first (so they appear behind nodes) - use adjusted coordinates
@@ -483,7 +519,7 @@ network_map <- ggplot() +
     title = "",
     subtitle = "",
     caption = str_wrap(
-      "Key — AT: Adventure Therapy; CBT(G): Cognitive Behaviour Therapy (Group); CBT(I): Cognitive Behaviour Therapy (Individual); EX: Exercise; FFT: Functional Family Therapy; FT: Family Therapy; GT: Group Therapy; IT: Individual Therapy; OTH: Other; MST: Multisystemic Therapy; RP: Relapse Prevention; SE: Sex Education; SST: Social Skills Training; TAU: Treatment as Usual",
+      "Key — AT: Adventure Therapy; CBT(G): Cognitive Behaviour Therapy (Group); CBT(I): Cognitive Behaviour Therapy (Individual); EX: Exercise; FFT: Functional Family Therapy; FT: Family Therapy; GT: Group Therapy; IT: Individual Therapy; OTH: Other; MST: Multisystemic Therapy; RP: Relapse Prevention; SE: Sex Education; SST: Social Skills Training; TAU: intervention as Usual",
       width = 220
     ),
   ) +
@@ -497,3 +533,20 @@ network_map <- ggplot() +
   )
 
 network_map
+
+#basic_skills_training == BST
+#soft_skills_training = SST
+#behavioural_skills_training == BeST
+#job_specific_technical_skills_off_job_training == Off-JT
+#self_employment_support = SES
+#job_search_preparation = JSP
+#job_search_assistance = JSA
+#employment_counselling = Emp-counsel
+#employment_coaching =  Emp-coach
+#financial_assistance = FIN
+#job_specific_technical_skills_on_job_training
+##unpaid_temporary_work_experience = unpaid-WE
+#wage_subsidies = WS
+#public_works = PW
+#other_active_component_nec = Oth
+#services_as_usual = SAU
