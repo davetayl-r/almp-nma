@@ -83,8 +83,34 @@ almp_nma_combined_data <- almp_effect_size_data |>
     )
   )
 
+#-------------------------------------------------------------------------------
+# 2. Drop outcomes that are out of scope for this round
+#-------------------------------------------------------------------------------
+
+almp_nma_combined_data_filtered <- almp_nma_combined_data |>
+  filter(
+    outcome_domain %in%
+      c(
+        "Labour Force Status",
+        #"Employment Quality",
+        #"Capability-enhancing assets",
+        #"Social Networks and Relationships",
+        "Total Income",
+        "Education and Skills",
+        #"Job Seeking Behaviour",
+        #"Criminal Justice System Involvement",
+        #"Physical and Mental Health",
+        "Employment compensation",
+        "Employment Duration",
+        "Labour Market Transitions",
+        #"Substance Use",
+        "Hours Worked" #,
+        #"Other economic outcomes",
+      )
+  )
+
 # export data
 saveRDS(
-  almp_nma_combined_data,
+  almp_nma_combined_data_filtered,
   "./data_cleaning/outputs/almp_nma_combined_study_data.RDS"
 )

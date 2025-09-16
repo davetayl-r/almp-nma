@@ -23,6 +23,7 @@ almp_nma_analysis_data_quality_assessment <- almp_nma_combined_data_clean |>
   # subset quality assessment information
   select(
     study_id,
+    study_design_type,
     low_study_quality,
     qa_randomised_q1,
     qa_randomised_q2,
