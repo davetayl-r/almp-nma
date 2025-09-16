@@ -142,7 +142,12 @@ combined_study_quality_assessments <- bind_rows(
   left_join(
     qa_non_randomised_clean,
     by = "study_id"
-  )
+  ) |>
+  # convert any "Unsure" to "Unclear" across all columns
+  mutate(across(
+    starts_with("qa_non_randomised"),
+    ~ str_replace_all(.x, "Unsure", "Unclear")
+  ))
 
 # export
 saveRDS(

@@ -171,20 +171,32 @@ almp_nma_components_plot <- almp_nma_components_plot_data |>
     )
   ) +
   labs(
-    y = "Count",
-    x = "",
-    title = "Distribution of ALMP components"
+    y = "Studies containing each component",
+    x = ""
   ) +
   scale_y_continuous(expand = expansion(mult = c(0, 0.1))) +
   scale_fill_manual(
-    values = c("Intervention" = "#1565C0", "Comparison" = "#FFB300")
+    values = c("Intervention" = "#69C2C9", "Comparison" = "#7D2248")
   ) +
   theme(
     axis.text.x = element_text(hjust = 1, angle = 45),
     legend.position = "none",
-    strip.text = element_text(size = 9),
     panel.spacing = unit(0.2, "lines"),
-    plot.margin = margin(t = 10, r = 10, b = 0, l = 25, unit = "pt")
+    plot.margin = margin(t = 10, r = 10, b = 0, l = 25, unit = "pt"),
+    plot.background = element_rect(
+      colour = "#FFFFFF"
+    ),
+    legend.title = element_blank(),
+    strip.background = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.ticks = element_blank(),
+    axis.line.x = element_blank(),
+    strip.text = element_text(
+      face = "bold",
+      hjust = 0,
+      size = 10
+    )
   )
 
 # export plot
