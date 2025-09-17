@@ -518,7 +518,38 @@ outcome_coverage
 
 almp_nma_additive_model_data <- almp_nma_timing_model_data |>
   # drop redundant vars
-  select()
+  select(
+    -outcome_source,
+    -favourable_direction,
+    -conditional,
+    -d,
+    -d_se,
+    -d_var,
+    -g_var,
+    -location,
+    -source,
+    -year_published,
+    -peer_reviewed,
+    -year_start,
+    -intervention_length_n,
+    -youth_focused,
+    -intervention_developer,
+    -intervention_implementor,
+    -program_scope,
+    -intervention_funding,
+    -conditionality,
+    -incentives,
+    -certification,
+    -study_funding,
+    -evaluator,
+    -proportion_female_treatment,
+    -study_age_mean,
+    -target,
+    -window,
+    -selected_timepoint,
+    -within_anchor_window,
+    -selected_outside_window
+  )
 
 saveRDS(
   almp_nma_additive_model_data,

@@ -29,11 +29,8 @@ almp_nma_additive_model_data <- readRDS(almp_nma_additive_model_data_location)
 #-------------------------------------------------------------------------------
 
 almp_nma_model_one_data <- almp_nma_additive_model_data |>
-  # focus on labour market outcomes when first reported
-  filter(
-    outcome_id == 1,
-    outcome_domain == "Labour Force Status"
-  )
+  # select closest data point to 24 month window
+  filter()
 
 #-------------------------------------------------------------------------------
 # 2. Specify model formula
