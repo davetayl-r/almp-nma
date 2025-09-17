@@ -1,7 +1,7 @@
 #============================================================================================#
 # Project: ALMP NMA                                                                          #
 # Author: David Taylor                                                                       #
-# Date: 15/09/2025                                                                           #
+# Date: 17/09/2025                                                                           #
 # Purpose: NMA model #1                                                                      #
 #============================================================================================#
 
@@ -12,10 +12,6 @@ library(cmdstanr)
 library(brms)
 library(tidybayes)
 library(posterior)
-library(ggplot2)
-library(ggdist)
-library(scales)
-library(ggh4x)
 
 # load custom functions
 source("./analysis/code/analysis_functions.R")
@@ -30,23 +26,64 @@ almp_nma_additive_model_data <- readRDS(almp_nma_additive_model_data_location)
 
 almp_nma_model_one_data <- almp_nma_additive_model_data |>
   # select closest data point to 24 month window
-  filter()
+  filter(
+    selected_primary_timepoint == 1
+  ) |>
+  filter(
+    timepoint_outside_anchor_window != 1.00 |
+      is.na(timepoint_outside_anchor_window)
+  ) |>
+  mutate(
+    # remove apostrophe's from outcome names
+    outcome = str_remove_all(outcome, "[\u2018\u2019\u201A\u201B]"),
+    # force outcome to be factor
+    outcome = factor(outcome)
+  ) |>
+  # drop the rarest outcomes
+  filter(
+    !outcome %in%
+      c(
+        # these outcomes appear once
+        "Apprenticeship Duration",
+        "Bachelors or equivalent (ISCED 6) application",
+        "Current Unemployment",
+        "Currently Employed Temporarily",
+        "Currently Employment Permanently",
+        "EET since baseline",
+        "Entires to Not in the Labour Force",
+        "Foundation skills (ISCED 1) completion",
+        "Lower secondary school (ISCED 2) completion",
+        "Not in the Labour Force since baseline",
+        "Recent EET",
+        "Re-employment probability",
+        "Quarters employed",
+        "Recent Unemployment",
+        "Unemployed since baseline",
+        # these outcomes appear twice
+        "Masters or equivalent (ISCED 7) completion",
+        "Period Not in the Labour Force"
+      )
+  )
 
 #-------------------------------------------------------------------------------
 # 2. Specify model formula
 #-------------------------------------------------------------------------------
 
-# specify formula for the additive component model
+# Goal: additive component model with outcome-specific slopes and study-level random effects varying by outcome.
+#
+# - `0 +` removes the intercept so each outcome:component coefficient is estimable relative to SAU (which you confirmed is the reference comparator).
+# - `outcome:comp_*` lets each component have a different effect per outcome.
+# - `(0 + outcome | p | study)` gives each study a random deviation for each outcome, capturing within-study dependence and allowing a correlated structure across outcomes.
+# — `| p |` structure estimates the full RE covariance
+
 almp_nma_model_one_formula <- bf(
   delta | se(delta_se) ~
     0 +
-      # component x outcome effects
+      # component × outcome effects
       outcome:comp_basic_skills_training +
       outcome:comp_soft_skills_training +
       outcome:comp_behavioural_skills_training +
-      outcome:comp_business_skills_training +
-      outcome:comp_business_advisory_and_mentoring +
-      outcome:comp_financial_and_start_up_support +
+      outcome:comp_self_employment_support +
       outcome:comp_job_specific_technical_skills_off_job_training +
       outcome:comp_job_search_preparation +
       outcome:comp_job_search_assistance +
@@ -59,34 +96,46 @@ almp_nma_model_one_formula <- bf(
       outcome:comp_wage_subsidies +
       outcome:comp_public_works +
       outcome:comp_other_active_component_nec +
-      # random effects for each study
-      (0 + outcome | p | study)
+      # random effects for each study varying by outcome
+      (0 + outcome || study)
+  #(0 + outcome | p | study)
+)
+
+#-------------------------------------------------------------------------------
+# 3. Specify priors
+#-------------------------------------------------------------------------------
+
+# - Component effects: moderately sceptical Normal(0, 0.4) on the delta scale
+# - Study-level SDs: weakly informative Normal(0, 0.25) (half-Normal implied)
+
+almp_nma_model_one_priors <- c(
+  prior(normal(0, 0.4), class = "b"),
+  prior(normal(0, 0.25), class = "sd", group = "study")
 )
 
 #-------------------------------------------------------------------------------
 # 3. Fit the Bayesian additive CNMA model
 #-------------------------------------------------------------------------------
 
+# This is a quick but safe configuration:
+# - 2 chains, 4000 iters (2000 warmup) to smoke-test the model and
+#   surface coding/convergence issues quickly.
+# - adapt_delta 0.95 is usually enough here; we only crank up if divergences appear.
+# - If your CPU supports it, `threads = threading(2)` speeds up within-chain sampling.
+
 almp_nma_model_one <- brm(
   formula = almp_nma_model_one_formula,
   data = almp_nma_model_one_data,
-  prior = c(
-    # Component effects
-    prior(normal(0, 0.4), class = "b"),
-    # Study-level heterogeneity
-    prior(normal(0, 0.25), class = "sd", group = "study")
-  ),
+  prior = almp_nma_model_one_priors,
+  family = gaussian(),
   chains = 2,
-  warmup = 2000,
   iter = 4000,
+  warmup = 2000,
   cores = 8,
+  threads = threading(2),
   backend = "cmdstanr",
   refresh = 250,
-  # Additional control parameters for stability
-  control = list(
-    adapt_delta = 0.99,
-    max_treedepth = 15
-  ),
+  control = list(adapt_delta = 0.95, max_treedepth = 13),
   silent = FALSE,
   seed = 12345
 )
@@ -108,81 +157,175 @@ pp_check(almp_nma_model_one)
 #-------------------------------------------------------------------------------
 
 # The component effects are the b_ parameters (excluding intercept if any)
-component_draws <- multivariate_hpsb_cnma_model |>
+almp_nma_model_one_component_draws <- almp_nma_model_one |>
   gather_draws(`b_.*:comp_.*`, regex = TRUE) |>
   # Parse the parameter names to extract outcome and component
   mutate(
     # Extract outcome (everything before the colon)
-    outcome = str_extract(.variable, "^[^:]+"),
-    outcome = str_remove(outcome, "^b_outcome"),
+    outcome = str_extract(
+      .variable,
+      "^[^:]+"
+    ),
+    outcome = str_remove(
+      outcome,
+      "^b_outcome"
+    ),
     # Extract component (everything after comp_)
-    component = str_extract(.variable, "(?<=:).*"),
-    component = str_remove(component, "^comp_"),
-    component = case_when(
-      component == "cognitive_behaviour_therapy_group" ~
-        "Cognitive Behaviour Therapy (Group)",
-      component == "cognitive_behaviour_therapy_individual" ~
-        "Cognitive Behaviour Therapy (Individual)",
-      component == "family_therapy" ~ "Family Therapy",
-      component == "sex_education" ~ "Sex Education",
-      component == "relapse_prevention" ~ "Relapse Prevention",
-      component == "social_skills_training" ~ "Social Skills Training",
-      component == "multisystemtic_therapy" ~ "Multisystemtic Therapy",
-      component == "individual_therapy" ~ "Individual Therapy",
-      component == "group_therapy" ~ "Group Therapy",
-      component == "adventure_therapy" ~ "Adventure Therapy",
-      component == "exercise" ~ "Exercise",
-      component == "mode_deactivation_therapy" ~ "Mode Deactivation Therapy",
-      component == "play_therapy" ~ "Play Therapy",
-      component == "other" ~ "Other"
+    component = str_extract(
+      .variable,
+      "(?<=:).*"
+    ),
+    component = str_remove(
+      component,
+      "^comp_"
+    ),
+    component = recode(
+      component,
+      "basic_skills_training" = "Basic Skills Training",
+      "behavioural_skills_training" = "Behavioral Skills Training",
+      "employment_coaching" = "Employment Coaching",
+      "employment_counselling" = "Employment Counseling",
+      "financial_assistance" = "Financial Assistance",
+      "job_search_assistance" = "Job Search Assistance",
+      "job_search_preparation" = "Job Search Preparation",
+      "job_specific_technical_skills_off_job_training" = "Technical Skills Training (Off-the-Job)",
+      "job_specific_technical_skills_on_job_training" = "Technical Skills Training (On-the-Job)",
+      "other_active_component_nec" = "Other Active Components",
+      "paid_temporary_work_experience" = "Paid Work Experience",
+      "public_works" = "Public Works",
+      "self_employment_support" = "Self-Employment Support",
+      "soft_skills_training" = "Soft Skills Training",
+      "unpaid_temporary_work_experience" = "Unpaid Work Experience",
+      "wage_subsidies" = "Wage Subsidies"
     ),
     component = factor(
       component,
       levels = c(
-        "Cognitive Behaviour Therapy (Group)",
-        "Cognitive Behaviour Therapy (Individual)",
-        "Family Therapy",
-        "Multisystemtic Therapy",
-        "Individual Therapy",
-        "Group Therapy",
-        "Mode Deactivation Therapy",
-        "Adventure Therapy",
-        "Sex Education",
-        "Relapse Prevention",
-        "Social Skills Training",
-        "Exercise",
-        "Play Therapy",
-        "Other"
+        "Basic Skills Training",
+        "Soft Skills Training",
+        "Behavioral Skills Training",
+        "Technical Skills Training (Off-the-Job)",
+        "Self-Employment Support",
+        "Job Search Assistance",
+        "Job Search Preparation",
+        "Employment Coaching",
+        "Employment Counseling",
+        "Financial Assistance",
+        "Technical Skills Training (On-the-Job)",
+        "Paid Work Experience",
+        "Unpaid Work Experience",
+        "Wage Subsidies",
+        "Public Works",
+        "Other Active Components"
       ),
       ordered = TRUE
     ),
-    outcome = case_when(
-      outcome == "SexualRiskBehaviors" ~ "Sexual Risk Behaviours",
-      outcome == "SexualCognitiveDistortions" ~ "Sexual Cognitive Distortions",
-      outcome == "HealthySexualKnowledgeDAttitudes" ~
-        "Healthy Sexual Knowledge or Attitudes",
-      outcome == "Frequencyofsexualoffending" ~ "Frequency of Sexual Offending",
-      outcome == "Anyviolentsexualoffending" ~ "Any Violent Sexual Offending",
-      outcome == "Anysexualoffending" ~ "Any Sexual Offending"
+    outcome = recode(
+      outcome,
+      "Apprenticeshipparticipation" = "Apprenticeship Participation",
+      "BachelorsorequivalentISCED6completion" = "Bachelors Degree (ISCED 6) Completion",
+      "BachelorsorequivalentISCED6participation" = "Bachelors Degree (ISCED 6) Participation",
+      "CurrentlyEmployed" = "Currently Employed",
+      "CurrentlyNEET" = "Currently NEET",
+      "CurrentlyNotintheLabourForce" = "Currently Not in the Labour Force",
+      "CurrentlySelfMEmployed" = "Currently Self-Employed",
+      "CurrentlyUnemployed" = "Currently Unemployed",
+      "Employedsincebaseline" = "Employed Since Baseline",
+      "Employmentcompensation" = "Employment Compensation",
+      "ExitsfromUnemployment" = "Exits from Unemployment",
+      "HoursWorked" = "Hours Worked",
+      "LabourEarnings" = "Labour Earnings",
+      "Occupationallicenceobtained" = "Occupational Licence Obtained",
+      "PeriodEmployed" = "Period Employed",
+      "PeriodUnemployed" = "Period Unemployed",
+      "PostMsecondarynonMtertiaryISCED4completion" = "Post-Secondary Non-Tertiary (ISCED 4) Completion",
+      "PostMsecondarynonMtertiaryISCED4participation" = "Post-Secondary Non-Tertiary (ISCED 4) Participation",
+      "RecentEmployment" = "Recent Employment",
+      "SecondaryschoolorequivalentISCED3completion" = "Secondary School (ISCED 3) Completion",
+      "SecondaryschoolorequivalentISCED3participation" = "Secondary School (ISCED 3) Participation",
+      "ShortMcycletertiaryISCED5completion" = "Short-Cycle Tertiary (ISCED 5) Completion",
+      "ShortMcycletertiaryISCED5participation" = "Short-Cycle Tertiary (ISCED 5) Participation",
+      "Totalindividualincome" = "Total Individual Income",
+      "Wages" = "Wages"
     ),
     outcome = factor(
       outcome,
       levels = c(
-        "Sexual Risk Behaviours",
-        "Sexual Cognitive Distortions",
-        "Frequency of Sexual Offending",
-        "Any Violent Sexual Offending",
-        "Any Sexual Offending",
-        "Healthy Sexual Knowledge or Attitudes"
+        "Apprenticeship Participation",
+        "Bachelors Degree (ISCED 6) Completion",
+        "Bachelors Degree (ISCED 6) Participation",
+        "Currently Employed",
+        "Currently NEET",
+        "Currently Not in the Labour Force",
+        "Currently Self-Employed",
+        "Currently Unemployed",
+        "Employed Since Baseline",
+        "Employment Compensation",
+        "Exits from Unemployment",
+        "Hours Worked",
+        "Labour Earnings",
+        "Occupational Licence Obtained",
+        "Period Employed",
+        "Period Unemployed",
+        "Post-Secondary Non-Tertiary (ISCED 4) Completion",
+        "Post-Secondary Non-Tertiary (ISCED 4) Participation",
+        "Recent Employment",
+        "Secondary School (ISCED 3) Completion",
+        "Secondary School (ISCED 3) Participation",
+        "Short-Cycle Tertiary (ISCED 5) Completion",
+        "Short-Cycle Tertiary (ISCED 5) Participation",
+        "Total Individual Income",
+        "Wages"
       ),
       ordered = TRUE
     )
   ) |>
   ungroup() |>
-  select(.draw, outcome, component, effect = .value)
+  select(
+    .draw,
+    outcome,
+    component,
+    effect = .value
+  ) |>
+  mutate(
+    outcome_domain = case_when(
+      outcome %in%
+        c(
+          "Currently Employed",
+          "Currently Unemployed",
+          "Currently NEET",
+          "Currently Not in the Labour Force",
+          "Currently Self-Employed",
+          "Recent Employment",
+          "Employed Since Baseline"
+        ) ~
+        "Labour Force Status",
+      outcome %in% c("Labour Earnings", "Employment Compensation", "Wages") ~
+        "Employment Compensation",
+      outcome == "Total Individual Income" ~ "Total Income",
+      outcome %in% c("Period Employed", "Period Unemployed") ~
+        "Employment Duration",
+      outcome == "Hours Worked" ~ "Hours Worked",
+      outcome %in%
+        c(
+          "Apprenticeship Participation",
+          "Bachelors Degree (ISCED 6) Participation",
+          "Bachelors Degree (ISCED 6) Completion",
+          "Secondary School (ISCED 3) Completion",
+          "Secondary School (ISCED 3) Participation",
+          "Occupational Licence Obtained",
+          "Short-Cycle Tertiary (ISCED 5) Participation",
+          "Short-Cycle Tertiary (ISCED 5) Completion",
+          "Post-Secondary Non-Tertiary (ISCED 4) Participation",
+          "Post-Secondary Non-Tertiary (ISCED 4) Completion"
+        ) ~
+        "Education and Skills",
+      outcome == "Exits from Unemployment" ~ "Labour Market Transitions"
+    )
+  )
 
 # Create summary statistics for labels
-component_summary <- component_draws |>
+almp_nma_model_one_component_summary <- almp_nma_model_one_component_draws |>
   group_by(
     outcome,
     component
@@ -206,138 +349,54 @@ component_summary <- component_draws |>
     effect = format(round(effect, 2), nsmall = 2),
     .lower = format(round(.lower, 2), nsmall = 2),
     .upper = format(round(.upper, 2), nsmall = 2)
+  ) |>
+  mutate(
+    outcome_domain = case_when(
+      outcome %in%
+        c(
+          "Currently Employed",
+          "Currently Unemployed",
+          "Currently NEET",
+          "Currently Not in the Labour Force",
+          "Currently Self-Employed",
+          "Recent Employment",
+          "Employed Since Baseline"
+        ) ~
+        "Labour Force Status",
+      outcome %in% c("Labour Earnings", "Employment Compensation", "Wages") ~
+        "Employment Compensation",
+      outcome == "Total Individual Income" ~ "Total Income",
+      outcome %in% c("Period Employed", "Period Unemployed") ~
+        "Employment Duration",
+      outcome == "Hours Worked" ~ "Hours Worked",
+      outcome %in%
+        c(
+          "Apprenticeship Participation",
+          "Bachelors Degree (ISCED 6) Participation",
+          "Bachelors Degree (ISCED 6) Completion",
+          "Secondary School (ISCED 3) Completion",
+          "Secondary School (ISCED 3) Participation",
+          "Occupational Licence Obtained",
+          "Short-Cycle Tertiary (ISCED 5) Participation",
+          "Short-Cycle Tertiary (ISCED 5) Completion",
+          "Post-Secondary Non-Tertiary (ISCED 4) Participation",
+          "Post-Secondary Non-Tertiary (ISCED 4) Completion"
+        ) ~
+        "Education and Skills",
+      outcome == "Exits from Unemployment" ~ "Labour Market Transitions"
+    )
   )
 
 #-------------------------------------------------------------------------------
-# 6. Visualise results
+# 6. Export results for visualisation
 #-------------------------------------------------------------------------------
 
-# create forest plot
-forest_plot_harmful_sexual_behaviour_outcomes <- component_draws |>
-  ggplot(
-    aes(
-      x = effect,
-      y = outcome #,
-      #fill = outcome
-    )
-  ) +
-  # Zero reference line
-  geom_vline(
-    xintercept = 0,
-    linewidth = 0.25,
-    linetype = "dashed",
-    alpha = 0.5,
-    color = "gray50"
-  ) +
-  # Half-eye plots showing posterior distributions
-  stat_halfeye(
-    data = . %>% filter(outcome == "Healthy Sexual Knowledge or Attitudes"),
-    aes(
-      fill = after_stat(ifelse(
-        x <= -0.0,
-        "negative_outcome",
-        "positive_outcome"
-      ))
-    ),
-    .width = c(0.95),
-    colour = "#000000",
-    alpha = 0.7,
-    point_interval = "median_qi"
-  ) +
-  stat_halfeye(
-    data = . %>% filter(!outcome == "Healthy Sexual Knowledge or Attitudes"),
-    aes(
-      fill = after_stat(ifelse(
-        x >= -0.0,
-        "negative_outcome",
-        "positive_outcome"
-      ))
-    ),
-    .width = c(0.95),
-    colour = "#000000",
-    alpha = 0.7,
-    point_interval = "median_qi"
-  ) +
-  # Add summary text labels
-  geom_text(
-    data = mutate_if(component_summary, is.numeric, round, 3),
-    aes(
-      label = str_glue("{effect} [{.lower},{.upper}]"),
-      x = 0
-    ),
-    hjust = "centre",
-    nudge_y = -0.2,
-    size = 3,
-    color = "black"
-  ) +
-  # wrap y-axis labels
-  scale_y_discrete(
-    labels = label_wrap(20)
-  ) +
-  scale_x_continuous(
-    limits = c(-2, 2),
-    breaks = c(-1, 0, 1)
-  ) +
-  # wrap facets
-  facet_grid(
-    . ~ component,
-    labeller = label_wrap_gen(width = 15)
-  ) +
-  # specify colour scheme
-  scale_fill_manual(
-    values = c(
-      "positive_outcome" = "#008744",
-      "negative_outcome" = "#d62d20"
-    ),
-    name = "Outcome Direction",
-    labels = c(
-      "positive_outcome" = "Favours Intervention",
-      "negative_outcome" = "Favours Services as Usual"
-    )
-  ) +
-  # specify labels
-  labs(
-    title = "Component-level effects of therapeutic interventions for children and young people who have exhibited harmful sexual behaviour from a\nBayesian CNMA for Harmful Sexual Behaviour Outcomes",
-    subtitle = "Posterior distributions with 95% credible intervals",
-    x = "Effect Size (Hedges' g)",
-    y = "Outcome",
-    caption = "Values show median effect size [95% Cr I]"
-  ) +
-  # set theme
-  theme_minimal() +
-  theme(
-    plot.background = element_rect(fill = "#FFFFFF"),
-    panel.grid.major.y = element_blank(),
-    panel.grid.minor = element_blank(),
-    plot.title = element_text(
-      hjust = 0.5,
-      size = 14,
-      face = "bold"
-    ),
-    plot.subtitle = element_text(
-      hjust = 0.5,
-      size = 11
-    ),
-    axis.title = element_text(
-      size = 12
-    ),
-    axis.text = element_text(
-      size = 10
-    ),
-    strip.text = element_text(
-      size = 10
-    ),
-    legend.position = "bottom"
-  )
+saveRDS(
+  almp_nma_model_one_component_summary,
+  "./visualisation/inputs/almp_nma_model_one_component_summary.RDS"
+)
 
-forest_plot_harmful_sexual_behaviour_outcomes
-
-# export plot
-#ggsave(
-#  plot = forest_plot_harmful_sexual_behaviour_outcomes,
-#  filename = "./output/figures/hpsb_cnma_forest_plot_harmful_sexual_behaviour_outcomes.png",
-#  height = 7,
-#  width = 16,
-#  device = "png",
-#  type = "cairo-png"
-#)
+saveRDS(
+  almp_nma_model_one_component_draws,
+  "./visualisation/inputs/almp_nma_model_one_component_draws.RDS"
+)
