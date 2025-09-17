@@ -343,7 +343,6 @@ almp_nma_analysis_data <- almp_nma_combined_data_clean |>
   select(
     -treatment_n,
     -comparison_n,
-    -location,
     -intervention_intensity_n,
     -int_basic_skills_training,
     -int_soft_skills_training,
