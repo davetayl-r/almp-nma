@@ -5,6 +5,8 @@
 # Purpose: Helper functions for the NMA                                                      #
 #============================================================================================#
 
+library(rlang)
+
 #-------------------------------------------------------------------------------
 # 1. Create component indicator variables
 #-------------------------------------------------------------------------------
@@ -47,72 +49,54 @@ create_component_matrix <- function(data, sep.comps = "+") {
 #-------------------------------------------------------------------------------
 
 select_outcome_timepoint <- function(
-  data,
-  # numeric months
-  time_col = outcome_timing,
-  # e.g., "Labour Force Status"
-  domain_col = outcome_domain,
-  # study ID
-  study_col = study,
-  # tbl with columns: domain, target, window
-  anchors_tbl = NULL,
-  # fallback if domain not in anchors_tbl
+  df,
+  targets,
+  study_var = "study",
+  domain_var = "outcome_domain",
+  time_var = "outcome_timing",
   default_target = default_target,
-  default_window = default_window,
-  # round months
-  round_time = TRUE
+  default_window = default_window
 ) {
-  time_col <- enquo(time_col)
-  domain_col <- enquo(domain_col)
-  study_col <- enquo(study_col)
+  study_sym <- sym(study_var)
+  domain_sym <- sym(domain_var)
+  time_sym <- sym(time_var)
 
-  # Normalise anchors table (optional)
-  if (is.null(anchors_tbl)) {
-    anchors_tbl <- tibble(
-      !!as_name(domain_col) := character(),
-      target = numeric(),
-      window = numeric()
-    )
-  } else {
-    # Ensure it has matching domain column name
-    anchors_tbl <- anchors_tbl |>
-      rename(!!as_name(domain_col) := {{ domain_col }})
-  }
-
-  data |>
-    mutate(
-      .time = !!time_col,
-      .time = if (round_time) round(.time) else .time
-    ) |>
-    left_join(anchors_tbl, by = as_name(domain_col)) |>
+  # attach targets and compute window/ distance
+  cand <- df %>%
+    left_join(targets, by = setNames("outcome_domain", domain_var)) %>%
     mutate(
       target = if_else(is.na(target), default_target, target),
       window = if_else(is.na(window), default_window, window),
-      distance_months = abs(.time - target),
-      within_anchor_window = distance_months <= window
-    ) |>
-    group_by(!!study_col, !!domain_col) |>
-    arrange(
-      desc(within_anchor_window),
-      distance_months,
-      .time,
-      .by_group = TRUE
-    ) |>
+      dist = abs(!!time_sym - target),
+      within_anchor_window = (!!time_sym >= target - window) &
+        (!!time_sym <= target + window)
+    )
+
+  # choose one timepoint per study × domain
+  chosen_time <- cand %>%
+    group_by(!!study_sym, !!domain_sym) %>%
+    arrange(desc(within_anchor_window), dist, !!time_sym, .by_group = TRUE) %>%
+    summarise(
+      selected_timepoint = first(!!time_sym),
+      selected_outside_window_group = !first(within_anchor_window),
+      .groups = "drop"
+    )
+
+  # propagate the chosen timepoint back to all outcomes at that time
+  out <- cand %>%
+    left_join(chosen_time, by = c(study_var, domain_var)) %>%
     mutate(
-      selected_primary_timepoint = if_else(
-        row_number() == 1 & !is.na(.time),
-        1L,
-        0L
+      selected_primary_timepoint = (!!time_sym == selected_timepoint),
+      # mark outside/inside window only for the selected rows; NA otherwise
+      selected_outside_window = if_else(
+        selected_primary_timepoint,
+        selected_outside_window_group,
+        NA
       ),
-      selected_outside_window = selected_primary_timepoint == 1L &
-        !within_anchor_window
-    ) |>
-    ungroup() |>
-    rename(
-      anchor_target_months = target,
-      anchor_window_months = window
-    ) |>
-    # keep original time column intact; write back the rounded time if desired
-    mutate(!!as_name(quo_name(time_col)) := .time) |>
-    select(-.time)
+      # (optional) keep an integer flag like in your screenshot
+      selected_primary_timepoint = as.integer(selected_primary_timepoint)
+    ) %>%
+    select(-dist, -selected_outside_window_group)
+
+  out
 }

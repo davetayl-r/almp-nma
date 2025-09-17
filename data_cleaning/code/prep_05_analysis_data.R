@@ -263,15 +263,30 @@ almp_nma_consolidated_component_data <- almp_nma_combined_data_clean |>
   )
 
 #-------------------------------------------------------------------------------
-# 5. Final cleaning and preparation
+# 5. Centre study-level variables
 #-------------------------------------------------------------------------------
 
-almp_nma_analysis_data <- almp_nma_combined_data_clean |>
-  # join consolidated component data
-  left_join(
-    almp_nma_consolidated_component_data,
-    by = "study_id"
+almp_nma_centred_data <- almp_nma_combined_data_clean |>
+  distinct(
+    study_id,
+    proportion_female_treatment,
+    study_age_min,
+    study_age_max,
+    study_age_mean
   ) |>
+  group_by(
+    study_id
+  ) |>
+  arrange(
+    study_age_mean
+  ) |>
+  mutate(
+    appearence_flag = row_number()
+  ) |>
+  filter(
+    appearence_flag == 1
+  ) |>
+  ungroup() |>
   mutate(
     # impute missing average age data from reported minimum and maximum age ranges
     study_age_mean = case_when(
@@ -281,9 +296,43 @@ almp_nma_analysis_data <- almp_nma_combined_data_clean |>
     ),
     # centre age around mean
     prop_female_centred = proportion_female_treatment -
-      mean(proportion_female_treatment),
-    # centre sex around mean
-    study_age_mean_centred = study_age_mean,
+      mean(proportion_female_treatment, na.rm = TRUE),
+    # centre age around mean
+    study_age_mean_centred = study_age_mean -
+      mean(study_age_mean, na.rm = TRUE),
+    # centre age from 18
+    study_age_mean_centred_18 = study_age_mean - 18
+  ) |>
+  # drop redundant vars
+  select(
+    -study_age_min,
+    -study_age_max,
+    -appearence_flag
+  )
+
+#-------------------------------------------------------------------------------
+# 6. Merge component data and centred study-level vars
+#-------------------------------------------------------------------------------
+
+almp_nma_analysis_data <- almp_nma_combined_data_clean |>
+  # join consolidated component data
+  left_join(
+    almp_nma_consolidated_component_data,
+    by = "study_id"
+  ) |>
+  # drop vars that will duplicate from centred data
+  select(
+    -proportion_female_treatment,
+    -study_age_min,
+    -study_age_max,
+    -study_age_mean
+  ) |>
+  # join centred vars
+  left_join(
+    almp_nma_centred_data,
+    by = "study_id"
+  ) |>
+  mutate(
     # convert location into a USA binary
     united_states = case_when(
       location == "United States" ~ 1,
@@ -294,8 +343,6 @@ almp_nma_analysis_data <- almp_nma_combined_data_clean |>
   select(
     -treatment_n,
     -comparison_n,
-    -study_age_min,
-    -study_age_max,
     -location,
     -intervention_intensity_n,
     -int_basic_skills_training,
@@ -361,14 +408,14 @@ almp_nma_analysis_data <- almp_nma_combined_data_clean |>
     -qa_non_randomised_q9
   )
 
-# export data to use for network map
+# export data to use for summary visualisation
 saveRDS(
   almp_nma_analysis_data,
-  "./visualisation/inputs/almp_nma_network_map_data.RDS"
+  "./visualisation/inputs/almp_nma_summary_visualisation_data.RDS"
 )
 
 #-------------------------------------------------------------------------------
-# 6. Prepare additive modelling data
+# 7. Prepare additive modelling data
 #-------------------------------------------------------------------------------
 
 # Create component matrix
@@ -392,8 +439,8 @@ for (component in colnames(almp_component_matrix)) {
   )
 }
 
-# prepare data for export
-almp_nma_additive_model_data <- almp_working_data |>
+# clean up data
+almp_nma_component_model_data <- almp_working_data |>
   # drop redundant vars
   select(
     -intervention,
@@ -404,44 +451,75 @@ almp_nma_additive_model_data <- almp_working_data |>
     study = study_id,
     delta = g,
     delta_se = g_se
-  ) |>
-  # add outcome flag
-  group_by(
-    study,
-    outcome
+  )
+
+#-------------------------------------------------------------------------------
+# 8. Select single timepoint for analysis
+#-------------------------------------------------------------------------------
+
+# specify time point anchors for 24 months +/- 6 months
+outcome_domain_targets <- tibble::tribble(
+  ~outcome_domain,
+  ~target,
+  ~window,
+  "Labour Force Status",
+  24,
+  6,
+  "Education and Skills",
+  24,
+  6,
+  "Employment Duration",
+  24,
+  6,
+  "Employment compensation",
+  24,
+  6,
+  "Hours Worked",
+  24,
+  6,
+  "Total Income",
+  24,
+  6,
+  "Labour Market Transitions",
+  24,
+  6
+)
+
+# run outcome timing function
+almp_nma_timing_model_data <- almp_nma_component_model_data |>
+  select_outcome_timepoint(
+    targets = outcome_domain_targets,
+    study_var = "study",
+    domain_var = "outcome_domain",
+    time_var = "outcome_timing",
+    default_target = 24,
+    default_window = 6
   ) |>
   mutate(
-    outcome_id = row_number()
-  ) |>
-  ungroup()
-
+    timepoint_outside_anchor_window = case_when(
+      selected_outside_window == TRUE ~ 1
+    )
+  )
 
 # coverage table to see how much you keep
-outcome_coverage <- outcome_candidates |>
+outcome_coverage <- almp_nma_timing_model_data |>
+  filter(!is.na(outcome_timing)) |>
   summarise(
     n_studies = n_distinct(study),
-    n_within = n_distinct(study[within]),
+    n_within = n_distinct(study[within_anchor_window]),
     prop_within = n_within / n_studies,
     .by = outcome_domain
   ) |>
   arrange(desc(prop_within))
-
 outcome_coverage
 
-# ---- 4) Hand-off dataset for the model (one row per study × domain)
-# Keep the chosen follow-up and mark whether it fell outside the window (for sensitivity).
-single_timepoint <- outcome_selected |>
-  transmute(
-    study,
-    outcome_domain,
-    outcome_timing_outcome_selected = outcome_timing,
-    anchor_target_months = target,
-    anchor_window_months = window,
-    distance_months = dist,
-    outcome_selected_outside_window = outside_window
-  )
+#-------------------------------------------------------------------------------
+# 9. Clean up data for export
+#-------------------------------------------------------------------------------
 
-# write_rds(single_timepoint, "./analysis/outputs/almp_nma_single_timepoint.rds")
+almp_nma_additive_model_data <- almp_nma_timing_model_data |>
+  # drop redundant vars
+  select()
 
 saveRDS(
   almp_nma_additive_model_data,

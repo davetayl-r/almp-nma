@@ -13,7 +13,7 @@ library(graphlayouts)
 #library(ggpp)
 
 # read data
-almp_nma_network_raw_data_location <- "./visualisation/inputs/almp_nma_network_map_data.RDS"
+almp_nma_network_raw_data_location <- "./visualisation/inputs/almp_nma_summary_visualisation_data.RDS"
 almp_nma_network_raw_data <- readRDS(almp_nma_network_raw_data_location)
 
 # set seed
