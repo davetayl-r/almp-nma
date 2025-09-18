@@ -2,7 +2,7 @@
 # Project: ALMP NMA                                                                          #
 # Author: David Taylor                                                                       #
 # Date: 18/09/2025                                                                           #
-# Purpose: NMA model #6 — correlated study RE with heterogeneity varying by study design     #
+# Purpose: NMA model #7 — bringing in outcome domains                                        #
 #============================================================================================#
 
 # load required packages
@@ -24,7 +24,7 @@ almp_nma_additive_model_data <- readRDS(almp_nma_additive_model_data_location)
 # 1. Subset data for model
 #-------------------------------------------------------------------------------
 
-almp_nma_model_six_data <- almp_nma_additive_model_data |>
+almp_nma_model_seven_data <- almp_nma_additive_model_data |>
   # select closest data point to 24 month window
   filter(
     selected_primary_timepoint == 1
@@ -69,14 +69,15 @@ almp_nma_model_six_data <- almp_nma_additive_model_data |>
       study_design_type == "Design-based identification" ~ 1,
       TRUE ~ 0
     ),
-    study_design_dbi = as.numeric(study_design_dbi)
+    study_design_dbi = as.numeric(study_design_dbi),
+    outcome_domain = factor(outcome_domain)
   )
 
 #-------------------------------------------------------------------------------
 # 2. Specify model formula
 #-------------------------------------------------------------------------------
 
-almp_nma_model_six_formula <- bf(
+almp_nma_model_seven_formula <- bf(
   delta | se(delta_se) ~
     # remove the intercept so each outcome:component coefficient is estimable relative to SAU
     0 +
@@ -104,21 +105,24 @@ almp_nma_model_six_formula <- bf(
       low_study_quality +
       low_study_quality:study_design_soo +
       low_study_quality:study_design_dbi +
-      # random effects varying by outcome
-      (0 + outcome | p | gr(study, by = study_design_type))
+      # domain-varying penalties
+      outcome_domain:study_design_soo +
+      outcome_domain:study_design_dbi +
+      outcome_domain:low_study_quality +
+      # random effects
+      (0 + outcome || gr(study, by = study_design_type)) +
+      (1 | gr(study, by = study_design_type))
 )
 
 #-------------------------------------------------------------------------------
 # 3. Specify priors
 #-------------------------------------------------------------------------------
 
-almp_nma_model_six_priors <- c(
+almp_nma_model_seven_priors <- c(
   # Default prior for all fixed effects (components + design): moderately sceptical Normal(0, 0.4) on the delta scale
   prior(normal(0, 0.4), class = "b"),
   # Study-level heterogeneity: weakly informative Normal(0, 0.25) (half-Normal implied)
   prior(normal(0, 0.25), class = "sd", group = "study"),
-  # lkj prior for correlated outcomes within studies
-  prior(lkj(2), class = "cor", group = "study"),
   # Tighter priors for the two design adjustments: tighter, sceptical Normals centred at 0 (e.g., SD = 0.15) suggested that differences may exist, but shouldn't dominate
   prior(normal(0, 0.15), class = "b", coef = "study_design_soo"),
   prior(normal(0, 0.15), class = "b", coef = "study_design_dbi"),
@@ -134,6 +138,99 @@ almp_nma_model_six_priors <- c(
     normal(0, 0.10),
     class = "b",
     coef = "study_design_dbi:low_study_quality"
+  ),
+  # low study quality × outcome_domain
+  prior(
+    normal(0, 0.10),
+    class = "b",
+    coef = "low_study_quality:outcome_domainEmploymentcompensation"
+  ),
+  prior(
+    normal(0, 0.10),
+    class = "b",
+    coef = "low_study_quality:outcome_domainEmploymentDuration"
+  ),
+  prior(
+    normal(0, 0.10),
+    class = "b",
+    coef = "low_study_quality:outcome_domainHoursWorked"
+  ),
+  prior(
+    normal(0, 0.10),
+    class = "b",
+    coef = "low_study_quality:outcome_domainLabourForceStatus"
+  ),
+  prior(
+    normal(0, 0.10),
+    class = "b",
+    coef = "low_study_quality:outcome_domainLabourMarketTransitions"
+  ),
+  prior(
+    normal(0, 0.10),
+    class = "b",
+    coef = "low_study_quality:outcome_domainTotalIncome"
+  ),
+  # study_design_soo × outcome_domain
+  prior(
+    normal(0, 0.12),
+    class = "b",
+    coef = "study_design_soo:outcome_domainEmploymentcompensation"
+  ),
+  prior(
+    normal(0, 0.12),
+    class = "b",
+    coef = "study_design_soo:outcome_domainEmploymentDuration"
+  ),
+  prior(
+    normal(0, 0.12),
+    class = "b",
+    coef = "study_design_soo:outcome_domainHoursWorked"
+  ),
+  prior(
+    normal(0, 0.12),
+    class = "b",
+    coef = "study_design_soo:outcome_domainLabourForceStatus"
+  ),
+  prior(
+    normal(0, 0.12),
+    class = "b",
+    coef = "study_design_soo:outcome_domainLabourMarketTransitions"
+  ),
+  prior(
+    normal(0, 0.12),
+    class = "b",
+    coef = "study_design_soo:outcome_domainTotalIncome"
+  ),
+  # study_design_dbi × outcome_domain
+  prior(
+    normal(0, 0.12),
+    class = "b",
+    coef = "study_design_dbi:outcome_domainEmploymentcompensation"
+  ),
+  prior(
+    normal(0, 0.12),
+    class = "b",
+    coef = "study_design_dbi:outcome_domainEmploymentDuration"
+  ),
+  prior(
+    normal(0, 0.12),
+    class = "b",
+    coef = "study_design_dbi:outcome_domainHoursWorked"
+  ),
+  prior(
+    normal(0, 0.12),
+    class = "b",
+    coef = "study_design_dbi:outcome_domainLabourForceStatus"
+  ),
+  prior(
+    normal(0, 0.12),
+    class = "b",
+    coef = "study_design_dbi:outcome_domainLabourMarketTransitions"
+  ),
+  prior(
+    normal(0, 0.12),
+    class = "b",
+    coef = "study_design_dbi:outcome_domainTotalIncome"
   )
 )
 
@@ -141,14 +238,14 @@ almp_nma_model_six_priors <- c(
 # 3. Fit the Bayesian additive CNMA model
 #-------------------------------------------------------------------------------
 
-almp_nma_model_six <- brm(
-  formula = almp_nma_model_six_formula,
-  data = almp_nma_model_six_data,
-  prior = almp_nma_model_six_priors,
+almp_nma_model_seven <- brm(
+  formula = almp_nma_model_seven_formula,
+  data = almp_nma_model_seven_data,
+  prior = almp_nma_model_seven_priors,
   family = gaussian(),
   chains = 2,
-  iter = 4000,
-  warmup = 2000,
+  iter = 3000,
+  warmup = 1500,
   cores = 8,
   threads = threading(2),
   backend = "cmdstanr",
@@ -163,19 +260,19 @@ almp_nma_model_six <- brm(
 #-------------------------------------------------------------------------------
 
 # inspect the results
-summary(almp_nma_model_six)
+summary(almp_nma_model_seven)
 
 # inspect diagnostic plots
-#plot(almp_nma_model_six)
+#plot(almp_nma_model_seven)
 
-pp_check(almp_nma_model_six)
+pp_check(almp_nma_model_seven)
 
 #-------------------------------------------------------------------------------
 # 5. Clean up model output
 #-------------------------------------------------------------------------------
 
 # extract heterogeneity
-almp_nma_model_six_tau_draws <- almp_nma_model_six |>
+almp_nma_model_seven_tau_draws <- almp_nma_model_seven |>
   # extract tau for study-level REs by outcome × design
   gather_draws(`^sd_study__outcome.*:study_design_type.*$`, regex = TRUE) |>
   transmute(
@@ -196,7 +293,7 @@ almp_nma_model_six_tau_draws <- almp_nma_model_six |>
   )
 
 # Extract component effects (the b_ parameters)
-almp_nma_model_six_component_draws <- almp_nma_model_six |>
+almp_nma_model_seven_component_draws <- almp_nma_model_seven |>
   gather_draws(
     `b_.*:comp_.*`,
     regex = TRUE
@@ -367,7 +464,7 @@ almp_nma_model_six_component_draws <- almp_nma_model_six |>
   )
 
 # Create summary statistics for labels
-almp_nma_model_six_component_summary <- almp_nma_model_six_component_draws |>
+almp_nma_model_seven_component_summary <- almp_nma_model_seven_component_draws |>
   group_by(
     outcome,
     component
@@ -429,16 +526,16 @@ almp_nma_model_six_component_summary <- almp_nma_model_six_component_draws |>
 #-------------------------------------------------------------------------------
 
 saveRDS(
-  almp_nma_model_six_component_summary,
-  "./visualisation/inputs/prototype_models/almp_nma_model_six_component_summary.RDS"
+  almp_nma_model_seven_component_summary,
+  "./visualisation/inputs/prototype_models/almp_nma_model_seven_component_summary.RDS"
 )
 
 saveRDS(
-  almp_nma_model_six_component_draws,
-  "./visualisation/inputs/prototype_models/almp_nma_model_six_component_draws.RDS"
+  almp_nma_model_seven_component_draws,
+  "./visualisation/inputs/prototype_models/almp_nma_model_seven_component_draws.RDS"
 )
 
 saveRDS(
-  almp_nma_model_six_tau_draws,
-  "./visualisation/inputs/prototype_models/almp_nma_model_six_tau_draws.RDS"
+  almp_nma_model_seven_tau_draws,
+  "./visualisation/inputs/prototype_models/almp_nma_model_seven_tau_draws.RDS"
 )

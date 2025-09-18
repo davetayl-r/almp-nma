@@ -2,7 +2,7 @@
 # Project: ALMP NMA                                                                          #
 # Author: David Taylor                                                                       #
 # Date: 18/09/2025                                                                           #
-# Purpose: Visualise NMA model #6                                                            #
+# Purpose: Visualise NMA model #7                                                            #
 #============================================================================================#
 
 # load required packages
@@ -13,19 +13,19 @@ library(scales)
 library(ggh4x)
 
 # load data
-almp_nma_model_six_component_draws_location <- "./visualisation/inputs/prototype_models/almp_nma_model_six_component_draws.RDS"
-almp_nma_model_six_component_draws <- readRDS(
-  almp_nma_model_six_component_draws_location
+almp_nma_model_seven_component_draws_location <- "./visualisation/inputs/prototype_models/almp_nma_model_seven_component_draws.RDS"
+almp_nma_model_seven_component_draws <- readRDS(
+  almp_nma_model_seven_component_draws_location
 )
 
-almp_nma_model_six_component_summary_location <- "./visualisation/inputs/prototype_models/almp_nma_model_six_component_summary.RDS"
-almp_nma_model_six_component_summary <- readRDS(
-  almp_nma_model_six_component_summary_location
+almp_nma_model_seven_component_summary_location <- "./visualisation/inputs/prototype_models/almp_nma_model_seven_component_summary.RDS"
+almp_nma_model_seven_component_summary <- readRDS(
+  almp_nma_model_seven_component_summary_location
 )
 
-almp_nma_model_six_tau_draws_location <- "./visualisation/inputs/prototype_models/almp_nma_model_six_tau_draws.RDS"
-almp_nma_model_six_tau_draws <- readRDS(
-  almp_nma_model_six_tau_draws_location
+almp_nma_model_seven_tau_draws_location <- "./visualisation/inputs/prototype_models/almp_nma_model_seven_tau_draws.RDS"
+almp_nma_model_seven_tau_draws <- readRDS(
+  almp_nma_model_seven_tau_draws_location
 )
 
 #-------------------------------------------------------------------------------
@@ -33,7 +33,7 @@ almp_nma_model_six_tau_draws <- readRDS(
 #-------------------------------------------------------------------------------
 
 # subset data
-almp_nma_model_six_forest_plot_data_labour_market_outcomes <- almp_nma_model_six_component_draws |>
+almp_nma_model_seven_forest_plot_data_labour_market_outcomes <- almp_nma_model_seven_component_draws |>
   filter(
     outcome_domain == "Labour Force Status",
     !component == "Other Active Components"
@@ -55,7 +55,7 @@ almp_nma_model_six_forest_plot_data_labour_market_outcomes <- almp_nma_model_six
     )
   )
 
-almp_nma_model_six_forest_plot_labels_labour_market_outcomes <- almp_nma_model_six_component_summary |>
+almp_nma_model_seven_forest_plot_labels_labour_market_outcomes <- almp_nma_model_seven_component_summary |>
   filter(
     outcome_domain == "Labour Force Status",
     !component == "Other Active Components"
@@ -78,7 +78,7 @@ almp_nma_model_six_forest_plot_labels_labour_market_outcomes <- almp_nma_model_s
   )
 
 # create forest plot
-almp_nma_model_six_forest_plot_labour_market_outcomes <- almp_nma_model_six_forest_plot_data_labour_market_outcomes |>
+almp_nma_model_seven_forest_plot_labour_market_outcomes <- almp_nma_model_seven_forest_plot_data_labour_market_outcomes |>
   ggplot(
     aes(
       x = effect,
@@ -139,7 +139,7 @@ almp_nma_model_six_forest_plot_labour_market_outcomes <- almp_nma_model_six_fore
   # Add summary text labels
   geom_text(
     data = mutate_if(
-      almp_nma_model_six_forest_plot_labels_labour_market_outcomes,
+      almp_nma_model_seven_forest_plot_labels_labour_market_outcomes,
       is.numeric,
       round,
       3
@@ -216,8 +216,8 @@ almp_nma_model_six_forest_plot_labour_market_outcomes <- almp_nma_model_six_fore
 
 # export plot
 ggsave(
-  plot = almp_nma_model_six_forest_plot_labour_market_outcomes,
-  filename = "./visualisation/output/prototype_models/almp_nma_model_six_forest_plot_labour_market_outcomes.png",
+  plot = almp_nma_model_seven_forest_plot_labour_market_outcomes,
+  filename = "./visualisation/output/prototype_models/almp_nma_model_seven_forest_plot_labour_market_outcomes.png",
   height = 10,
   width = 18,
   device = "png",
@@ -229,20 +229,20 @@ ggsave(
 #-------------------------------------------------------------------------------
 
 # subset data
-almp_nma_model_six_forest_plot_data_employment_compensation_outcomes <- almp_nma_model_six_component_draws |>
+almp_nma_model_seven_forest_plot_data_employment_compensation_outcomes <- almp_nma_model_seven_component_draws |>
   filter(
     outcome_domain == "Employment Compensation",
     !component == "Other Active Components"
   )
 
-almp_nma_model_six_forest_plot_labels_employment_compensation_outcomes <- almp_nma_model_six_component_summary |>
+almp_nma_model_seven_forest_plot_labels_employment_compensation_outcomes <- almp_nma_model_seven_component_summary |>
   filter(
     outcome_domain == "Employment Compensation",
     !component == "Other Active Components"
   )
 
 # create forest plot
-almp_nma_model_six_forest_plot_employment_compensation_outcomes <- almp_nma_model_six_forest_plot_data_employment_compensation_outcomes |>
+almp_nma_model_seven_forest_plot_employment_compensation_outcomes <- almp_nma_model_seven_forest_plot_data_employment_compensation_outcomes |>
   ggplot(
     aes(
       x = effect,
@@ -274,7 +274,7 @@ almp_nma_model_six_forest_plot_employment_compensation_outcomes <- almp_nma_mode
   # Add summary text labels
   geom_text(
     data = mutate_if(
-      almp_nma_model_six_forest_plot_labels_employment_compensation_outcomes,
+      almp_nma_model_seven_forest_plot_labels_employment_compensation_outcomes,
       is.numeric,
       round,
       3
@@ -350,8 +350,8 @@ almp_nma_model_six_forest_plot_employment_compensation_outcomes <- almp_nma_mode
 
 # export plot
 ggsave(
-  plot = almp_nma_model_six_forest_plot_employment_compensation_outcomes,
-  filename = "./visualisation/output/prototype_models/almp_nma_model_six_forest_plot_employment_compensation_outcomes.png",
+  plot = almp_nma_model_seven_forest_plot_employment_compensation_outcomes,
+  filename = "./visualisation/output/prototype_models/almp_nma_model_seven_forest_plot_employment_compensation_outcomes.png",
   height = 6,
   width = 18,
   device = "png",
@@ -363,20 +363,20 @@ ggsave(
 #-------------------------------------------------------------------------------
 
 # subset data
-almp_nma_model_six_forest_plot_data_employment_duration_outcomes <- almp_nma_model_six_component_draws |>
+almp_nma_model_seven_forest_plot_data_employment_duration_outcomes <- almp_nma_model_seven_component_draws |>
   filter(
     outcome_domain == "Employment Duration",
     !component == "Other Active Components"
   )
 
-almp_nma_model_six_forest_plot_labels_employment_duration_outcomes <- almp_nma_model_six_component_summary |>
+almp_nma_model_seven_forest_plot_labels_employment_duration_outcomes <- almp_nma_model_seven_component_summary |>
   filter(
     outcome_domain == "Employment Duration",
     !component == "Other Active Components"
   )
 
 # create forest plot
-almp_nma_model_six_forest_plot_employment_duration_outcomes <- almp_nma_model_six_forest_plot_data_employment_duration_outcomes |>
+almp_nma_model_seven_forest_plot_employment_duration_outcomes <- almp_nma_model_seven_forest_plot_data_employment_duration_outcomes |>
   ggplot(
     aes(
       x = effect,
@@ -435,7 +435,7 @@ almp_nma_model_six_forest_plot_employment_duration_outcomes <- almp_nma_model_si
   # Add summary text labels
   geom_text(
     data = mutate_if(
-      almp_nma_model_six_forest_plot_labels_employment_duration_outcomes,
+      almp_nma_model_seven_forest_plot_labels_employment_duration_outcomes,
       is.numeric,
       round,
       3
@@ -512,8 +512,8 @@ almp_nma_model_six_forest_plot_employment_duration_outcomes <- almp_nma_model_si
 
 # export plot
 ggsave(
-  plot = almp_nma_model_six_forest_plot_employment_duration_outcomes,
-  filename = "./visualisation/output/prototype_models/almp_nma_model_six_forest_plot_employment_duration_outcomes.png",
+  plot = almp_nma_model_seven_forest_plot_employment_duration_outcomes,
+  filename = "./visualisation/output/prototype_models/almp_nma_model_seven_forest_plot_employment_duration_outcomes.png",
   height = 5,
   width = 18,
   device = "png",
@@ -525,7 +525,7 @@ ggsave(
 #-------------------------------------------------------------------------------
 
 # subset data
-almp_nma_model_six_forest_plot_data_education_skills_outcomes <- almp_nma_model_six_component_draws |>
+almp_nma_model_seven_forest_plot_data_education_skills_outcomes <- almp_nma_model_seven_component_draws |>
   filter(
     outcome_domain == "Education and Skills",
     !component == "Other Active Components"
@@ -550,7 +550,7 @@ almp_nma_model_six_forest_plot_data_education_skills_outcomes <- almp_nma_model_
     )
   )
 
-almp_nma_model_six_forest_plot_labels_education_skills_outcomes <- almp_nma_model_six_component_summary |>
+almp_nma_model_seven_forest_plot_labels_education_skills_outcomes <- almp_nma_model_seven_component_summary |>
   filter(
     outcome_domain == "Education and Skills",
     !component == "Other Active Components"
@@ -576,7 +576,7 @@ almp_nma_model_six_forest_plot_labels_education_skills_outcomes <- almp_nma_mode
   )
 
 # create forest plot
-almp_nma_model_six_forest_plot_education_skills_outcomes <- almp_nma_model_six_forest_plot_data_education_skills_outcomes |>
+almp_nma_model_seven_forest_plot_education_skills_outcomes <- almp_nma_model_seven_forest_plot_data_education_skills_outcomes |>
   ggplot(
     aes(
       x = effect,
@@ -608,7 +608,7 @@ almp_nma_model_six_forest_plot_education_skills_outcomes <- almp_nma_model_six_f
   # Add summary text labels
   geom_text(
     data = mutate_if(
-      almp_nma_model_six_forest_plot_labels_education_skills_outcomes,
+      almp_nma_model_seven_forest_plot_labels_education_skills_outcomes,
       is.numeric,
       round,
       3
@@ -685,8 +685,8 @@ almp_nma_model_six_forest_plot_education_skills_outcomes <- almp_nma_model_six_f
 
 # export plot
 ggsave(
-  plot = almp_nma_model_six_forest_plot_education_skills_outcomes,
-  filename = "./visualisation/output/prototype_models/almp_nma_model_six_forest_plot_education_skills_outcomes.png",
+  plot = almp_nma_model_seven_forest_plot_education_skills_outcomes,
+  filename = "./visualisation/output/prototype_models/almp_nma_model_seven_forest_plot_education_skills_outcomes.png",
   height = 12,
   width = 18,
   device = "png",
@@ -698,20 +698,20 @@ ggsave(
 #-------------------------------------------------------------------------------
 
 # subset data
-almp_nma_model_six_forest_plot_data_hours_worked_outcomes <- almp_nma_model_six_component_draws |>
+almp_nma_model_seven_forest_plot_data_hours_worked_outcomes <- almp_nma_model_seven_component_draws |>
   filter(
     outcome_domain == "Hours Worked",
     !component == "Other Active Components"
   )
 
-almp_nma_model_six_forest_plot_labels_hours_worked_outcomes <- almp_nma_model_six_component_summary |>
+almp_nma_model_seven_forest_plot_labels_hours_worked_outcomes <- almp_nma_model_seven_component_summary |>
   filter(
     outcome_domain == "Hours Worked",
     !component == "Other Active Components"
   )
 
 # create forest plot
-almp_nma_model_six_forest_plot_hours_worked_outcomes <- almp_nma_model_six_forest_plot_data_hours_worked_outcomes |>
+almp_nma_model_seven_forest_plot_hours_worked_outcomes <- almp_nma_model_seven_forest_plot_data_hours_worked_outcomes |>
   ggplot(
     aes(
       x = effect,
@@ -743,7 +743,7 @@ almp_nma_model_six_forest_plot_hours_worked_outcomes <- almp_nma_model_six_fores
   # Add summary text labels
   geom_text(
     data = mutate_if(
-      almp_nma_model_six_forest_plot_labels_hours_worked_outcomes,
+      almp_nma_model_seven_forest_plot_labels_hours_worked_outcomes,
       is.numeric,
       round,
       3
@@ -820,8 +820,8 @@ almp_nma_model_six_forest_plot_hours_worked_outcomes <- almp_nma_model_six_fores
 
 # export plot
 ggsave(
-  plot = almp_nma_model_six_forest_plot_hours_worked_outcomes,
-  filename = "./visualisation/output/prototype_models/almp_nma_model_six_forest_plot_hours_worked_outcomes.png",
+  plot = almp_nma_model_seven_forest_plot_hours_worked_outcomes,
+  filename = "./visualisation/output/prototype_models/almp_nma_model_seven_forest_plot_hours_worked_outcomes.png",
   height = 4,
   width = 18,
   device = "png",
@@ -833,20 +833,20 @@ ggsave(
 #-------------------------------------------------------------------------------
 
 # subset data
-almp_nma_model_six_forest_plot_data_labour_market_transitions <- almp_nma_model_six_component_draws |>
+almp_nma_model_seven_forest_plot_data_labour_market_transitions <- almp_nma_model_seven_component_draws |>
   filter(
     outcome_domain == "Labour Market Transitions",
     !component == "Other Active Components"
   )
 
-almp_nma_model_six_forest_plot_labels_labour_market_transitions_outcomes <- almp_nma_model_six_component_summary |>
+almp_nma_model_seven_forest_plot_labels_labour_market_transitions_outcomes <- almp_nma_model_seven_component_summary |>
   filter(
     outcome_domain == "Labour Market Transitions",
     !component == "Other Active Components"
   )
 
 # create forest plot
-almp_nma_model_six_forest_plot_labour_market_transitions <- almp_nma_model_six_forest_plot_data_labour_market_transitions |>
+almp_nma_model_seven_forest_plot_labour_market_transitions <- almp_nma_model_seven_forest_plot_data_labour_market_transitions |>
   ggplot(
     aes(
       x = effect,
@@ -878,7 +878,7 @@ almp_nma_model_six_forest_plot_labour_market_transitions <- almp_nma_model_six_f
   # Add summary text labels
   geom_text(
     data = mutate_if(
-      almp_nma_model_six_forest_plot_labels_labour_market_transitions_outcomes,
+      almp_nma_model_seven_forest_plot_labels_labour_market_transitions_outcomes,
       is.numeric,
       round,
       3
@@ -955,8 +955,8 @@ almp_nma_model_six_forest_plot_labour_market_transitions <- almp_nma_model_six_f
 
 # export plot
 ggsave(
-  plot = almp_nma_model_six_forest_plot_labour_market_transitions,
-  filename = "./visualisation/output/prototype_models/almp_nma_model_six_forest_plot_labour_market_transitions.png",
+  plot = almp_nma_model_seven_forest_plot_labour_market_transitions,
+  filename = "./visualisation/output/prototype_models/almp_nma_model_seven_forest_plot_labour_market_transitions.png",
   height = 4,
   width = 18,
   device = "png",
@@ -968,7 +968,7 @@ ggsave(
 #-------------------------------------------------------------------------------
 
 # summarise tau for plotting
-almp_nma_model_six_tau_summary <- almp_nma_model_six_tau_draws |>
+almp_nma_model_seven_tau_summary <- almp_nma_model_seven_tau_draws |>
   group_by(design) |>
   summarise(
     median = median(tau),
@@ -998,16 +998,16 @@ almp_nma_model_six_tau_summary <- almp_nma_model_six_tau_draws |>
   )
 
 # merge plot data label to the draws
-almp_nma_model_six_tau_plot_data <- almp_nma_model_six_tau_draws |>
+almp_nma_model_seven_tau_plot_data <- almp_nma_model_seven_tau_draws |>
   mutate(
     design = factor(
       design,
-      levels = levels(almp_nma_model_six_tau_summary$design),
+      levels = levels(almp_nma_model_seven_tau_summary$design),
       ordered = TRUE
     )
   ) |>
   left_join(
-    almp_nma_model_six_tau_summary |>
+    almp_nma_model_seven_tau_summary |>
       select(
         design,
         facet_label
@@ -1016,7 +1016,7 @@ almp_nma_model_six_tau_plot_data <- almp_nma_model_six_tau_draws |>
   )
 
 # plot tau distribution: each panel shows the posterior for study-level heterogeneity (τ) by study design
-almp_nma_model_six_tau_distribution_plot <- almp_nma_model_six_tau_plot_data |>
+almp_nma_model_seven_tau_distribution_plot <- almp_nma_model_seven_tau_plot_data |>
   ggplot(
     aes(
       x = tau,
@@ -1030,7 +1030,7 @@ almp_nma_model_six_tau_distribution_plot <- almp_nma_model_six_tau_plot_data |>
     slab_alpha = 0.5
   ) +
   geom_vline(
-    data = almp_nma_model_six_tau_summary,
+    data = almp_nma_model_seven_tau_summary,
     aes(xintercept = median),
     inherit.aes = FALSE,
     colour = "#2d3239ff",
@@ -1063,12 +1063,12 @@ almp_nma_model_six_tau_distribution_plot <- almp_nma_model_six_tau_plot_data |>
     strip.clip = "off"
   )
 
-almp_nma_model_six_tau_distribution_plot
+almp_nma_model_seven_tau_distribution_plot
 
 # export plot
 ggsave(
-  plot = almp_nma_model_six_tau_distribution_plot,
-  filename = "./visualisation/output/prototype_models/almp_nma_model_six_tau_distribution_plot.png",
+  plot = almp_nma_model_seven_tau_distribution_plot,
+  filename = "./visualisation/output/prototype_models/almp_nma_model_seven_tau_distribution_plot.png",
   height = 6,
   width = 8,
   device = "png",
