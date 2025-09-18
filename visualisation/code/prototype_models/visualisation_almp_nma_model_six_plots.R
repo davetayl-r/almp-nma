@@ -95,7 +95,7 @@ almp_nma_model_six_forest_plot_labour_market_outcomes <- almp_nma_model_six_fore
   ) +
   # Half-eye plots showing posterior distributions
   stat_halfeye(
-    data = . %>%
+    data = . |>
       filter(
         outcome %in%
           c(
@@ -116,7 +116,7 @@ almp_nma_model_six_forest_plot_labour_market_outcomes <- almp_nma_model_six_fore
     point_interval = "median_qi"
   ) +
   stat_halfeye(
-    data = . %>%
+    data = . |>
       filter(
         !outcome %in%
           c(
@@ -393,7 +393,7 @@ almp_nma_model_six_forest_plot_employment_duration_outcomes <- almp_nma_model_si
   ) +
   # Half-eye plots showing posterior distributions
   stat_halfeye(
-    data = . %>%
+    data = . |>
       filter(
         !outcome %in%
           c(
@@ -413,7 +413,7 @@ almp_nma_model_six_forest_plot_employment_duration_outcomes <- almp_nma_model_si
     point_interval = "median_qi"
   ) +
   stat_halfeye(
-    data = . %>%
+    data = . |>
       filter(
         outcome %in%
           c(
@@ -969,59 +969,115 @@ ggsave(
 
 # summarise tau for plotting
 almp_nma_model_six_tau_summary <- almp_nma_model_six_tau_draws |>
-  ungroup() |>
+  group_by(design) |>
   summarise(
     median = median(tau),
     lower = quantile(tau, 0.025),
-    upper = quantile(tau, 0.975)
+    upper = quantile(tau, 0.975),
+    .groups = "drop"
+  ) |>
+  mutate(
+    design = factor(
+      design,
+      levels = c(
+        "Randomised design",
+        "Selection on observables",
+        "Design-based identification"
+      ),
+      ordered = TRUE
+    ),
+    # create label
+    #facet_label = sprintf(
+    #  "paste('%s', '\n', tau==%.3f, ' (95%% CrI [', %.3f, ', ', %.3f, '])')",
+    #  as.character(design),
+    #  median,
+    #  lower,
+    #  upper
+    #),
+    facet_label = sprintf(
+      "atop('%s', tau==%.3f~'(95%%~CrI~['*%.3f*','*%.3f*'])')",
+      as.character(design),
+      median,
+      lower,
+      upper
+    ),
+    facet_label = forcats::fct_inorder(facet_label)
   )
 
-# plot tau distribution
-almp_nma_model_six_tau_distribution_plot <- almp_nma_model_six_tau_draws |>
-  ggplot(aes(x = tau)) +
+# merge plot data label to the draws
+almp_nma_model_six_tau_plot_data <- almp_nma_model_six_tau_draws |>
+  mutate(
+    design = factor(
+      design,
+      levels = levels(almp_nma_model_six_tau_summary$design),
+      ordered = TRUE
+    )
+  ) |>
+  left_join(
+    almp_nma_model_six_tau_summary |>
+      select(
+        design,
+        facet_label
+      ),
+    by = "design"
+  )
+
+# plot tau distribution: each panel shows the posterior for study-level heterogeneity (τ) by study design
+almp_nma_model_six_tau_distribution_plot <- almp_nma_model_six_tau_plot_data |>
+  ggplot(
+    aes(
+      x = tau,
+      fill = design
+    )
+  ) +
   stat_halfeye(
-    .width = 0.95, # 95% CrI
-    fill = "#69C2C9",
-    colour = "#7D2248",
-    point_interval = median_qi, # median + interval
+    .width = 0.95,
+    colour = "#2d3239ff",
+    point_interval = median_qi,
     slab_alpha = 0.5
   ) +
-  # posterior median
   geom_vline(
-    xintercept = almp_nma_model_six_tau_summary$median,
+    data = almp_nma_model_six_tau_summary,
+    aes(xintercept = median),
+    inherit.aes = FALSE,
     colour = "#2d3239ff",
     linetype = "dashed",
     linewidth = 0.5
   ) +
-  lims(
-    x = c(0, 1)
+  facet_wrap(
+    ~facet_label,
+    ncol = 1,
+    labeller = label_parsed,
+    drop = FALSE,
+    scales = "fixed"
   ) +
-  labs(
-    x = expression(tau),
-    y = "Posterior density",
-    caption = bquote(
-      "Posterior median " * tau ==
-        .(round(almp_nma_model_six_tau_summary$median, 3)) ~
-        "(95% CrI [" *
-          .(round(almp_nma_model_six_tau_summary$lower, 3)) *
-          ", " *
-          .(round(almp_nma_model_six_tau_summary$upper, 3)) *
-          "])"
+  scale_fill_manual(
+    values = c(
+      "#7D2248",
+      "#69C2C9",
+      "#BFB800"
     )
   ) +
-  # set theme
-  theme_minimal() +
+  lims(x = c(0, 1)) +
+  labs(
+    x = expression(tau),
+    y = "Posterior density"
+  ) +
+  theme_minimal(base_size = 11) +
   theme(
-    plot.background = element_rect(fill = "#FFFFFF"),
+    plot.background = element_rect(fill = "#FFFFFF", colour = NA),
     panel.grid.major.y = element_blank(),
-    panel.grid.minor = element_blank()
+    panel.grid.minor = element_blank(),
+    legend.position = "none"
   )
+
+almp_nma_model_six_tau_distribution_plot
 
 # export plot
 ggsave(
   plot = almp_nma_model_six_tau_distribution_plot,
   filename = "./visualisation/output/prototype_models/almp_nma_model_six_tau_distribution_plot.png",
-  height = 4,
+  height = 5,
   width = 8,
   device = "png",
   type = "cairo-png"
