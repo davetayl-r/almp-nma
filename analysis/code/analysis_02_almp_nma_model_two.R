@@ -2,7 +2,7 @@
 # Project: ALMP NMA                                                                          #
 # Author: David Taylor                                                                       #
 # Date: 18/09/2025                                                                           #
-# Purpose: NMA model #2                                                                      #
+# Purpose: NMA model #2 — introduce study design                                             #
 #============================================================================================#
 
 # load required packages
@@ -76,17 +76,11 @@ almp_nma_model_two_data <- almp_nma_additive_model_data |>
 # 2. Specify model formula
 #-------------------------------------------------------------------------------
 
-# Goal: additive component model with outcome-specific slopes and study-level random effects varying by outcome.
-#
-# - `0 +` removes the intercept so each outcome:component coefficient is estimable relative to SAU (which you confirmed is the reference comparator).
-# - `outcome:comp_*` lets each component have a different effect per outcome.
-# - `(0 + outcome | p | study)` gives each study a random deviation for each outcome, capturing within-study dependence and allowing a correlated structure across outcomes.
-# — `| p |` structure estimates the full RE covariance
-
 almp_nma_model_two_formula <- bf(
   delta | se(delta_se) ~
+    # remove the intercept so each outcome:component coefficient is estimable relative to SAU
     0 +
-      # component × outcome effects
+      # component × outcome effects: let each component have a different effect per outcome
       outcome:comp_basic_skills_training +
       outcome:comp_soft_skills_training +
       outcome:comp_behavioural_skills_training +
@@ -138,13 +132,11 @@ component_coef_names <- c(
 )
 
 almp_nma_model_two_priors <- c(
-  # Default prior for all fixed effects (components + design)
+  # Default prior for all fixed effects (components + design): moderately sceptical Normal(0, 0.4) on the delta scale
   prior(normal(0, 0.4), class = "b"),
-
-  # Study-level heterogeneity
+  # Study-level heterogeneity: weakly informative Normal(0, 0.25) (half-Normal implied)
   prior(normal(0, 0.25), class = "sd", group = "study"),
-
-  # Tighter priors for the two design adjustments
+  # Tighter priors for the two design adjustments: tighter, sceptical Normals centred at 0 (e.g., SD = 0.15) suggested that differences may exist, but shouldn't dominate
   prior(normal(0, 0.15), class = "b", coef = "study_design_soo"),
   prior(normal(0, 0.15), class = "b", coef = "study_design_dbi")
 )
@@ -152,12 +144,6 @@ almp_nma_model_two_priors <- c(
 #-------------------------------------------------------------------------------
 # 3. Fit the Bayesian additive CNMA model
 #-------------------------------------------------------------------------------
-
-# This is a quick but safe configuration:
-# - 2 chains, 4000 iters (2000 warmup) to smoke-test the model and
-#   surface coding/convergence issues quickly.
-# - adapt_delta 0.95 is usually enough here; we only crank up if divergences appear.
-# - If your CPU supports it, `threads = threading(2)` speeds up within-chain sampling.
 
 almp_nma_model_two <- brm(
   formula = almp_nma_model_two_formula,

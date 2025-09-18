@@ -2,7 +2,7 @@
 # Project: ALMP NMA                                                                          #
 # Author: David Taylor                                                                       #
 # Date: 17/09/2025                                                                           #
-# Purpose: NMA model #1                                                                      #
+# Purpose: NMA model #1 - exchangeable model                                                 #
 #============================================================================================#
 
 # load required packages
@@ -63,17 +63,11 @@ almp_nma_model_one_data <- almp_nma_additive_model_data |>
 # 2. Specify model formula
 #-------------------------------------------------------------------------------
 
-# Goal: additive component model with outcome-specific slopes and study-level random effects varying by outcome.
-#
-# - `0 +` removes the intercept so each outcome:component coefficient is estimable relative to SAU (which you confirmed is the reference comparator).
-# - `outcome:comp_*` lets each component have a different effect per outcome.
-# - `(0 + outcome | p | study)` gives each study a random deviation for each outcome, capturing within-study dependence and allowing a correlated structure across outcomes.
-# — `| p |` structure estimates the full RE covariance
-
 almp_nma_model_one_formula <- bf(
   delta | se(delta_se) ~
+    # remove the intercept so each outcome:component coefficient is estimable relative to SAU
     0 +
-      # component × outcome effects
+      # component × outcome effects: let each component have a different effect per outcome
       outcome:comp_basic_skills_training +
       outcome:comp_soft_skills_training +
       outcome:comp_behavioural_skills_training +
@@ -92,30 +86,22 @@ almp_nma_model_one_formula <- bf(
       outcome:comp_other_active_component_nec +
       # random effects varying by outcome
       (0 + outcome || study)
-  #(0 + outcome | p | study)
 )
 
 #-------------------------------------------------------------------------------
 # 3. Specify priors
 #-------------------------------------------------------------------------------
 
-# - Component effects: moderately sceptical Normal(0, 0.4) on the delta scale
-# - Study-level SDs: weakly informative Normal(0, 0.25) (half-Normal implied)
-
 almp_nma_model_one_priors <- c(
+  # Component effects: moderately sceptical Normal(0, 0.4) on the delta scale
   prior(normal(0, 0.4), class = "b"),
+  # Study-level heterogeneity: weakly informative Normal(0, 0.25) (half-Normal implied)
   prior(normal(0, 0.25), class = "sd", group = "study")
 )
 
 #-------------------------------------------------------------------------------
 # 3. Fit the Bayesian additive CNMA model
 #-------------------------------------------------------------------------------
-
-# This is a quick but safe configuration:
-# - 2 chains, 4000 iters (2000 warmup) to smoke-test the model and
-#   surface coding/convergence issues quickly.
-# - adapt_delta 0.95 is usually enough here; we only crank up if divergences appear.
-# - If your CPU supports it, `threads = threading(2)` speeds up within-chain sampling.
 
 almp_nma_model_one <- brm(
   formula = almp_nma_model_one_formula,

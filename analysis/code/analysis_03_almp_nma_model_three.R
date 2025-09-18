@@ -2,7 +2,7 @@
 # Project: ALMP NMA                                                                          #
 # Author: David Taylor                                                                       #
 # Date: 18/09/2025                                                                           #
-# Purpose: NMA model #3                                                                      #
+# Purpose: NMA model #3 — introduce study quality (as well as study design)                  #
 #============================================================================================#
 
 # load required packages
@@ -66,7 +66,7 @@ almp_nma_model_three_data <- almp_nma_additive_model_data |>
     ),
     study_design_soo = as.numeric(study_design_soo),
     study_design_dbi = case_when(
-      study_design_type == "Selection on observables" ~ 1,
+      study_design_type == "SDesign-based identification" ~ 1,
       TRUE ~ 0
     ),
     study_design_dbi = as.numeric(study_design_dbi)
@@ -76,17 +76,11 @@ almp_nma_model_three_data <- almp_nma_additive_model_data |>
 # 2. Specify model formula
 #-------------------------------------------------------------------------------
 
-# Goal: additive component model with outcome-specific slopes and study-level random effects varying by outcome.
-#
-# - `0 +` removes the intercept so each outcome:component coefficient is estimable relative to SAU (which you confirmed is the reference comparator).
-# - `outcome:comp_*` lets each component have a different effect per outcome.
-# - `(0 + outcome | p | study)` gives each study a random deviation for each outcome, capturing within-study dependence and allowing a correlated structure across outcomes.
-# — `| p |` structure estimates the full RE covariance
-
 almp_nma_model_three_formula <- bf(
   delta | se(delta_se) ~
+    # remove the intercept so each outcome:component coefficient is estimable relative to SAU
     0 +
-      # component × outcome effects
+      # component × outcome effects: let each component have a different effect per outcome
       outcome:comp_basic_skills_training +
       outcome:comp_soft_skills_training +
       outcome:comp_behavioural_skills_training +
@@ -106,6 +100,8 @@ almp_nma_model_three_formula <- bf(
       # additive study-design adjustments using RCT as a baseline
       study_design_soo +
       study_design_dbi +
+      # study quality penalty
+      low_study_quality +
       # random effects varying by outcome
       (0 + outcome || study)
 )
@@ -114,50 +110,21 @@ almp_nma_model_three_formula <- bf(
 # 3. Specify priors
 #-------------------------------------------------------------------------------
 
-# - Component effects: moderately sceptical Normal(0, 0.4) on the delta scale
-# - Study-level SDs: weakly informative Normal(0, 0.25) (half-Normal implied)
-# - Design adjustments: tighter, sceptical Normals centred at 0 (e.g., SD = 0.15) suggested that differences may exist, but shouldn't dominate
-
-component_coef_names <- c(
-  "outcomecomp_basic_skills_training",
-  "outcomecomp_soft_skills_training",
-  "outcomecomp_behavioural_skills_training",
-  "outcomecomp_self_employment_support",
-  "outcomecomp_job_specific_technical_skills_off_job_training",
-  "outcomecomp_job_search_preparation",
-  "outcomecomp_job_search_assistance",
-  "outcomecomp_employment_counselling",
-  "outcomecomp_employment_coaching",
-  "outcomecomp_financial_assistance",
-  "outcomecomp_job_specific_technical_skills_on_job_training",
-  "outcomecomp_paid_temporary_work_experience",
-  "outcomecomp_unpaid_temporary_work_experience",
-  "outcomecomp_wage_subsidies",
-  "outcomecomp_public_works",
-  "outcomecomp_other_active_component_nec"
-)
-
 almp_nma_model_three_priors <- c(
-  # Default prior for all fixed effects (components + design)
+  # Default prior for all fixed effects (components + design): moderately sceptical Normal(0, 0.4) on the delta scale
   prior(normal(0, 0.4), class = "b"),
-
-  # Study-level heterogeneity
+  # Study-level heterogeneity: weakly informative Normal(0, 0.25) (half-Normal implied)
   prior(normal(0, 0.25), class = "sd", group = "study"),
-
-  # Tighter priors for the two design adjustments
+  # Tighter priors for the two design adjustments: tighter, sceptical Normals centred at 0 (e.g., SD = 0.15) suggested that differences may exist, but shouldn't dominate
   prior(normal(0, 0.15), class = "b", coef = "study_design_soo"),
-  prior(normal(0, 0.15), class = "b", coef = "study_design_dbi")
+  prior(normal(0, 0.15), class = "b", coef = "study_design_dbi"),
+  # Tight prior for low study quality
+  prior(normal(0, 0.12), class = "b", coef = "low_study_quality")
 )
 
 #-------------------------------------------------------------------------------
 # 3. Fit the Bayesian additive CNMA model
 #-------------------------------------------------------------------------------
-
-# This is a quick but safe configuration:
-# - 2 chains, 4000 iters (2000 warmup) to smoke-test the model and
-#   surface coding/convergence issues quickly.
-# - adapt_delta 0.95 is usually enough here; we only crank up if divergences appear.
-# - If your CPU supports it, `threads = threading(2)` speeds up within-chain sampling.
 
 almp_nma_model_three <- brm(
   formula = almp_nma_model_three_formula,
@@ -394,11 +361,6 @@ almp_nma_model_three_component_summary <- almp_nma_model_three_component_draws |
   mutate(
     component = factor(component)
   ) |>
-  #mutate(
-  #  effect = round(effect, 2),
-  #  .lower = round(.lower, 2),
-  #  .upper = round(.upper, 2)
-  #)
   mutate(
     effect = format(round(effect, 2), nsmall = 2),
     .lower = format(round(.lower, 2), nsmall = 2),
