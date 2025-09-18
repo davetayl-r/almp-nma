@@ -2,7 +2,7 @@
 # Project: ALMP NMA                                                                          #
 # Author: David Taylor                                                                       #
 # Date: 18/09/2025                                                                           #
-# Purpose: NMA model #3 — interact study quality x study design                              #
+# Purpose: NMA model #4 — interact study quality x study design                              #
 #============================================================================================#
 
 # load required packages
@@ -66,7 +66,7 @@ almp_nma_model_four_data <- almp_nma_additive_model_data |>
     ),
     study_design_soo = as.numeric(study_design_soo),
     study_design_dbi = case_when(
-      study_design_type == "SDesign-based identification" ~ 1,
+      study_design_type == "Design-based identification" ~ 1,
       TRUE ~ 0
     ),
     study_design_dbi = as.numeric(study_design_dbi)
@@ -75,13 +75,6 @@ almp_nma_model_four_data <- almp_nma_additive_model_data |>
 #-------------------------------------------------------------------------------
 # 2. Specify model formula
 #-------------------------------------------------------------------------------
-
-# Goal: additive component model with outcome-specific slopes and study-level random effects varying by outcome.
-#
-# - `0 +` removes the intercept so each outcome:component coefficient is estimable relative to SAU (which you confirmed is the reference comparator).
-# - `outcome:comp_*` lets each component have a different effect per outcome.
-# - `(0 + outcome | p | study)` gives each study a random deviation for each outcome, capturing within-study dependence and allowing a correlated structure across outcomes.
-# — `| p |` structure estimates the full RE covariance
 
 almp_nma_model_four_formula <- bf(
   delta | se(delta_se) ~
@@ -107,8 +100,10 @@ almp_nma_model_four_formula <- bf(
       # additive study-design adjustments using RCT as a baseline
       study_design_soo +
       study_design_dbi +
-      # study quality penalty
+      # study quality penalty with design specific interaction
       low_study_quality +
+      low_study_quality:study_design_soo +
+      low_study_quality:study_design_dbi +
       # random effects varying by outcome
       (0 + outcome || study)
 )
@@ -126,7 +121,18 @@ almp_nma_model_four_priors <- c(
   prior(normal(0, 0.15), class = "b", coef = "study_design_soo"),
   prior(normal(0, 0.15), class = "b", coef = "study_design_dbi"),
   # Tight prior for low study quality
-  prior(normal(0, 0.12), class = "b", coef = "low_study_quality")
+  prior(normal(0, 0.12), class = "b", coef = "low_study_quality"),
+  # Even tighter prior for design interactions
+  prior(
+    normal(0, 0.10),
+    class = "b",
+    coef = "study_design_soo:low_study_quality"
+  ),
+  prior(
+    normal(0, 0.10),
+    class = "b",
+    coef = "study_design_dbi:low_study_quality"
+  )
 )
 
 #-------------------------------------------------------------------------------

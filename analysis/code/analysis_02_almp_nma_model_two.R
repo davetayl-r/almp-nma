@@ -108,29 +108,6 @@ almp_nma_model_two_formula <- bf(
 # 3. Specify priors
 #-------------------------------------------------------------------------------
 
-# - Component effects: moderately sceptical Normal(0, 0.4) on the delta scale
-# - Study-level SDs: weakly informative Normal(0, 0.25) (half-Normal implied)
-# - Design adjustments: tighter, sceptical Normals centred at 0 (e.g., SD = 0.15) suggested that differences may exist, but shouldn't dominate
-
-component_coef_names <- c(
-  "outcomecomp_basic_skills_training",
-  "outcomecomp_soft_skills_training",
-  "outcomecomp_behavioural_skills_training",
-  "outcomecomp_self_employment_support",
-  "outcomecomp_job_specific_technical_skills_off_job_training",
-  "outcomecomp_job_search_preparation",
-  "outcomecomp_job_search_assistance",
-  "outcomecomp_employment_counselling",
-  "outcomecomp_employment_coaching",
-  "outcomecomp_financial_assistance",
-  "outcomecomp_job_specific_technical_skills_on_job_training",
-  "outcomecomp_paid_temporary_work_experience",
-  "outcomecomp_unpaid_temporary_work_experience",
-  "outcomecomp_wage_subsidies",
-  "outcomecomp_public_works",
-  "outcomecomp_other_active_component_nec"
-)
-
 almp_nma_model_two_priors <- c(
   # Default prior for all fixed effects (components + design): moderately sceptical Normal(0, 0.4) on the delta scale
   prior(normal(0, 0.4), class = "b"),
