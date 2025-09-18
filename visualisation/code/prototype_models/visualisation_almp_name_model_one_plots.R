@@ -13,15 +13,21 @@ library(scales)
 library(ggh4x)
 
 # load data
-almp_nma_model_one_component_draws_location <- "./visualisation/inputs/almp_nma_model_one_component_draws.RDS"
+almp_nma_model_one_component_draws_location <- "./visualisation/inputs/prototype_models/almp_nma_model_one_component_draws.RDS"
 almp_nma_model_one_component_draws <- readRDS(
   almp_nma_model_one_component_draws_location
 )
 
-almp_nma_model_one_component_summary_location <- "./visualisation/inputs/almp_nma_model_one_component_summary.RDS"
+almp_nma_model_one_component_summary_location <- "./visualisation/inputs/prototype_models/almp_nma_model_one_component_summary.RDS"
 almp_nma_model_one_component_summary <- readRDS(
   almp_nma_model_one_component_summary_location
 )
+
+almp_nma_model_one_tau_draws_location <- "./visualisation/inputs/prototype_models/almp_nma_model_one_tau_draws.RDS"
+almp_nma_model_one_tau_draws <- readRDS(
+  almp_nma_model_one_tau_draws_location
+)
+
 
 #-------------------------------------------------------------------------------
 # 1. Visualise Labour Force Status outcomes
@@ -954,6 +960,70 @@ ggsave(
   filename = "./visualisation/output/prototype_models/almp_nma_model_one_forest_plot_labour_market_transitions.png",
   height = 4,
   width = 18,
+  device = "png",
+  type = "cairo-png"
+)
+
+#-------------------------------------------------------------------------------
+# 7. Visualise study-level heterogeneity
+#-------------------------------------------------------------------------------
+
+# summarise tau for plotting
+almp_nma_model_one_tau_summary <- almp_nma_model_one_tau_draws |>
+  ungroup() |>
+  summarise(
+    median = median(tau),
+    lower = quantile(tau, 0.025),
+    upper = quantile(tau, 0.975)
+  )
+
+# plot tau distribution
+almp_nma_model_one_tau_distribution_plot <- almp_nma_model_one_tau_draws |>
+  ggplot(aes(x = tau)) +
+  stat_halfeye(
+    .width = 0.95, # 95% CrI
+    fill = "#69C2C9",
+    colour = "#7D2248",
+    point_interval = median_qi, # median + interval
+    slab_alpha = 0.5
+  ) +
+  # posterior median
+  geom_vline(
+    xintercept = almp_nma_model_one_tau_summary$median,
+    colour = "#2d3239ff",
+    linetype = "dashed",
+    linewidth = 0.5
+  ) +
+  lims(
+    x = c(0, 1)
+  ) +
+  labs(
+    x = expression(tau),
+    y = "Posterior density",
+    caption = bquote(
+      "Posterior median " * tau ==
+        .(round(almp_nma_model_one_tau_summary$median, 3)) ~
+        "(95% CrI [" *
+          .(round(almp_nma_model_one_tau_summary$lower, 3)) *
+          ", " *
+          .(round(almp_nma_model_one_tau_summary$upper, 3)) *
+          "])"
+    )
+  ) +
+  # set theme
+  theme_minimal() +
+  theme(
+    plot.background = element_rect(fill = "#FFFFFF"),
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor = element_blank()
+  )
+
+# export plot
+ggsave(
+  plot = almp_nma_model_one_tau_distribution_plot,
+  filename = "./visualisation/output/prototype_models/almp_nma_model_one_tau_distribution_plot.png",
+  height = 4,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )

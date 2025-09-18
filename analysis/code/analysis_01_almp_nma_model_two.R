@@ -1,8 +1,8 @@
 #============================================================================================#
 # Project: ALMP NMA                                                                          #
 # Author: David Taylor                                                                       #
-# Date: 17/09/2025                                                                           #
-# Purpose: NMA model #1                                                                      #
+# Date: 18/09/2025                                                                           #
+# Purpose: NMA model #2                                                                      #
 #============================================================================================#
 
 # load required packages
@@ -32,12 +32,6 @@ almp_nma_model_one_data <- almp_nma_additive_model_data |>
   filter(
     timepoint_outside_anchor_window != 1.00 |
       is.na(timepoint_outside_anchor_window)
-  ) |>
-  mutate(
-    # remove apostrophe's from outcome names
-    outcome = str_remove_all(outcome, "[\u2018\u2019\u201A\u201B]"),
-    # force outcome to be factor
-    outcome = factor(outcome)
   ) |>
   # drop the rarest outcomes
   filter(
@@ -153,12 +147,30 @@ summary(almp_nma_model_one)
 pp_check(almp_nma_model_one)
 
 #-------------------------------------------------------------------------------
-# 5. Clean up output
+# 5. Clean up model output
 #-------------------------------------------------------------------------------
 
-# The component effects are the b_ parameters (excluding intercept if any)
+# extract study-level heterogeneity
+almp_nma_model_one_tau_draws <- almp_nma_model_one |>
+  gather_draws(
+    `sd_.*`,
+    regex = TRUE
+  ) |>
+  mutate(
+    outcome = str_remove(.variable, "^sd_study__outcome")
+  ) |>
+  select(
+    .draw,
+    outcome,
+    tau = .value
+  )
+
+# Extract component effects (the b_ parameters)
 almp_nma_model_one_component_draws <- almp_nma_model_one |>
-  gather_draws(`b_.*:comp_.*`, regex = TRUE) |>
+  gather_draws(
+    `b_.*:comp_.*`,
+    regex = TRUE
+  ) |>
   # Parse the parameter names to extract outcome and component
   mutate(
     # Extract outcome (everything before the colon)
@@ -393,10 +405,15 @@ almp_nma_model_one_component_summary <- almp_nma_model_one_component_draws |>
 
 saveRDS(
   almp_nma_model_one_component_summary,
-  "./visualisation/inputs/almp_nma_model_one_component_summary.RDS"
+  "./visualisation/inputs/prototype_models/almp_nma_model_one_component_summary.RDS"
 )
 
 saveRDS(
   almp_nma_model_one_component_draws,
-  "./visualisation/inputs/almp_nma_model_one_component_draws.RDS"
+  "./visualisation/inputs/prototype_models/almp_nma_model_one_component_draws.RDS"
+)
+
+saveRDS(
+  almp_nma_model_one_tau_draws,
+  "./visualisation/inputs/prototype_models/almp_nma_model_one_tau_draws.RDS"
 )
