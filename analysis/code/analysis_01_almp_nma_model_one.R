@@ -90,7 +90,7 @@ almp_nma_model_one_formula <- bf(
       outcome:comp_wage_subsidies +
       outcome:comp_public_works +
       outcome:comp_other_active_component_nec +
-      # random effects for each study varying by outcome
+      # random effects varying by outcome
       (0 + outcome || study)
   #(0 + outcome | p | study)
 )
