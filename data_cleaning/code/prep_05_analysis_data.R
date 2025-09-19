@@ -498,6 +498,10 @@ almp_nma_timing_model_data <- almp_nma_component_model_data |>
     timepoint_outside_anchor_window = case_when(
       selected_outside_window == TRUE ~ 1
     )
+  ) |>
+  # centre outcome timing from 24 months
+  mutate(
+    outcome_timing_centred_24 = 24 - outcome_timing
   )
 
 # coverage table to see how much you keep

@@ -118,121 +118,71 @@ almp_nma_model_seven_formula <- bf(
 # 3. Specify priors
 #-------------------------------------------------------------------------------
 
-almp_nma_model_seven_priors <- c(
-  # Default prior for all fixed effects (components + design): moderately sceptical Normal(0, 0.4) on the delta scale
-  prior(normal(0, 0.4), class = "b"),
-  # Study-level heterogeneity: weakly informative Normal(0, 0.25) (half-Normal implied)
-  prior(normal(0, 0.25), class = "sd", group = "study"),
-  # Tighter priors for the two design adjustments: tighter, sceptical Normals centred at 0 (e.g., SD = 0.15) suggested that differences may exist, but shouldn't dominate
-  prior(normal(0, 0.15), class = "b", coef = "study_design_soo"),
-  prior(normal(0, 0.15), class = "b", coef = "study_design_dbi"),
-  # Tight prior for low study quality
-  prior(normal(0, 0.12), class = "b", coef = "low_study_quality"),
-  # Even tighter prior for design interactions
-  prior(
-    normal(0, 0.10),
-    class = "b",
-    coef = "study_design_soo:low_study_quality"
-  ),
-  prior(
-    normal(0, 0.10),
-    class = "b",
-    coef = "study_design_dbi:low_study_quality"
-  ),
-  # low study quality × outcome_domain
-  prior(
-    normal(0, 0.10),
-    class = "b",
-    coef = "low_study_quality:outcome_domainEmploymentcompensation"
-  ),
-  prior(
-    normal(0, 0.10),
-    class = "b",
-    coef = "low_study_quality:outcome_domainEmploymentDuration"
-  ),
-  prior(
-    normal(0, 0.10),
-    class = "b",
-    coef = "low_study_quality:outcome_domainHoursWorked"
-  ),
-  prior(
-    normal(0, 0.10),
-    class = "b",
-    coef = "low_study_quality:outcome_domainLabourForceStatus"
-  ),
-  prior(
-    normal(0, 0.10),
-    class = "b",
-    coef = "low_study_quality:outcome_domainLabourMarketTransitions"
-  ),
-  prior(
-    normal(0, 0.10),
-    class = "b",
-    coef = "low_study_quality:outcome_domainTotalIncome"
-  ),
-  # study_design_soo × outcome_domain
-  prior(
-    normal(0, 0.12),
-    class = "b",
-    coef = "study_design_soo:outcome_domainEmploymentcompensation"
-  ),
-  prior(
-    normal(0, 0.12),
-    class = "b",
-    coef = "study_design_soo:outcome_domainEmploymentDuration"
-  ),
-  prior(
-    normal(0, 0.12),
-    class = "b",
-    coef = "study_design_soo:outcome_domainHoursWorked"
-  ),
-  prior(
-    normal(0, 0.12),
-    class = "b",
-    coef = "study_design_soo:outcome_domainLabourForceStatus"
-  ),
-  prior(
-    normal(0, 0.12),
-    class = "b",
-    coef = "study_design_soo:outcome_domainLabourMarketTransitions"
-  ),
-  prior(
-    normal(0, 0.12),
-    class = "b",
-    coef = "study_design_soo:outcome_domainTotalIncome"
-  ),
-  # study_design_dbi × outcome_domain
-  prior(
-    normal(0, 0.12),
-    class = "b",
-    coef = "study_design_dbi:outcome_domainEmploymentcompensation"
-  ),
-  prior(
-    normal(0, 0.12),
-    class = "b",
-    coef = "study_design_dbi:outcome_domainEmploymentDuration"
-  ),
-  prior(
-    normal(0, 0.12),
-    class = "b",
-    coef = "study_design_dbi:outcome_domainHoursWorked"
-  ),
-  prior(
-    normal(0, 0.12),
-    class = "b",
-    coef = "study_design_dbi:outcome_domainLabourForceStatus"
-  ),
-  prior(
-    normal(0, 0.12),
-    class = "b",
-    coef = "study_design_dbi:outcome_domainLabourMarketTransitions"
-  ),
-  prior(
-    normal(0, 0.12),
-    class = "b",
-    coef = "study_design_dbi:outcome_domainTotalIncome"
+# inspect available names
+possible_prior_names <- get_prior(
+  almp_nma_model_seven_formula,
+  data = almp_nma_model_seven_data,
+  family = gaussian()
+)
+
+# Base priors — apply to everything unless overridden
+pri_base <- list(
+  prior(normal(0, 0.40), class = "b"),
+  prior(normal(0, 0.25), class = "sd", group = "study")
+)
+
+# Main effects
+prior_main_study_design <- make_coef_priors(
+  possible_prior_names,
+  "^study_design_(soo|dbi)$",
+  0.15
+)
+prior_main_quality <- make_coef_priors(
+  possible_prior_names,
+  "^low_study_quality$",
+  0.12
+)
+
+# Global design × quality (order-robust)
+prior_global_interactions <- make_coef_priors(
+  possible_prior_names,
+  "^(study_design_(soo|dbi):low_study_quality|low_study_quality:study_design_(soo|dbi))$",
+  0.10
+)
+
+# Domain-varying penalties
+prior_domain_quality <- make_coef_priors(
+  possible_prior_names,
+  "^(low_study_quality:outcome_domain|outcome_domain.*:low_study_quality)",
+  0.10
+)
+
+prior_domain_design <- make_coef_priors(
+  possible_prior_names,
+  "^(study_design_(soo|dbi):outcome_domain|outcome_domain.*:study_design_(soo|dbi))",
+  0.12
+)
+
+# Combine & flatten
+almp_nma_model_seven_priors <- do.call(
+  c,
+  c(
+    pri_base,
+    prior_main_study_design,
+    prior_main_quality,
+    prior_global_interactions,
+    prior_domain_quality,
+    prior_domain_design
   )
 )
+
+# 5) Optional: sanity check what you matched
+message("Matched priors for:")
+message("  main design:  ", length(prior_main_study_design))
+message("  main quality: ", length(prior_main_quality))
+message("  global int:   ", length(prior_global_interactions))
+message("  dom quality:  ", length(prior_domain_quality))
+message("  dom design:   ", length(prior_domain_design))
 
 #-------------------------------------------------------------------------------
 # 3. Fit the Bayesian additive CNMA model

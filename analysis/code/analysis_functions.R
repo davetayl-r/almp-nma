@@ -100,3 +100,23 @@ select_outcome_timepoint <- function(
 
   out
 }
+
+#-------------------------------------------------------------------------------
+# 3. Make a list of prior() objects for any coefs matching a regex
+#-------------------------------------------------------------------------------
+
+make_coef_priors <- function(gp, pattern, sd) {
+  coefs <- gp |>
+    dplyr::filter(.data$class == "b", grepl(pattern, .data$coef)) |>
+    dplyr::distinct(.data$coef) |>
+    dplyr::pull(.data$coef)
+
+  if (length(coefs) == 0) {
+    return(list())
+  }
+
+  pri_str <- sprintf("normal(0, %g)", sd) # e.g., "normal(0, 0.12)"
+  lapply(as.character(coefs), function(cf) {
+    set_prior(pri_str, class = "b", coef = cf)
+  })
+}
