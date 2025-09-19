@@ -1096,3 +1096,41 @@ ggsave(
   device = "png",
   type = "cairo-png"
 )
+
+#-------------------------------------------------------------------------------
+# 7. Summary outcome matrix
+#-------------------------------------------------------------------------------
+
+almp_nma_additive_model_component_outcome_matrix <- almp_nma_additive_model_component_summary |>
+  ggplot(
+    aes(
+      x = component,
+      y = outcome,
+      fill = posterior_different_prior_flag
+    )
+  ) +
+  geom_tile(color = "white") +
+  scale_fill_manual(
+    values = c("Yes" = "#008744", "No" = "#D62d20"),
+    name = "Posterior\nDifferent?"
+  ) +
+  labs(
+    x = "Component",
+    y = "Outcome",
+    title = "Posterior differences by outcome × component"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    panel.grid = element_blank()
+  )
+
+# export plot
+ggsave(
+  plot = almp_nma_additive_model_component_outcome_matrix,
+  filename = "./visualisation/output/almp_nma_additive_model_component_outcome_matrix.png",
+  height = 25,
+  width = 18,
+  device = "png",
+  type = "cairo-png"
+)
