@@ -41,7 +41,8 @@ almp_nma_additive_model_tau_summary <- readRDS(
 almp_nma_additive_model_forest_plot_data_labour_market_outcomes <- almp_nma_additive_model_component_draws |>
   filter(
     outcome_domain == "Labour Force Status",
-    !component == "Other Active Components"
+    !component == "Other Active Components",
+    posterior_different_prior_flag == "Yes"
   ) |>
   mutate(
     outcome = fct_drop(outcome),
@@ -63,7 +64,8 @@ almp_nma_additive_model_forest_plot_data_labour_market_outcomes <- almp_nma_addi
 almp_nma_additive_model_forest_plot_labels_labour_market_outcomes <- almp_nma_additive_model_component_summary |>
   filter(
     outcome_domain == "Labour Force Status",
-    !component == "Other Active Components"
+    !component == "Other Active Components",
+    posterior_different_prior_flag == "Yes"
   ) |>
   mutate(
     outcome = fct_drop(outcome),
@@ -86,7 +88,7 @@ almp_nma_additive_model_forest_plot_labels_labour_market_outcomes <- almp_nma_ad
 almp_nma_additive_model_forest_plot_labour_market_outcomes <- almp_nma_additive_model_forest_plot_data_labour_market_outcomes |>
   ggplot(
     aes(
-      x = effect,
+      x = theta,
       y = reorder(outcome, as.numeric(outcome), decreasing = TRUE)
     )
   ) +
@@ -150,7 +152,7 @@ almp_nma_additive_model_forest_plot_labour_market_outcomes <- almp_nma_additive_
       3
     ),
     aes(
-      label = str_glue("{effect} [{.lower},{.upper}]"),
+      label = str_glue("{theta} [{.lower},{.upper}]"),
       x = 0
     ),
     hjust = "centre",
@@ -237,20 +239,22 @@ ggsave(
 almp_nma_additive_model_forest_plot_data_employment_compensation_outcomes <- almp_nma_additive_model_component_draws |>
   filter(
     outcome_domain == "Employment Compensation",
-    !component == "Other Active Components"
+    !component == "Other Active Components",
+    posterior_different_prior_flag == "Yes"
   )
 
 almp_nma_additive_model_forest_plot_labels_employment_compensation_outcomes <- almp_nma_additive_model_component_summary |>
   filter(
     outcome_domain == "Employment Compensation",
-    !component == "Other Active Components"
+    !component == "Other Active Components",
+    posterior_different_prior_flag == "Yes"
   )
 
 # create forest plot
 almp_nma_additive_model_forest_plot_employment_compensation_outcomes <- almp_nma_additive_model_forest_plot_data_employment_compensation_outcomes |>
   ggplot(
     aes(
-      x = effect,
+      x = theta,
       y = reorder(outcome, as.numeric(outcome), decreasing = TRUE)
     )
   ) +
@@ -285,7 +289,7 @@ almp_nma_additive_model_forest_plot_employment_compensation_outcomes <- almp_nma
       3
     ),
     aes(
-      label = str_glue("{effect} [{.lower},{.upper}]"),
+      label = str_glue("{theta} [{.lower},{.upper}]"),
       x = 0
     ),
     hjust = "centre",
@@ -371,20 +375,22 @@ ggsave(
 almp_nma_additive_model_forest_plot_data_employment_duration_outcomes <- almp_nma_additive_model_component_draws |>
   filter(
     outcome_domain == "Employment Duration",
-    !component == "Other Active Components"
+    !component == "Other Active Components",
+    posterior_different_prior_flag == "Yes"
   )
 
 almp_nma_additive_model_forest_plot_labels_employment_duration_outcomes <- almp_nma_additive_model_component_summary |>
   filter(
     outcome_domain == "Employment Duration",
-    !component == "Other Active Components"
+    !component == "Other Active Components",
+    posterior_different_prior_flag == "Yes"
   )
 
 # create forest plot
 almp_nma_additive_model_forest_plot_employment_duration_outcomes <- almp_nma_additive_model_forest_plot_data_employment_duration_outcomes |>
   ggplot(
     aes(
-      x = effect,
+      x = theta,
       y = reorder(outcome, as.numeric(outcome), decreasing = TRUE)
     )
   ) +
@@ -446,7 +452,7 @@ almp_nma_additive_model_forest_plot_employment_duration_outcomes <- almp_nma_add
       3
     ),
     aes(
-      label = str_glue("{effect} [{.lower},{.upper}]"),
+      label = str_glue("{theta} [{.lower},{.upper}]"),
       x = 0
     ),
     hjust = "centre",
@@ -533,7 +539,8 @@ ggsave(
 almp_nma_additive_model_forest_plot_data_education_skills_outcomes <- almp_nma_additive_model_component_draws |>
   filter(
     outcome_domain == "Education and Skills",
-    !component == "Other Active Components"
+    !component == "Other Active Components",
+    posterior_different_prior_flag == "Yes"
   ) |>
   mutate(
     outcome = fct_drop(outcome),
@@ -558,7 +565,8 @@ almp_nma_additive_model_forest_plot_data_education_skills_outcomes <- almp_nma_a
 almp_nma_additive_model_forest_plot_labels_education_skills_outcomes <- almp_nma_additive_model_component_summary |>
   filter(
     outcome_domain == "Education and Skills",
-    !component == "Other Active Components"
+    !component == "Other Active Components",
+    posterior_different_prior_flag == "Yes"
   ) |>
   mutate(
     outcome = fct_drop(outcome),
@@ -584,7 +592,7 @@ almp_nma_additive_model_forest_plot_labels_education_skills_outcomes <- almp_nma
 almp_nma_additive_model_forest_plot_education_skills_outcomes <- almp_nma_additive_model_forest_plot_data_education_skills_outcomes |>
   ggplot(
     aes(
-      x = effect,
+      x = theta,
       y = reorder(outcome, as.numeric(outcome), decreasing = TRUE)
     )
   ) +
@@ -619,7 +627,7 @@ almp_nma_additive_model_forest_plot_education_skills_outcomes <- almp_nma_additi
       3
     ),
     aes(
-      label = str_glue("{effect} [{.lower},{.upper}]"),
+      label = str_glue("{theta} [{.lower},{.upper}]"),
       x = 0
     ),
     hjust = "centre",
@@ -706,20 +714,22 @@ ggsave(
 almp_nma_additive_model_forest_plot_data_hours_worked_outcomes <- almp_nma_additive_model_component_draws |>
   filter(
     outcome_domain == "Hours Worked",
-    !component == "Other Active Components"
+    !component == "Other Active Components",
+    posterior_different_prior_flag == "Yes"
   )
 
 almp_nma_additive_model_forest_plot_labels_hours_worked_outcomes <- almp_nma_additive_model_component_summary |>
   filter(
     outcome_domain == "Hours Worked",
-    !component == "Other Active Components"
+    !component == "Other Active Components",
+    posterior_different_prior_flag == "Yes"
   )
 
 # create forest plot
 almp_nma_additive_model_forest_plot_hours_worked_outcomes <- almp_nma_additive_model_forest_plot_data_hours_worked_outcomes |>
   ggplot(
     aes(
-      x = effect,
+      x = theta,
       y = outcome
     )
   ) +
@@ -754,7 +764,7 @@ almp_nma_additive_model_forest_plot_hours_worked_outcomes <- almp_nma_additive_m
       3
     ),
     aes(
-      label = str_glue("{effect} [{.lower},{.upper}]"),
+      label = str_glue("{theta} [{.lower},{.upper}]"),
       x = 0
     ),
     hjust = "centre",
@@ -841,20 +851,22 @@ ggsave(
 almp_nma_additive_model_forest_plot_data_labour_market_transitions <- almp_nma_additive_model_component_draws |>
   filter(
     outcome_domain == "Labour Market Transitions",
-    !component == "Other Active Components"
+    !component == "Other Active Components",
+    posterior_different_prior_flag == "Yes"
   )
 
 almp_nma_additive_model_forest_plot_labels_labour_market_transitions_outcomes <- almp_nma_additive_model_component_summary |>
   filter(
     outcome_domain == "Labour Market Transitions",
-    !component == "Other Active Components"
+    !component == "Other Active Components",
+    posterior_different_prior_flag == "Yes"
   )
 
 # create forest plot
 almp_nma_additive_model_forest_plot_labour_market_transitions <- almp_nma_additive_model_forest_plot_data_labour_market_transitions |>
   ggplot(
     aes(
-      x = effect,
+      x = theta,
       y = outcome
     )
   ) +
@@ -889,7 +901,7 @@ almp_nma_additive_model_forest_plot_labour_market_transitions <- almp_nma_additi
       3
     ),
     aes(
-      label = str_glue("{effect} [{.lower},{.upper}]"),
+      label = str_glue("{theta} [{.lower},{.upper}]"),
       x = 0
     ),
     hjust = "centre",

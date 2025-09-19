@@ -323,19 +323,7 @@ almp_nma_additive_model_tau_by_design_draws <- almp_nma_additive_model_tau_draws
 almp_nma_additive_model_tau_draws <- bind_rows(
   almp_nma_additive_model_tau_overall_draws,
   almp_nma_additive_model_tau_by_design_draws
-) |>
-  mutate(
-    group = factor(
-      group,
-      levels = c(
-        "Overall",
-        "Randomised design",
-        "Selection on observables",
-        "Design-based identification"
-      ),
-      ordered = TRUE
-    )
-  )
+)
 
 # extract and merge summaries
 almp_nma_additive_model_tau_overall <- almp_nma_additive_model_tau_overall_draws |>
@@ -373,18 +361,152 @@ almp_nma_additive_model_tau_by_design <- almp_nma_additive_model_tau_by_design_d
 almp_nma_additive_model_tau_summary <- bind_rows(
   almp_nma_additive_model_tau_overall,
   almp_nma_additive_model_tau_by_design
-) |>
+)
+
+#-------------------------------------------------------------------------------
+# 6. Explore what component estimates were actually updated
+#-------------------------------------------------------------------------------
+
+# Extract component effects (the b_ parameters)
+almp_nma_additive_model_component_draws_flagged <- almp_nma_additive_model |>
+  gather_draws(`b_.*:comp_.*`, regex = TRUE) |>
   mutate(
-    group = factor(
-      group,
+    outcome = str_remove(str_extract(.variable, "^[^:]+"), "^b_outcome"),
+    outcome = recode(
+      outcome,
+      "Apprenticeshipparticipation" = "Apprenticeship Participation",
+      "BachelorsorequivalentISCED6completion" = "Bachelors Degree (ISCED 6) Completion",
+      "BachelorsorequivalentISCED6participation" = "Bachelors Degree (ISCED 6) Participation",
+      "CurrentlyEmployed" = "Currently Employed",
+      "CurrentlyNEET" = "Currently NEET",
+      "CurrentlyNotintheLabourForce" = "Currently Not in the Labour Force",
+      "CurrentlySelfMEmployed" = "Currently Self-Employed",
+      "CurrentlyUnemployed" = "Currently Unemployed",
+      "Employedsincebaseline" = "Employed Since Baseline",
+      "Employmentcompensation" = "Employment Compensation",
+      "ExitsfromUnemployment" = "Exits from Unemployment",
+      "HoursWorked" = "Hours Worked",
+      "LabourEarnings" = "Labour Earnings",
+      "Occupationallicenceobtained" = "Occupational Licence Obtained",
+      "PeriodEmployed" = "Period Employed",
+      "PeriodUnemployed" = "Period Unemployed",
+      "PostMsecondarynonMtertiaryISCED4completion" = "Post-Secondary Non-Tertiary (ISCED 4) Completion",
+      "PostMsecondarynonMtertiaryISCED4participation" = "Post-Secondary Non-Tertiary (ISCED 4) Participation",
+      "RecentEmployment" = "Recent Employment",
+      "SecondaryschoolorequivalentISCED3completion" = "Secondary School (ISCED 3) Completion",
+      "SecondaryschoolorequivalentISCED3participation" = "Secondary School (ISCED 3) Participation",
+      "ShortMcycletertiaryISCED5completion" = "Short-Cycle Tertiary (ISCED 5) Completion",
+      "ShortMcycletertiaryISCED5participation" = "Short-Cycle Tertiary (ISCED 5) Participation",
+      "Totalindividualincome" = "Total Individual Income",
+      "Wages" = "Wages"
+    ),
+    outcome = factor(
+      outcome,
       levels = c(
-        "Overall",
-        "Randomised design",
-        "Selection on observables",
-        "Design-based identification"
+        "Apprenticeship Participation",
+        "Bachelors Degree (ISCED 6) Completion",
+        "Bachelors Degree (ISCED 6) Participation",
+        "Currently Employed",
+        "Currently NEET",
+        "Currently Not in the Labour Force",
+        "Currently Self-Employed",
+        "Currently Unemployed",
+        "Employed Since Baseline",
+        "Employment Compensation",
+        "Exits from Unemployment",
+        "Hours Worked",
+        "Labour Earnings",
+        "Occupational Licence Obtained",
+        "Period Employed",
+        "Period Unemployed",
+        "Post-Secondary Non-Tertiary (ISCED 4) Completion",
+        "Post-Secondary Non-Tertiary (ISCED 4) Participation",
+        "Recent Employment",
+        "Secondary School (ISCED 3) Completion",
+        "Secondary School (ISCED 3) Participation",
+        "Short-Cycle Tertiary (ISCED 5) Completion",
+        "Short-Cycle Tertiary (ISCED 5) Participation",
+        "Total Individual Income",
+        "Wages"
+      ),
+      ordered = TRUE
+    ),
+    component = str_remove(str_extract(.variable, "(?<=:).*"), "^comp_"),
+    component = recode(
+      component,
+      "basic_skills_training" = "Basic Skills Training",
+      "behavioural_skills_training" = "Behavioral Skills Training",
+      "employment_coaching" = "Employment Coaching",
+      "employment_counselling" = "Employment Counseling",
+      "financial_assistance" = "Financial Assistance",
+      "job_search_assistance" = "Job Search Assistance",
+      "job_search_preparation" = "Job Search Preparation",
+      "job_specific_technical_skills_off_job_training" = "Technical Skills Training (Off-the-Job)",
+      "job_specific_technical_skills_on_job_training" = "Technical Skills Training (On-the-Job)",
+      "other_active_component_nec" = "Other Active Components",
+      "paid_temporary_work_experience" = "Paid Work Experience",
+      "public_works" = "Public Works",
+      "self_employment_support" = "Self-Employment Support",
+      "soft_skills_training" = "Soft Skills Training",
+      "unpaid_temporary_work_experience" = "Unpaid Work Experience",
+      "wage_subsidies" = "Wage Subsidies"
+    ),
+    component = factor(
+      component,
+      levels = c(
+        "Basic Skills Training",
+        "Soft Skills Training",
+        "Behavioral Skills Training",
+        "Technical Skills Training (Off-the-Job)",
+        "Self-Employment Support",
+        "Job Search Assistance",
+        "Job Search Preparation",
+        "Employment Coaching",
+        "Employment Counseling",
+        "Financial Assistance",
+        "Technical Skills Training (On-the-Job)",
+        "Paid Work Experience",
+        "Unpaid Work Experience",
+        "Wage Subsidies",
+        "Public Works",
+        "Other Active Components"
       ),
       ordered = TRUE
     )
+  ) |>
+  group_by(outcome, component) |>
+  summarise(
+    theta = mean(.value),
+    theta_sd = sd(.value),
+    .groups = "drop"
+  ) |>
+  # use custom functions to determine if posterior summary x component different from the prior
+  mutate(
+    kld = kullback_leibler_divergence_normal(
+      theta, #= post_mean,
+      theta_sd, #= post_sd,
+      prior_sd = 0.40
+    ),
+    ppo = mapply(
+      prior_posterior_overlap,
+      theta, #= post_mean,
+      theta_sd, # = post_sd,
+      MoreArgs = list(prior_sd = 0.40)
+    ),
+    # signal gate: moved if PPO ≤ 0.60 OR KLD ≥ 0.10 nats
+    posterior_different_prior = (ppo <= 0.60) | (kld >= 0.10),
+    # flag outcomes where the posterior does not differ from the prior
+    posterior_different_prior_flag = case_when(
+      posterior_different_prior == TRUE ~ "Yes",
+      posterior_different_prior == FALSE ~ "No"
+    )
+  ) |>
+  select(
+    -kld,
+    -ppo,
+    -posterior_different_prior,
+    -theta,
+    -theta_sd
   )
 
 #-------------------------------------------------------------------------------
@@ -393,9 +515,10 @@ almp_nma_additive_model_tau_summary <- bind_rows(
 
 # Extract component effects (the b_ parameters)
 almp_nma_additive_model_component_draws <- almp_nma_additive_model |>
-  gather_draws(
-    `b_.*:comp_.*`,
-    regex = TRUE
+  gather_draws(`b_.*:comp_.*`, regex = TRUE) |>
+  mutate(
+    outcome = str_remove(str_extract(.variable, "^[^:]+"), "^b_outcome"),
+    component = str_remove(str_extract(.variable, "(?<=:).*"), "^comp_")
   ) |>
   # Parse the parameter names to extract outcome and component
   mutate(
@@ -523,7 +646,7 @@ almp_nma_additive_model_component_draws <- almp_nma_additive_model |>
     .draw,
     outcome,
     component,
-    effect = .value
+    theta = .value
   ) |>
   mutate(
     outcome_domain = case_when(
@@ -562,14 +685,25 @@ almp_nma_additive_model_component_draws <- almp_nma_additive_model |>
     )
   )
 
+# extract posterior summaries for b_ component × outcome terms
+almp_nma_additive_model_component_updated <- left_join(
+  almp_nma_additive_model_component_draws,
+  almp_nma_additive_model_component_draws_flagged,
+  by = c(
+    "outcome",
+    "component"
+  )
+)
+
 # Create summary statistics for labels
-almp_nma_additive_model_component_summary <- almp_nma_additive_model_component_draws |>
+almp_nma_additive_model_component_summary <- almp_nma_additive_model_component_updated |>
   group_by(
     outcome,
-    component
+    component,
+    posterior_different_prior_flag
   ) |>
   median_qi(
-    effect,
+    theta,
     .width = c(0.8, 0.95)
   ) |>
   filter(
@@ -579,7 +713,7 @@ almp_nma_additive_model_component_summary <- almp_nma_additive_model_component_d
     component = factor(component)
   ) |>
   mutate(
-    effect = format(round(effect, 2), nsmall = 2),
+    theta = format(round(theta, 2), nsmall = 2),
     .lower = format(round(.lower, 2), nsmall = 2),
     .upper = format(round(.upper, 2), nsmall = 2)
   ) |>
@@ -620,86 +754,18 @@ almp_nma_additive_model_component_summary <- almp_nma_additive_model_component_d
     )
   )
 
-#-------------------------------------------------------------------------------
-# 6. Explore what component estimates were actually updated
-#-------------------------------------------------------------------------------
-
-# extract posterior summaries for b_ component × outcome terms
-almp_nma_additive_model_component_updated_flag <- almp_nma_additive_model |>
-  gather_draws(`b_.*:comp_.*`, regex = TRUE) |>
-  mutate(
-    outcome = str_remove(str_extract(.variable, "^[^:]+"), "^b_outcome"),
-    component = str_remove(str_extract(.variable, "(?<=:).*"), "^comp_")
-  ) |>
-  group_by(outcome, component) |>
-  summarise(
-    post_mean = mean(.value),
-    post_sd = sd(.value),
-    .groups = "drop"
-  ) |>
-  # use custom functions to determine if posterior summary x component different from the prior
-  mutate(
-    kld = kullback_leibler_divergence_normal(
-      post_mean,
-      post_sd,
-      prior_sd = 0.40
-    ),
-    ppo = mapply(
-      prior_posterior_overlap,
-      post_mean,
-      post_sd,
-      MoreArgs = list(prior_sd = 0.40)
-    ),
-    # signal gate: moved if PPO ≤ 0.60 OR KLD ≥ 0.10 nats
-    posterior_different_prior = (ppo <= 0.60) | (kld >= 0.10)
-  )
-
-# apply filters to component draws
-almp_nma_additive_model_component_draws_flagged <- almp_nma_additive_model_component_draws |>
-  left_join(
-    almp_nma_additive_model_component_updated_flag |>
-      transmute(outcome, component, kld, ppo, posterior_different_prior),
-    by = c("outcome", "component")
-  ) |>
-  # flag outcomes where the posterior does not differ from the prior
-  mutate(
-    posterior_different_prior_flag = case_when(
-      posterior_different_prior == TRUE ~ "Yes",
-      posterior_different_prior == FALSE ~ "No"
-    )
-  ) |>
-  select(
-    -posterior_different_prior
-  )
-
-almp_nma_additive_model_component_summary_flagged <- almp_nma_additive_model_component_summary |>
-  left_join(
-    almp_nma_additive_model_component_updated_flag |>
-      transmute(outcome, component, kld, ppo, posterior_different_prior),
-    by = c("outcome", "component")
-  ) |>
-  # flag outcomes where the posterior does not differ from the prior
-  mutate(
-    posterior_different_prior_flag = case_when(
-      posterior_different_prior == TRUE ~ "Yes",
-      posterior_different_prior == FALSE ~ "No"
-    )
-  ) |>
-  select(
-    -posterior_different_prior
-  )
 
 #-------------------------------------------------------------------------------
 # 6. Export results for visualisation
 #-------------------------------------------------------------------------------
 
 saveRDS(
-  almp_nma_additive_model_component_summary_flagged,
+  almp_nma_additive_model_component_summary,
   "./visualisation/inputs/almp_nma_additive_model_component_summary.RDS"
 )
 
 saveRDS(
-  almp_nma_additive_model_component_draws_flagged,
+  almp_nma_additive_model_component_updated,
   "./visualisation/inputs/almp_nma_additive_model_component_draws.RDS"
 )
 
