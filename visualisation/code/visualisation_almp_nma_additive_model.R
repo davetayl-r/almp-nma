@@ -28,6 +28,11 @@ almp_nma_additive_model_tau_draws <- readRDS(
   almp_nma_additive_model_tau_draws_location
 )
 
+almp_nma_additive_model_tau_summary_location <- "./visualisation/inputs/almp_nma_additive_model_tau_summary.RDS"
+almp_nma_additive_model_tau_summary <- readRDS(
+  almp_nma_additive_model_tau_summary_location
+)
+
 #-------------------------------------------------------------------------------
 # 1. Visualise Labour Force Status outcomes
 #-------------------------------------------------------------------------------
@@ -968,51 +973,55 @@ ggsave(
 #-------------------------------------------------------------------------------
 
 # summarise tau for plotting
-almp_nma_additive_model_tau_summary <- almp_nma_additive_model_tau_draws |>
-  group_by(design) |>
-  summarise(
-    median = median(tau),
-    lower = quantile(tau, 0.025),
-    upper = quantile(tau, 0.975),
-    .groups = "drop"
-  ) |>
+almp_nma_additive_model_tau_summary_label <- almp_nma_additive_model_tau_summary |>
   mutate(
-    design = factor(
-      design,
+    group = factor(
+      group,
       levels = c(
+        "Overall",
         "Randomised design",
         "Selection on observables",
         "Design-based identification"
       ),
       ordered = TRUE
-    ),
-    # create label
+    )
+  ) |>
+  rename(
+    lower = .lower,
+    upper = .upper
+  ) |>
+  # create label
+  mutate(
     facet_label = sprintf(
       "paste('%s', '\n', tau==%.3f, ' (95%% CrI [', %.3f, ', ', %.3f, '])')",
-      as.character(design),
-      median,
+      as.character(group),
+      tau,
       lower,
       upper
-    ),
-    facet_label = forcats::fct_inorder(facet_label)
+    )
   )
 
 # merge plot data label to the draws
 almp_nma_additive_model_tau_plot_data <- almp_nma_additive_model_tau_draws |>
-  mutate(
-    design = factor(
-      design,
-      levels = levels(almp_nma_additive_model_tau_summary$design),
-      ordered = TRUE
-    )
-  ) |>
   left_join(
-    almp_nma_additive_model_tau_summary |>
+    almp_nma_additive_model_tau_summary_label |>
       select(
-        design,
+        group,
         facet_label
       ),
-    by = "design"
+    by = "group"
+  ) |>
+  mutate(
+    facet_label = factor(
+      facet_label,
+      levels = c(
+        "paste('Overall', '\n', tau==0.087, ' (95% CrI [', 0.052, ', ', 0.131, '])')",
+        "paste('Randomised design', '\n', tau==0.074, ' (95% CrI [', 0.028, ', ', 0.134, '])')",
+        "paste('Selection on observables', '\n', tau==0.102, ' (95% CrI [', 0.039, ', ', 0.195, '])')",
+        "paste('Design-based identification', '\n', tau==0.092, ' (95% CrI [', 0.032, ', ', 0.197, '])')"
+      ),
+      ordered = TRUE
+    )
   )
 
 # plot tau distribution: each panel shows the posterior for study-level heterogeneity (τ) by study design
@@ -1020,7 +1029,8 @@ almp_nma_additive_model_tau_distribution_plot <- almp_nma_additive_model_tau_plo
   ggplot(
     aes(
       x = tau,
-      fill = design
+      #group = facet_label,
+      fill = facet_label
     )
   ) +
   stat_halfeye(
@@ -1030,26 +1040,29 @@ almp_nma_additive_model_tau_distribution_plot <- almp_nma_additive_model_tau_plo
     slab_alpha = 0.5
   ) +
   geom_vline(
-    data = almp_nma_additive_model_tau_summary,
-    aes(xintercept = median),
-    inherit.aes = FALSE,
+    data = almp_nma_additive_model_tau_summary_label,
+    aes(xintercept = tau),
     colour = "#2d3239ff",
     linetype = "dashed",
     linewidth = 0.5
   ) +
   facet_wrap(
-    ~facet_label,
+    ~ forcats::fct_relevel(
+      facet_label,
+      "paste('Overall', '\n', tau==0.087, ' (95% CrI [', 0.052, ', ', 0.131, '])')"
+    ),
     ncol = 1,
     labeller = label_parsed
   ) +
   scale_fill_manual(
     values = c(
+      "#9d9494ff",
       "#7D2248",
       "#69C2C9",
       "#BFB800"
     )
   ) +
-  lims(x = c(0, 1)) +
+  lims(x = c(0, 0.5)) +
   labs(
     x = expression(tau),
     y = "Posterior density"
@@ -1059,8 +1072,7 @@ almp_nma_additive_model_tau_distribution_plot <- almp_nma_additive_model_tau_plo
     plot.background = element_rect(fill = "#FFFFFF", colour = NA),
     panel.grid.major.y = element_blank(),
     panel.grid.minor = element_blank(),
-    legend.position = "none",
-    strip.clip = "off"
+    legend.position = "none"
   )
 
 # export plot

@@ -303,7 +303,7 @@ almp_nma_additive_model_tau_overall_draws <- almp_nma_additive_model_tau_draws_r
   group_by(.draw) |>
   summarise(tau = median(tau), .groups = "drop") |>
   mutate(
-    group = "overall"
+    group = "Overall"
   )
 
 # extract tau by study design (median across outcome domains within draw)
@@ -323,8 +323,19 @@ almp_nma_additive_model_tau_by_design_draws <- almp_nma_additive_model_tau_draws
 almp_nma_additive_model_tau_draws <- bind_rows(
   almp_nma_additive_model_tau_overall_draws,
   almp_nma_additive_model_tau_by_design_draws
-)
-
+) |>
+  mutate(
+    group = factor(
+      group,
+      levels = c(
+        "Overall",
+        "Randomised design",
+        "Selection on observables",
+        "Design-based identification"
+      ),
+      ordered = TRUE
+    )
+  )
 
 # extract and merge summaries
 almp_nma_additive_model_tau_overall <- almp_nma_additive_model_tau_overall_draws |>
@@ -362,7 +373,19 @@ almp_nma_additive_model_tau_by_design <- almp_nma_additive_model_tau_by_design_d
 almp_nma_additive_model_tau_summary <- bind_rows(
   almp_nma_additive_model_tau_overall,
   almp_nma_additive_model_tau_by_design
-)
+) |>
+  mutate(
+    group = factor(
+      group,
+      levels = c(
+        "Overall",
+        "Randomised design",
+        "Selection on observables",
+        "Design-based identification"
+      ),
+      ordered = TRUE
+    )
+  )
 
 #-------------------------------------------------------------------------------
 # 7. Extract component effects
