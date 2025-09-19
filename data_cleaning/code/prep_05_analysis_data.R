@@ -296,7 +296,7 @@ almp_nma_centred_data <- almp_nma_combined_data_clean |>
     ),
     # centre age around mean
     prop_female_centred = proportion_female_treatment -
-      mean(proportion_female_treatment, na.rm = TRUE),
+      mean(proportion_female_treatment, na.rm = TRUE) / 10,
     # centre age around mean
     study_age_mean_centred = study_age_mean -
       mean(study_age_mean, na.rm = TRUE),
@@ -501,7 +501,7 @@ almp_nma_timing_model_data <- almp_nma_component_model_data |>
   ) |>
   # centre outcome timing from 24 months
   mutate(
-    outcome_timing_centred_24 = 24 - outcome_timing
+    outcome_timing_centred_24 = (24 - outcome_timing) / 12
   )
 
 # coverage table to see how much you keep
