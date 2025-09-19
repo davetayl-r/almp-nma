@@ -102,7 +102,7 @@ select_outcome_timepoint <- function(
 }
 
 #-------------------------------------------------------------------------------
-# 3. Make a list of prior() objects for any coefs matching a regex
+# 3. Make a list of prior() objects for any coefficients matching a regex
 #-------------------------------------------------------------------------------
 
 make_coef_priors <- function(gp, pattern, sd) {
@@ -119,4 +119,35 @@ make_coef_priors <- function(gp, pattern, sd) {
   lapply(as.character(coefs), function(cf) {
     set_prior(pri_str, class = "b", coef = cf)
   })
+}
+
+#-------------------------------------------------------------------------------
+# 4. Check for Kullback-Leibler divergence for N(post_mean, post_sd^2)
+#-------------------------------------------------------------------------------
+
+kullback_leibler_divergence_normal <- function(
+  post_mean,
+  post_sd,
+  prior_sd = 0.40
+) {
+  0.5 *
+    ((post_sd^2 + post_mean^2) / prior_sd^2 - 1 + 2 * log(prior_sd / post_sd))
+}
+
+#-------------------------------------------------------------------------------
+# 5. Check for prior–posterior overlap (PPO) by numeric integration
+#-------------------------------------------------------------------------------
+
+prior_posterior_overlap <- function(
+  post_mean,
+  post_sd,
+  prior_sd = 0.40
+) {
+  lo <- min(post_mean - 6 * post_sd, -6 * prior_sd)
+  hi <- max(post_mean + 6 * post_sd, 6 * prior_sd)
+  x <- seq(lo, hi, length.out = 4001)
+  dx <- x[2] - x[1]
+  prior_dens <- dnorm(x, mean = 0, sd = prior_sd)
+  post_dens <- dnorm(x, mean = post_mean, sd = post_sd)
+  sum(pmin(prior_dens, post_dens)) * dx
 }
