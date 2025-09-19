@@ -649,6 +649,10 @@ almp_nma_additive_model_component_draws <- almp_nma_additive_model |>
     theta = .value
   ) |>
   mutate(
+    probability_greater_zero = mean(theta > 0, na.rm = TRUE),
+    .by = c(outcome, component)
+  ) |>
+  mutate(
     outcome_domain = case_when(
       outcome %in%
         c(
@@ -686,7 +690,7 @@ almp_nma_additive_model_component_draws <- almp_nma_additive_model |>
   )
 
 # extract posterior summaries for b_ component × outcome terms
-almp_nma_additive_model_component_updated <- left_join(
+almp_nma_additive_model_component_draws_updated <- left_join(
   almp_nma_additive_model_component_draws,
   almp_nma_additive_model_component_draws_flagged,
   by = c(
@@ -700,7 +704,8 @@ almp_nma_additive_model_component_summary <- almp_nma_additive_model_component_u
   group_by(
     outcome,
     component,
-    posterior_different_prior_flag
+    posterior_different_prior_flag,
+    probability_greater_zero
   ) |>
   median_qi(
     theta,
@@ -754,7 +759,6 @@ almp_nma_additive_model_component_summary <- almp_nma_additive_model_component_u
     )
   )
 
-
 #-------------------------------------------------------------------------------
 # 6. Export results for visualisation
 #-------------------------------------------------------------------------------
@@ -765,7 +769,7 @@ saveRDS(
 )
 
 saveRDS(
-  almp_nma_additive_model_component_updated,
+  almp_nma_additive_model_component_draws_updated,
   "./visualisation/inputs/almp_nma_additive_model_component_draws.RDS"
 )
 
