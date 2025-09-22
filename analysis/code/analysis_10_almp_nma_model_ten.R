@@ -613,7 +613,7 @@ almp_nma_model_ten_component_draws <- map_dfr(
         "Labour Market Transitions"
     ),
     # Flip the sign on negative outcomes
-    outcome = case_when(
+    effect = case_when(
       outcome %in%
         c(
           "Currently Unemployed",
