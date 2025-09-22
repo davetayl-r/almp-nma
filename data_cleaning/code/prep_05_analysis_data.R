@@ -525,6 +525,11 @@ almp_nma_additive_model_data <- almp_nma_timing_model_data |>
   mutate(
     # remove apostrophe's from outcome names
     outcome = str_remove_all(outcome, "[\u2018\u2019\u201A\u201B]"),
+    # recode one misnamed outcome
+    outcome = case_when(
+      outcome == "Current Unemployment" ~ "Currently Unemployed",
+      TRUE ~ outcome
+    ),
     # force outcome to be factor
     outcome = factor(outcome)
   ) |>

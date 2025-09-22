@@ -151,3 +151,60 @@ prior_posterior_overlap <- function(
   post_dens <- dnorm(x, mean = post_mean, sd = post_sd)
   sum(pmin(prior_dens, post_dens)) * dx
 }
+
+# ---------------------------------------------------------
+# 6. Get draw-level differences for one component
+# ---------------------------------------------------------
+get_comp_outcome_draws <- function(comp, n_draws = NULL) {
+  new_data_0 <- grid_base
+  new_data_1 <- grid_base
+  new_data_1[[comp]] <- 1L
+
+  # posterior_linpred gives a matrix: draws x rows(newdata)
+  matrix_0 <- if (is.null(n_draws)) {
+    brms::posterior_linpred(
+      almp_nma_model_ten,
+      newdata = new_data_0,
+      re_formula = re_outcome_only
+    )
+  } else {
+    brms::posterior_linpred(
+      almp_nma_model_ten,
+      newdata = new_data_0,
+      re_formula = re_outcome_only,
+      ndraws = n_draws
+    )
+  }
+  matrix_1 <- if (is.null(n_draws)) {
+    brms::posterior_linpred(
+      almp_nma_model_ten,
+      newdata = new_data_1,
+      re_formula = re_outcome_only
+    )
+  } else {
+    brms::posterior_linpred(
+      almp_nma_model_ten,
+      newdata = new_data_1,
+      re_formula = re_outcome_only,
+      ndraws = n_draws
+    )
+  }
+
+  # difference matrix to get draws x outcomes
+  difference_matrix <- matrix_1 - matrix_0
+  colnames(difference_matrix) <- as.character(new_data_0$outcome)
+
+  # tidy data
+  as_tibble(difference_matrix) |>
+    mutate(.draw = row_number()) |>
+    pivot_longer(
+      cols = -.draw,
+      names_to = "outcome",
+      values_to = "estimate"
+    ) |>
+    mutate(
+      component = comp,
+      outcome = factor(outcome, levels = outcome_levels),
+      .before = 1
+    )
+}

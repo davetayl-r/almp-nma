@@ -1,8 +1,8 @@
 #============================================================================================#
 # Project: ALMP NMA                                                                          #
 # Author: David Taylor                                                                       #
-# Date: 20/09/2025                                                                           #
-# Purpose: NMA model #9 — include sex, age and simplify RE                                   #
+# Date: 22/09/2025                                                                           #
+# Purpose: NMA model #10 — change up approach                                                #
 #============================================================================================#
 
 # load required packages
@@ -24,25 +24,28 @@ almp_nma_additive_model_data <- readRDS(almp_nma_additive_model_data_location)
 # 1. Subset data for model
 #-------------------------------------------------------------------------------
 
+almp_nma_model_ten_data_x <- almp_nma_additive_model_data |>
+  group_by(outcome) |>
+  tally() |>
+  arrange(n)
+
 almp_nma_model_ten_data <- almp_nma_additive_model_data |>
   # select closest data point to 24 month window
   filter(
     selected_primary_timepoint == 1
   ) |>
   # drop the rarest outcomes
+  mutate(
+    outcome = as.character(outcome)
+  ) |>
   filter(
     !outcome %in%
       c(
         # these outcomes appear once
         "Apprenticeship Duration",
         "Bachelors or equivalent (ISCED 6) application",
-        "Current Unemployment",
-        "Currently Employed Temporarily",
-        "Currently Employment Permanently",
         "EET since baseline",
         "Entires to Not in the Labour Force",
-        "Foundation skills (ISCED 1) completion",
-        "Lower secondary school (ISCED 2) completion",
         "Not in the Labour Force since baseline",
         "Post-secondary non-tertiary (ISCED 4) application",
         "Quarters employed",
@@ -53,7 +56,15 @@ almp_nma_model_ten_data <- almp_nma_additive_model_data |>
         "Unemployed since baseline",
         # these outcomes appear twice
         "Masters or equivalent (ISCED 7) completion",
-        "Period Not in the Labour Force"
+        "Foundation skills (ISCED 1) completion",
+        "Lower secondary school (ISCED 2) completion",
+        "Currently Employment Permanently",
+        "Period Not in the Labour Force",
+        # these outcomes appear three times
+        "Currently Employed Temporarily",
+        # these outcomes appear four times
+        "Currently EET",
+        "Period Unemployed"
       )
   ) |>
   # create flags for study design type
@@ -69,6 +80,29 @@ almp_nma_model_ten_data <- almp_nma_additive_model_data |>
     ),
     study_design_dbi = as.numeric(study_design_dbi),
     outcome_domain = factor(outcome_domain)
+  ) |>
+  # convert negative outcomes to positive
+  mutate(
+    delta = case_when(
+      outcome %in%
+        c(
+          "Current Unemployment",
+          "Currently Unemployed",
+          "Currently NEET",
+          "Currently Not in the Labour Force",
+          #"Entires to Not in the Labour Force",
+          #"Not in the Labour Force since baseline",
+          "Period Not in the Labour Force" #,
+          #"Period Unemployed",
+          #"Recent Unemployment",
+          #"Unemployed since baseline"
+        ) ~
+        delta * -1,
+      TRUE ~ delta
+    )
+  ) |>
+  mutate(
+    outcome = as.factor(outcome)
   )
 
 #-------------------------------------------------------------------------------
@@ -240,7 +274,7 @@ almp_nma_model_ten <- brm(
   family = gaussian(),
   chains = 2,
   iter = 3000,
-  warmup = 1500,
+  warmup = 1000,
   cores = 8,
   threads = threading(2),
   backend = "cmdstanr",
@@ -276,10 +310,8 @@ pp_check(almp_nma_model_ten, type = "intervals")
 # 6. Clean up model output
 #-------------------------------------------------------------------------------
 
-x <- factor(almp_nma_model_ten_tau_draws$.variable) |> levels()
-
-# extract heterogeneity
-almp_nma_model_ten_tau_draws <- almp_nma_model_ten |>
+# extract heterogeneity x component
+almp_nma_model_ten_tau_component_draws <- almp_nma_model_ten |>
   # extract tau for study-level REs by outcome × design
   gather_draws(
     `^sd_outcome.*$`,
@@ -288,7 +320,7 @@ almp_nma_model_ten_tau_draws <- almp_nma_model_ten |>
   transmute(
     .draw,
     # rename vars
-    outcome = case_when(
+    component = case_when(
       .variable == "sd_outcome__comp_basic_skills_training" ~
         "Basic Skills Training",
       .variable == "sd_outcome__comp_behavioural_skills_training" ~
@@ -324,55 +356,124 @@ almp_nma_model_ten_tau_draws <- almp_nma_model_ten |>
     ),
     tau = .value
   ) |>
+  ungroup() |>
   select(
-    outcome,
+    component,
     tau
   )
 
-# Extract component effects (the b_ parameters)
-almp_nma_model_ten_component_draws <- almp_nma_model_ten |>
+# extract heterogeneity x study design
+almp_nma_model_ten_tau_study_design_draws <- almp_nma_model_ten |>
+  # extract tau for study-level REs by outcome × design
   gather_draws(
-    `b_.*:comp_.*`,
+    `^sd_study__Intercept:study_design_type.*$`,
     regex = TRUE
   ) |>
+  transmute(
+    .draw,
+    design = str_match(.variable, ":study_design_type(.+)$")[, 2],
+    tau = .value
+  ) |>
+  mutate(
+    design = recode(
+      design,
+      "Randomiseddesign" = "Randomised design",
+      "Selectiononobservables" = "Selection on observables",
+      "Design-basedidentification" = "Design-based identification"
+    )
+  )
+
+# Get omponent column names from the model's data
+component_variables <- grep(
+  "^comp_",
+  names(almp_nma_model_ten$data),
+  value = TRUE
+)
+outcome_levels <- levels(almp_nma_model_ten$data$outcome)
+almp_nma_model_ten$data$study_design_type <- factor(
+  almp_nma_model_ten$data$study_design_type
+)
+design_levels <- levels(almp_nma_model_ten$data$study_design_type)
+
+# Create base grid
+grid_base <- tibble(
+  outcome = factor(outcome_levels, levels = outcome_levels),
+  outcome_timing_centred_24 = 0,
+  study_design_type = factor("Randomised design", levels = design_levels),
+  study_design_soo = 0,
+  study_design_dbi = 0,
+  low_study_quality = 0,
+  prop_female_centred = 0,
+  study_age_mean_centred = 0,
+  # set all components to 0 (Services As Usual baseline)
+  comp_basic_skills_training = 0,
+  comp_soft_skills_training = 0,
+  comp_behavioural_skills_training = 0,
+  comp_self_employment_support = 0,
+  comp_job_specific_technical_skills_off_job_training = 0,
+  comp_job_search_preparation = 0,
+  comp_job_search_assistance = 0,
+  comp_employment_counselling = 0,
+  comp_employment_coaching = 0,
+  comp_financial_assistance = 0,
+  comp_job_specific_technical_skills_on_job_training = 0,
+  comp_paid_temporary_work_experience = 0,
+  comp_unpaid_temporary_work_experience = 0,
+  comp_wage_subsidies = 0,
+  comp_public_works = 0,
+  comp_other_active_component_nec = 0,
+  delta = 0,
+  delta_se = mean(almp_nma_model_ten$data$delta_se, na.rm = TRUE)
+) |>
+  as.data.frame()
+
+# Keep only the outcome-level varying slopes (drop study REs)
+re_outcome_only <- ~ (0 +
+  comp_basic_skills_training +
+  comp_soft_skills_training +
+  comp_behavioural_skills_training +
+  comp_self_employment_support +
+  comp_job_specific_technical_skills_off_job_training +
+  comp_job_search_preparation +
+  comp_job_search_assistance +
+  comp_employment_counselling +
+  comp_employment_coaching +
+  comp_financial_assistance +
+  comp_job_specific_technical_skills_on_job_training +
+  comp_paid_temporary_work_experience +
+  comp_unpaid_temporary_work_experience +
+  comp_wage_subsidies +
+  comp_public_works +
+  comp_other_active_component_nec |
+  outcome)
+
+# Compute all component × outcome draw-level estimates
+almp_nma_model_ten_component_draws <- map_dfr(
+  component_variables,
+  get_comp_outcome_draws,
+  n_draws = NULL
+) |>
   # Parse the parameter names to extract outcome and component
   mutate(
-    # Extract outcome (everything before the colon)
-    outcome = str_extract(
-      .variable,
-      "^[^:]+"
-    ),
-    outcome = str_remove(
-      outcome,
-      "^b_outcome"
-    ),
-    # Extract component (everything after comp_)
-    component = str_extract(
-      .variable,
-      "(?<=:).*"
-    ),
-    component = str_remove(
-      component,
-      "^comp_"
-    ),
+    # rename components
     component = recode(
       component,
-      "basic_skills_training" = "Basic Skills Training",
-      "behavioural_skills_training" = "Behavioral Skills Training",
-      "employment_coaching" = "Employment Coaching",
-      "employment_counselling" = "Employment Counseling",
-      "financial_assistance" = "Financial Assistance",
-      "job_search_assistance" = "Job Search Assistance",
-      "job_search_preparation" = "Job Search Preparation",
-      "job_specific_technical_skills_off_job_training" = "Technical Skills Training (Off-the-Job)",
-      "job_specific_technical_skills_on_job_training" = "Technical Skills Training (On-the-Job)",
-      "other_active_component_nec" = "Other Active Components",
-      "paid_temporary_work_experience" = "Paid Work Experience",
-      "public_works" = "Public Works",
-      "self_employment_support" = "Self-Employment Support",
-      "soft_skills_training" = "Soft Skills Training",
-      "unpaid_temporary_work_experience" = "Unpaid Work Experience",
-      "wage_subsidies" = "Wage Subsidies"
+      "comp_basic_skills_training" = "Basic Skills Training",
+      "comp_behavioural_skills_training" = "Behavioral Skills Training",
+      "comp_employment_coaching" = "Employment Coaching",
+      "comp_employment_counselling" = "Employment Counseling",
+      "comp_financial_assistance" = "Financial Assistance",
+      "comp_job_search_assistance" = "Job Search Assistance",
+      "comp_job_search_preparation" = "Job Search Preparation",
+      "comp_job_specific_technical_skills_off_job_training" = "Technical Skills Training (Off-the-Job)",
+      "comp_job_specific_technical_skills_on_job_training" = "Technical Skills Training (On-the-Job)",
+      "comp_other_active_component_nec" = "Other Active Components",
+      "comp_paid_temporary_work_experience" = "Paid Work Experience",
+      "comp_public_works" = "Public Works",
+      "comp_self_employment_support" = "Self-Employment Support",
+      "comp_soft_skills_training" = "Soft Skills Training",
+      "comp_unpaid_temporary_work_experience" = "Unpaid Work Experience",
+      "comp_wage_subsidies" = "Wage Subsidies"
     ),
     component = factor(
       component,
@@ -398,30 +499,33 @@ almp_nma_model_ten_component_draws <- almp_nma_model_ten |>
     ),
     outcome = recode(
       outcome,
-      "Apprenticeshipparticipation" = "Apprenticeship Participation",
-      "BachelorsorequivalentISCED6completion" = "Bachelors Degree (ISCED 6) Completion",
-      "BachelorsorequivalentISCED6participation" = "Bachelors Degree (ISCED 6) Participation",
-      "CurrentlyEmployed" = "Currently Employed",
-      "CurrentlyNEET" = "Currently NEET",
-      "CurrentlyNotintheLabourForce" = "Currently Not in the Labour Force",
-      "CurrentlySelfMEmployed" = "Currently Self-Employed",
-      "CurrentlyUnemployed" = "Currently Unemployed",
-      "Employedsincebaseline" = "Employed Since Baseline",
-      "Employmentcompensation" = "Employment Compensation",
-      "ExitsfromUnemployment" = "Exits from Unemployment",
-      "HoursWorked" = "Hours Worked",
-      "LabourEarnings" = "Labour Earnings",
-      "Occupationallicenceobtained" = "Occupational Licence Obtained",
-      "PeriodEmployed" = "Period Employed",
-      "PeriodUnemployed" = "Period Unemployed",
-      "PostMsecondarynonMtertiaryISCED4completion" = "Post-Secondary Non-Tertiary (ISCED 4) Completion",
-      "PostMsecondarynonMtertiaryISCED4participation" = "Post-Secondary Non-Tertiary (ISCED 4) Participation",
-      "RecentEmployment" = "Recent Employment",
-      "SecondaryschoolorequivalentISCED3completion" = "Secondary School (ISCED 3) Completion",
-      "SecondaryschoolorequivalentISCED3participation" = "Secondary School (ISCED 3) Participation",
-      "ShortMcycletertiaryISCED5completion" = "Short-Cycle Tertiary (ISCED 5) Completion",
-      "ShortMcycletertiaryISCED5participation" = "Short-Cycle Tertiary (ISCED 5) Participation",
-      "Totalindividualincome" = "Total Individual Income",
+      "Apprenticeship participation" = "Apprenticeship Participation",
+      "Bachelors or equivalent (ISCED 6) completion" = "Bachelors Degree (ISCED 6) Completion",
+      "Bachelors or equivalent (ISCED 6) participation" = "Bachelors Degree (ISCED 6) Participation",
+      "Currently Employed" = "Currently Employed",
+      #"Currently EET" = "Currently EET",
+      "Currently NEET" = "Currently NEET",
+      "Currently Not in the Labour Force" = "Currently Not in the Labour Force",
+      "Currently Self-Employed" = "Currently Self-Employed",
+      "Currently Unemployed" = "Currently Unemployed",
+      "Employed since baseline" = "Employed Since Baseline",
+      "Employment compensation" = "Employment Compensation",
+      "Entries into Employment" = "Entries into Employment",
+      "Exits from Unemployment" = "Exits from Unemployment",
+      "Hours Worked" = "Hours Worked",
+      "Labour Earnings" = "Labour Earnings",
+      "Occupational licence obtained" = "Occupational Licence Obtained",
+      "Period Employed" = "Period Employed",
+      #"Period Unemployed" = "Period Unemployed",
+      "Post-secondary non-tertiary (ISCED 4) completion" = "Post-Secondary Non-Tertiary (ISCED 4) Completion",
+      "Post-secondary non-tertiary (ISCED 4) participation" = "Post-Secondary Non-Tertiary (ISCED 4) Participation",
+      "Recent Employment" = "Recent Employment",
+      "Secondary school or equivalent (ISCED 3) completion" = "Secondary School (ISCED 3) Completion",
+      "Secondary school or equivalent (ISCED 3) participation" = "Secondary School (ISCED 3) Participation",
+      "Short-cycle tertiary (ISCED 5) completion" = "Short-Cycle Tertiary (ISCED 5) Completion",
+      "Short-cycle tertiary (ISCED 5) participation" = "Short-Cycle Tertiary (ISCED 5) Participation",
+      "Total Income" = "Total Income",
+      "Total individual income" = "Total Individual Income",
       "Wages" = "Wages"
     ),
     outcome = factor(
@@ -432,9 +536,11 @@ almp_nma_model_ten_component_draws <- almp_nma_model_ten |>
         "Bachelors Degree (ISCED 6) Participation",
         "Currently Employed",
         "Currently NEET",
+        #"Currently EET",
         "Currently Not in the Labour Force",
         "Currently Self-Employed",
         "Currently Unemployed",
+        "Entries into Employment",
         "Employed Since Baseline",
         "Employment Compensation",
         "Exits from Unemployment",
@@ -442,7 +548,7 @@ almp_nma_model_ten_component_draws <- almp_nma_model_ten |>
         "Labour Earnings",
         "Occupational Licence Obtained",
         "Period Employed",
-        "Period Unemployed",
+        #"Period Unemployed",
         "Post-Secondary Non-Tertiary (ISCED 4) Completion",
         "Post-Secondary Non-Tertiary (ISCED 4) Participation",
         "Recent Employment",
@@ -450,6 +556,7 @@ almp_nma_model_ten_component_draws <- almp_nma_model_ten |>
         "Secondary School (ISCED 3) Participation",
         "Short-Cycle Tertiary (ISCED 5) Completion",
         "Short-Cycle Tertiary (ISCED 5) Participation",
+        "Total Income",
         "Total Individual Income",
         "Wages"
       ),
@@ -461,7 +568,7 @@ almp_nma_model_ten_component_draws <- almp_nma_model_ten |>
     .draw,
     outcome,
     component,
-    effect = .value
+    effect = estimate
   ) |>
   mutate(
     outcome_domain = case_when(
@@ -469,6 +576,7 @@ almp_nma_model_ten_component_draws <- almp_nma_model_ten |>
         c(
           "Currently Employed",
           "Currently Unemployed",
+          #"Currently EET",
           "Currently NEET",
           "Currently Not in the Labour Force",
           "Currently Self-Employed",
@@ -478,8 +586,13 @@ almp_nma_model_ten_component_draws <- almp_nma_model_ten |>
         "Labour Force Status",
       outcome %in% c("Labour Earnings", "Employment Compensation", "Wages") ~
         "Employment Compensation",
-      outcome == "Total Individual Income" ~ "Total Income",
-      outcome %in% c("Period Employed", "Period Unemployed") ~
+      outcome %in% c("Total Individual Income", "Total Income") ~
+        "Total Income",
+      outcome %in%
+        c(
+          "Period Employed" #,
+          #"Period Unemployed"
+        ) ~
         "Employment Duration",
       outcome == "Hours Worked" ~ "Hours Worked",
       outcome %in%
@@ -496,7 +609,25 @@ almp_nma_model_ten_component_draws <- almp_nma_model_ten |>
           "Post-Secondary Non-Tertiary (ISCED 4) Completion"
         ) ~
         "Education and Skills",
-      outcome == "Exits from Unemployment" ~ "Labour Market Transitions"
+      outcome %in% c("Entries into Employment", "Exits from Unemployment") ~
+        "Labour Market Transitions"
+    ),
+    # Flip the sign on negative outcomes
+    outcome = case_when(
+      outcome %in%
+        c(
+          "Currently Unemployed",
+          "Currently NEET",
+          "Currently Not in the Labour Force",
+          #"Entires to Not in the Labour Force",
+          #"Not in the Labour Force since baseline",
+          "Period Not in the Labour Force" #,
+          #"Period Unemployed",
+          #"Recent Unemployment",
+          #"Unemployed since baseline"
+        ) ~
+        effect * -1,
+      TRUE ~ effect
     )
   )
 
@@ -527,6 +658,7 @@ almp_nma_model_ten_component_summary <- almp_nma_model_ten_component_draws |>
         c(
           "Currently Employed",
           "Currently Unemployed",
+          #"Currently EET",
           "Currently NEET",
           "Currently Not in the Labour Force",
           "Currently Self-Employed",
@@ -536,8 +668,13 @@ almp_nma_model_ten_component_summary <- almp_nma_model_ten_component_draws |>
         "Labour Force Status",
       outcome %in% c("Labour Earnings", "Employment Compensation", "Wages") ~
         "Employment Compensation",
-      outcome == "Total Individual Income" ~ "Total Income",
-      outcome %in% c("Period Employed", "Period Unemployed") ~
+      outcome %in% c("Total Individual Income", "Total Income") ~
+        "Total Income",
+      outcome %in%
+        c(
+          "Period Employed" #,
+          #"Period Unemployed"
+        ) ~
         "Employment Duration",
       outcome == "Hours Worked" ~ "Hours Worked",
       outcome %in%
@@ -554,7 +691,8 @@ almp_nma_model_ten_component_summary <- almp_nma_model_ten_component_draws |>
           "Post-Secondary Non-Tertiary (ISCED 4) Completion"
         ) ~
         "Education and Skills",
-      outcome == "Exits from Unemployment" ~ "Labour Market Transitions"
+      outcome %in% c("Entries into Employment", "Exits from Unemployment") ~
+        "Labour Market Transitions"
     )
   )
 
@@ -573,6 +711,11 @@ saveRDS(
 )
 
 saveRDS(
-  almp_nma_model_ten_tau_draws,
-  "./visualisation/inputs/prototype_models/almp_nma_model_ten_tau_draws.RDS"
+  almp_nma_model_ten_tau_component_draws,
+  "./visualisation/inputs/prototype_models/almp_nma_model_ten_tau_component_draws.RDS"
+)
+
+saveRDS(
+  almp_nma_model_ten_tau_study_design_draws,
+  "./visualisation/inputs/prototype_models/almp_nma_model_ten_tau_study_design_draws.RDS"
 )
