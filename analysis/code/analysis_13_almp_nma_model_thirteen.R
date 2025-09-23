@@ -310,10 +310,6 @@ almp_nma_model_thirteen <- brm(
   save_pars = save_pars(all = TRUE)
 )
 
-saveRDS(
-  almp_nma_model_thirteen,
-)
-
 #-------------------------------------------------------------------------------
 # 5. Inspect the results
 #-------------------------------------------------------------------------------
