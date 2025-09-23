@@ -293,14 +293,22 @@ almp_nma_centred_data <- almp_nma_combined_data_clean |>
       is.na(study_age_mean) & !is.na(study_age_min) & !is.na(study_age_max) ~
         (study_age_min + study_age_max) / 2,
       TRUE ~ study_age_mean
-    ),
-    # centre age around mean
-    prop_female_centred = proportion_female_treatment -
-      mean(proportion_female_treatment, na.rm = TRUE) / 10,
-    # centre age around mean
-    study_age_mean_centred = study_age_mean -
+    )
+  ) |>
+  ungroup() |>
+  mutate(
+    # 10 percentage-point units: 1.0 == +10pp
+    prop_female_centred = (proportion_female_treatment -
+      mean(proportion_female_treatment, na.rm = TRUE)) *
+      10,
+    # centred age (years)
+    study_age_mean_centred_raw = study_age_mean -
       mean(study_age_mean, na.rm = TRUE),
-    # centre age from 18
+    # z-scored age (1 = +1 SD)
+    study_age_mean_centred = (study_age_mean -
+      mean(study_age_mean, na.rm = TRUE)) /
+      sd(study_age_mean, na.rm = TRUE),
+    # your 18-year anchor
     study_age_mean_centred_18 = study_age_mean - 18
   ) |>
   # drop redundant vars

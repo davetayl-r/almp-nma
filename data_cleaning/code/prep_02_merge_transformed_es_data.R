@@ -21,9 +21,12 @@ effect_size_code_files <- list.files(
   pattern = "\\.R$",
   full.names = TRUE
 ) |>
-  discard(~ basename(.x) == "benchmark_es_functions.R") |>
-  discard(~ basename(.x) == "effect_size_functions.R") |>
-  discard(~ basename(.x) == "backup_functions.R")
+  purrr::discard(~ basename(.x) == "benchmark_es_functions.R") |>
+  purrr::discard(~ basename(.x) == "effect_size_functions.R") |>
+  purrr::discard(~ basename(.x) == "backup_functions.R") |>
+  purrr::discard(
+    ~ basename(.x) == "es_transformation_pool_demographic_subgroups"
+  )
 
 # run each code file
 effect_size_code_files |>

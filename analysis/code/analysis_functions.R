@@ -122,7 +122,43 @@ make_coef_priors <- function(gp, pattern, sd) {
 }
 
 #-------------------------------------------------------------------------------
-# 4. Check for Kullback-Leibler divergence for N(post_mean, post_sd^2)
+# 4. Make a list of prior() objects for any sd coefficients matching a regex
+#-------------------------------------------------------------------------------
+
+make_sd_priors <- function(
+  gp,
+  coef_pattern = ".*", # regex on coef
+  group_pattern = NULL, # optional regex on group
+  dist = "student_t(3, 0, %s)", # or "normal(0, %s)"
+  scale = 0.25
+) {
+  stopifnot(is.data.frame(gp), all(c("class", "group", "coef") %in% names(gp)))
+
+  # start from SD rows only
+  rows <- dplyr::filter(gp, .data$class == "sd")
+
+  # optionally filter by group regex
+  if (!is.null(group_pattern)) {
+    rows <- dplyr::filter(rows, grepl(group_pattern, .data$group))
+  }
+
+  # filter by coef regex
+  rows <- dplyr::filter(rows, grepl(coef_pattern, .data$coef))
+
+  if (nrow(rows) == 0L) {
+    return(list())
+  }
+
+  pri_str <- sprintf(dist, scale)
+
+  # one prior per (group, coef)
+  purrr::pmap(rows[, c("group", "coef")], function(group, coef) {
+    set_prior(pri_str, class = "sd", group = group, coef = coef)
+  })
+}
+
+#-------------------------------------------------------------------------------
+# 5. Check for Kullback-Leibler divergence for N(post_mean, post_sd^2)
 #-------------------------------------------------------------------------------
 
 kullback_leibler_divergence_normal <- function(
@@ -135,7 +171,7 @@ kullback_leibler_divergence_normal <- function(
 }
 
 #-------------------------------------------------------------------------------
-# 5. Check for prior–posterior overlap (PPO) by numeric integration
+# 6. Check for prior–posterior overlap (PPO) by numeric integration
 #-------------------------------------------------------------------------------
 
 prior_posterior_overlap <- function(
@@ -153,7 +189,7 @@ prior_posterior_overlap <- function(
 }
 
 # ---------------------------------------------------------
-# 6. Get draw-level differences for one component
+# 7. Get draw-level differences for one component
 # ---------------------------------------------------------
 get_comp_outcome_draws <- function(comp, n_draws = NULL) {
   new_data_0 <- grid_base
