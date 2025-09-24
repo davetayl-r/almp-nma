@@ -541,6 +541,10 @@ almp_nma_additive_model_data <- almp_nma_timing_model_data |>
     # force outcome to be factor
     outcome = factor(outcome)
   ) |>
+  # rename vars
+  rename(
+    prop_female = proportion_female_treatment
+  ) |>
   # drop redundant vars
   select(
     -outcome_source,
@@ -566,7 +570,6 @@ almp_nma_additive_model_data <- almp_nma_timing_model_data |>
     -certification,
     -study_funding,
     -evaluator,
-    -proportion_female_treatment,
     -study_age_mean,
     -target,
     -window,

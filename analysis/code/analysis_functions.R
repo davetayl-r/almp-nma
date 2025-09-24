@@ -244,3 +244,60 @@ get_comp_outcome_draws <- function(comp, n_draws = NULL) {
       .before = 1
     )
 }
+
+# ---------------------------------------------------------
+# 8. Get draw-level differences for one component x proportion female
+# ---------------------------------------------------------
+component_effect_x_proportion_female <- function(
+  proportion_female_centred_value,
+  draw_ids = NULL
+) {
+  new_data <- base_outcome_grid
+  new_data$prop_female_centred <- proportion_female_centred_value
+
+  purrr::map_dfr(component_vars, function(component) {
+    new_data_1 <- new_data
+    new_data_1[[component]] <- 1
+    new_data_0 <- new_data
+    new_data_0[[component]] <- 0
+
+    # predictions: matrix [draws × n_outcomes]
+    mu_1 <- posterior_linpred(
+      almp_nma_model_thirteen_results,
+      newdata = new_data_1,
+      re_formula = NA,
+      transform = FALSE,
+      draw_ids = draw_ids
+    )
+    mu_0 <- posterior_linpred(
+      almp_nma_model_thirteen_results,
+      newdata = new_data_0,
+      re_formula = NA,
+      transform = FALSE,
+      draw_ids = draw_ids
+    )
+
+    # draws × outcomes
+    effect <- mu_1 - mu_0
+
+    colnames(effect) <- as.character(outcome_levels)
+
+    as_tibble(effect) |>
+      mutate(
+        .draw = seq_len(nrow(effect))
+      ) |>
+      pivot_longer(
+        -.draw,
+        names_to = "outcome",
+        values_to = "estimate"
+      ) |>
+      mutate(
+        component = component,
+        prop_female_raw = ifelse(
+          proportion_female_centred_value == proportion_female_1_centred_scale,
+          1,
+          0
+        )
+      )
+  })
+}

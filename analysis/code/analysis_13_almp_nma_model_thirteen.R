@@ -100,6 +100,11 @@ almp_nma_model_thirteen_data <- almp_nma_additive_model_data |>
     outcome = as.factor(outcome)
   )
 
+saveRDS(
+  almp_nma_model_thirteen_data,
+  "./analysis/output/almp_nma_model_thirteen_data.RDS"
+)
+
 #-------------------------------------------------------------------------------
 # 2. Specify model formula
 #-------------------------------------------------------------------------------
@@ -304,7 +309,7 @@ almp_nma_model_thirteen <- brm(
   init = "random",
   control = list(adapt_delta = 0.99, max_treedepth = 15),
   refresh = 100,
-  seed = 12345,
+  seed = 2204,
   file = "analysis/output/almp_nma_model_thirteen.RDS",
   file_refit = "on_change",
   save_pars = save_pars(all = TRUE)
