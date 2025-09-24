@@ -367,16 +367,16 @@ almp_nma_model_thirteen_tau_component_design_draws <- almp_nma_model_thirteen_dr
       component_key == "comp_behavioural_skills_training" ~
         "Behavioural Skills Training",
       component_key == "comp_self_employment_support" ~
-        "Self-employment Support",
+        "Self-Employment Support",
       component_key == "comp_job_specific_technical_skills_off_job_training" ~
-        "Off-Job Training",
+        "Technical Skills Training (Off-the-Job)",
       component_key == "comp_job_search_preparation" ~ "Job Search Preparation",
       component_key == "comp_job_search_assistance" ~ "Job Search Assistance",
       component_key == "comp_employment_counselling" ~ "Employment Counselling",
       component_key == "comp_employment_coaching" ~ "Employment Coaching",
       component_key == "comp_financial_assistance" ~ "Financial Assistance",
       component_key == "comp_job_specific_technical_skills_on_job_training" ~
-        "On-Job Training",
+        "Technical Skills Training (On-the-Job)",
       component_key == "comp_paid_temporary_work_experience" ~
         "Paid Temporary Work Experience",
       component_key == "comp_unpaid_temporary_work_experience" ~
@@ -384,7 +384,7 @@ almp_nma_model_thirteen_tau_component_design_draws <- almp_nma_model_thirteen_dr
       component_key == "comp_wage_subsidies" ~ "Wage Subsidies",
       component_key == "comp_public_works" ~ "Public Works",
       component_key == "comp_other_active_component_nec" ~
-        "Other active component",
+        "Other Active Components",
       TRUE ~ NA_character_
     ),
     design = recode(
@@ -511,20 +511,20 @@ almp_nma_model_thirteen_component_draws_flagged <- almp_nma_model_thirteen_draws
     component = recode(
       component,
       "basic_skills_training" = "Basic Skills Training",
-      "behavioural_skills_training" = "Behavioral Skills Training",
+      "behavioural_skills_training" = "Behavioural Skills Training",
       "employment_coaching" = "Employment Coaching",
-      "employment_counselling" = "Employment Counseling",
+      "employment_counselling" = "Employment Counselling",
       "financial_assistance" = "Financial Assistance",
       "job_search_assistance" = "Job Search Assistance",
       "job_search_preparation" = "Job Search Preparation",
       "job_specific_technical_skills_off_job_training" = "Technical Skills Training (Off-the-Job)",
       "job_specific_technical_skills_on_job_training" = "Technical Skills Training (On-the-Job)",
       "other_active_component_nec" = "Other Active Components",
-      "paid_temporary_work_experience" = "Paid Work Experience",
+      "paid_temporary_work_experience" = "Paid Temporary Work Experience",
       "public_works" = "Public Works",
       "self_employment_support" = "Self-Employment Support",
       "soft_skills_training" = "Soft Skills Training",
-      "unpaid_temporary_work_experience" = "Unpaid Work Experience",
+      "unpaid_temporary_work_experience" = "Unpaid Temporary Work Experience",
       "wage_subsidies" = "Wage Subsidies"
     )
   ) |>
@@ -611,20 +611,20 @@ almp_nma_model_thirteen_component_draws <- almp_nma_model_thirteen_draws |>
     component = recode(
       component,
       "basic_skills_training" = "Basic Skills Training",
-      "behavioural_skills_training" = "Behavioral Skills Training",
+      "behavioural_skills_training" = "Behavioural Skills Training",
       "employment_coaching" = "Employment Coaching",
-      "employment_counselling" = "Employment Counseling",
+      "employment_counselling" = "Employment Counselling",
       "financial_assistance" = "Financial Assistance",
       "job_search_assistance" = "Job Search Assistance",
       "job_search_preparation" = "Job Search Preparation",
       "job_specific_technical_skills_off_job_training" = "Technical Skills Training (Off-the-Job)",
       "job_specific_technical_skills_on_job_training" = "Technical Skills Training (On-the-Job)",
       "other_active_component_nec" = "Other Active Components",
-      "paid_temporary_work_experience" = "Paid Work Experience",
+      "paid_temporary_work_experience" = "Paid Temporary Work Experience",
       "public_works" = "Public Works",
       "self_employment_support" = "Self-Employment Support",
       "soft_skills_training" = "Soft Skills Training",
-      "unpaid_temporary_work_experience" = "Unpaid Work Experience",
+      "unpaid_temporary_work_experience" = "Unpaid Temporary Work Experience",
       "wage_subsidies" = "Wage Subsidies"
     )
   ) |>
@@ -735,17 +735,17 @@ almp_nma_model_thirteen_component_draws_combined <- left_join(
       levels = c(
         "Basic Skills Training",
         "Soft Skills Training",
-        "Behavioral Skills Training",
+        "Behavioural Skills Training",
         "Technical Skills Training (Off-the-Job)",
         "Self-Employment Support",
         "Job Search Assistance",
         "Job Search Preparation",
         "Employment Coaching",
-        "Employment Counseling",
+        "Employment Counselling",
         "Financial Assistance",
         "Technical Skills Training (On-the-Job)",
-        "Paid Work Experience",
-        "Unpaid Work Experience",
+        "Paid Temporary Work Experience",
+        "Unpaid Temporary Work Experience",
         "Wage Subsidies",
         "Public Works",
         "Other Active Components"

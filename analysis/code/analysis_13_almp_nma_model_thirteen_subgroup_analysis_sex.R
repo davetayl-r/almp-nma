@@ -102,6 +102,9 @@ almp_nma_model_thirteen_study_level_subgroup_sex_draws <- bind_rows(
   study_level_subgroup_sex_male_draws,
   study_level_subgroup_sex_female_draws
 ) |>
+  rename(
+    theta = estimate
+  ) |>
   mutate(
     subgroup = case_when(
       prop_female_raw == 1 ~ "female",
@@ -114,20 +117,129 @@ almp_nma_model_thirteen_study_level_subgroup_sex_draws <- bind_rows(
     subgroup
   ) |>
   mutate(
-    probability_greater_zero = mean(estimate > 0, na.rm = TRUE),
-    probability_low_impact = mean(estimate > 0 & estimate <= 0.1, na.rm = TRUE),
+    probability_greater_zero = mean(theta > 0, na.rm = TRUE),
+    probability_low_impact = mean(theta > 0 & theta <= 0.1, na.rm = TRUE),
     probability_medium_impact = mean(
-      estimate > 0.1 & estimate < 0.2,
+      theta > 0.1 & theta < 0.2,
       na.rm = TRUE
     ),
-    probability_high_impact = mean(estimate >= 0.2, na.rm = TRUE)
+    probability_high_impact = mean(theta >= 0.2, na.rm = TRUE)
   ) |>
-  ungroup()
+  ungroup() |>
+  mutate(
+    outcome = recode(
+      outcome,
+      "Apprenticeship participation" = "Apprenticeship Participation",
+      "Bachelors or equivalent (ISCED 6) completion" = "Bachelors Degree (ISCED 6) Completion",
+      "Bachelors or equivalent (ISCED 6) participation" = "Bachelors Degree (ISCED 6) Participation",
+      "Currently Employed" = "Currently Employed",
+      "Currently NEET" = "Currently NEET",
+      "Currently Not in the Labour Force" = "Currently Not in the Labour Force",
+      "Currently Self-Employed" = "Currently Self-Employed",
+      "Currently Unemployed" = "Currently Unemployed",
+      "Employed since baseline" = "Employed Since Baseline",
+      "Entries into Employment" = "Entries into Employment",
+      "Exits from Unemployment" = "Exits from Unemployment",
+      "Hours Worked" = "Hours Worked",
+      "Labour Earnings" = "Labour Earnings",
+      "Occupational licence obtained" = "Occupational Licence Obtained",
+      "Period Employed" = "Period Employed",
+      "Period Unemployed" = "Period Unemployed",
+      "Post-secondary non-tertiary (ISCED 4) completion" = "Post-Secondary Non-Tertiary (ISCED 4) Completion",
+      "Post-secondary non-tertiary (ISCED 4) participation" = "Post-Secondary Non-Tertiary (ISCED 4) Participation",
+      "Recent Employment" = "Recent Employment",
+      "Secondary school or equivalent (ISCED 3) completion" = "Secondary School (ISCED 3) Completion",
+      "Secondary school or equivalent (ISCED 3) participation" = "Secondary School (ISCED 3) Participation",
+      "Short-cycle tertiary (ISCED 5) completion" = "Short-Cycle Tertiary (ISCED 5) Completion",
+      "Short-cycle tertiary (ISCED 5) participation" = "Short-Cycle Tertiary (ISCED 5) Participation",
+      "Total Income" = "Total Income",
+      "Total individual income" = "Total Individual Income",
+      "Wages" = "Wages"
+    ),
+    component = case_when(
+      component == "comp_basic_skills_training" ~ "Basic Skills Training",
+      component == "comp_soft_skills_training" ~ "Soft Skills Training",
+      component == "comp_behavioural_skills_training" ~
+        "Behavioural Skills Training",
+      component == "comp_self_employment_support" ~ "Self-Employment Support",
+      component == "comp_job_specific_technical_skills_off_job_training" ~
+        "Technical Skills Training (Off-the-Job)",
+      component == "comp_job_search_preparation" ~ "Job Search Preparation",
+      component == "comp_job_search_assistance" ~ "Job Search Assistance",
+      component == "comp_employment_counselling" ~ "Employment Counselling",
+      component == "comp_employment_coaching" ~ "Employment Coaching",
+      component == "comp_financial_assistance" ~ "Financial Assistance",
+      component == "comp_job_specific_technical_skills_on_job_training" ~
+        "Technical Skills Training (On-the-Job)",
+      component == "comp_paid_temporary_work_experience" ~
+        "Paid Temporary Work Experience",
+      component == "comp_unpaid_temporary_work_experience" ~
+        "Unpaid Temporary Work Experience",
+      component == "comp_wage_subsidies" ~ "Wage Subsidies",
+      component == "comp_public_works" ~ "Public Works",
+      component == "comp_other_active_component_nec" ~
+        "Other Active Components",
+      TRUE ~ NA_character_
+    ),
+    outcome_domain = case_when(
+      outcome %in%
+        c(
+          "Currently Employed",
+          "Currently Unemployed",
+          "Currently NEET",
+          "Currently Not in the Labour Force",
+          "Currently Self-Employed",
+          "Recent Employment",
+          "Employed Since Baseline"
+        ) ~
+        "Labour Force Status",
+      outcome %in% c("Labour Earnings", "Wages") ~ "Employment Compensation",
+      outcome %in% c("Total Income", "Total Individual Income") ~
+        "Total Income",
+      outcome %in% c("Period Employed", "Period Unemployed") ~
+        "Employment Duration",
+      outcome == "Hours Worked" ~ "Hours Worked",
+      outcome %in%
+        c(
+          "Apprenticeship Participation",
+          "Bachelors Degree (ISCED 6) Participation",
+          "Bachelors Degree (ISCED 6) Completion",
+          "Secondary School (ISCED 3) Completion",
+          "Secondary School (ISCED 3) Participation",
+          "Occupational Licence Obtained",
+          "Short-Cycle Tertiary (ISCED 5) Participation",
+          "Short-Cycle Tertiary (ISCED 5) Completion",
+          "Post-Secondary Non-Tertiary (ISCED 4) Participation",
+          "Post-Secondary Non-Tertiary (ISCED 4) Completion"
+        ) ~
+        "Education and Skills",
+      outcome %in% c("Entries into Employment", "Exits from Unemployment") ~
+        "Labour Market Transitions"
+    ),
+    # Flip the sign on negative outcomes
+    theta = case_when(
+      outcome %in%
+        c(
+          "Currently Unemployed",
+          "Currently NEET",
+          "Currently Not in the Labour Force",
+          "Period Not in the Labour Force"
+        ) ~
+        theta * -1,
+      TRUE ~ theta
+    )
+  )
 
 # Posterior summaries for subgroup effects
 almp_nma_model_thirteen_study_level_subgroup_sex_summary <- almp_nma_model_thirteen_study_level_subgroup_sex_draws |>
+  group_by(
+    outcome,
+    outcome_domain,
+    component,
+    subgroup
+  ) |>
   median_qi(
-    estimate,
+    theta,
     .width = .95
   ) |>
   ungroup() |>
@@ -145,13 +257,14 @@ almp_nma_model_thirteen_differential_treatment_effect_sex_draws <- almp_nma_mode
   select(
     .draw,
     outcome,
+    outcome_domain,
     component,
     prop_female_raw,
-    estimate
+    theta
   ) |>
   pivot_wider(
     names_from = prop_female_raw,
-    values_from = estimate,
+    values_from = theta,
     names_prefix = "proportion_female_"
   ) |>
   group_by(
@@ -175,6 +288,7 @@ almp_nma_model_thirteen_differential_treatment_effect_sex_draws <- almp_nma_mode
 almp_nma_model_thirteen_differential_treatment_effect_sex_summary <- almp_nma_model_thirteen_differential_treatment_effect_sex_draws |>
   group_by(
     outcome,
+    outcome_domain,
     component,
     probability_greater_for_female,
     probability_greater_for_male
