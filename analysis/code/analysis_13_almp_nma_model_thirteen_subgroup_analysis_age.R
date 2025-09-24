@@ -161,23 +161,24 @@ almp_nma_model_thirteen_study_level_subgroup_sex_draws <- bind_rows(
       component == "comp_soft_skills_training" ~ "Soft Skills Training",
       component == "comp_behavioural_skills_training" ~
         "Behavioural Skills Training",
-      component == "comp_self_employment_support" ~ "Self-employment Support",
+      component == "comp_self_employment_support" ~ "Self-Employment Support",
       component == "comp_job_specific_technical_skills_off_job_training" ~
-        "Off-Job Training",
+        "Technical Skills Training (Off-the-Job)",
       component == "comp_job_search_preparation" ~ "Job Search Preparation",
       component == "comp_job_search_assistance" ~ "Job Search Assistance",
       component == "comp_employment_counselling" ~ "Employment Counselling",
       component == "comp_employment_coaching" ~ "Employment Coaching",
       component == "comp_financial_assistance" ~ "Financial Assistance",
       component == "comp_job_specific_technical_skills_on_job_training" ~
-        "On-Job Training",
+        "Technical Skills Training (On-the-Job)",
       component == "comp_paid_temporary_work_experience" ~
         "Paid Temporary Work Experience",
       component == "comp_unpaid_temporary_work_experience" ~
         "Unpaid Temporary Work Experience",
       component == "comp_wage_subsidies" ~ "Wage Subsidies",
       component == "comp_public_works" ~ "Public Works",
-      component == "comp_other_active_component_nec" ~ "Other active component",
+      component == "comp_other_active_component_nec" ~
+        "Other Active Components",
       TRUE ~ NA_character_
     ),
     outcome_domain = case_when(
