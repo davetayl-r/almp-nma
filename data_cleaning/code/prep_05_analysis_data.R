@@ -570,7 +570,6 @@ almp_nma_additive_model_data <- almp_nma_timing_model_data |>
     -certification,
     -study_funding,
     -evaluator,
-    -study_age_mean,
     -target,
     -window,
     -selected_timepoint,

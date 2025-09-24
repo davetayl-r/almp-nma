@@ -1,7 +1,7 @@
 #============================================================================================#
 # Project: ALMP NMA                                                                          #
 # Author: David Taylor                                                                       #
-# Date: 24/09/2025                                                                           #
+# Date: 25/09/2025                                                                           #
 # Purpose: NMA additive model                                                                #
 #============================================================================================#
 
@@ -197,8 +197,7 @@ almp_nma_additive_model_formula <- bf(
         comp_wage_subsidies +
         comp_public_works +
         comp_other_active_component_nec ||
-        gr(study, by = study_design_type)),
-  decomp = "QR"
+        gr(study, by = study_design_type))
 )
 
 #-------------------------------------------------------------------------------
@@ -293,13 +292,13 @@ almp_nma_additive_model <- brm(
   family = gaussian(),
   chains = 4,
   cores = 4,
-  iter = 6000,
+  iter = 4000,
   warmup = 2000,
   threads = threading(1),
   backend = "cmdstanr",
   init = 0,
   sample_prior = "no",
-  control = list(adapt_delta = 0.995, max_treedepth = 16),
+  control = list(adapt_delta = 0.99, max_treedepth = 16),
   refresh = 100,
   seed = 2204,
   file = "analysis/output/almp_nma_additive_model.RDS",

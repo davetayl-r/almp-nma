@@ -169,6 +169,118 @@ almp_nma_model_thirteen_study_level_subgroup_sex_summary_filtered <- almp_nma_mo
     )
   )
 
+almp_nma_model_thirteen_differential_treatment_effect_sex_draws_filtered <- almp_nma_model_thirteen_differential_treatment_effect_sex_draws |>
+  left_join(
+    posterior_flags,
+    by = c(
+      "outcome",
+      "component"
+    )
+  ) |>
+  # drop data we're not interested in
+  filter(
+    # not reporting other components
+    !component == "Other Active Components",
+    # filter outcomes where posterior is not different to prior
+    posterior_different_prior_flag == "Yes",
+    # drop outcome's that are otherwise sparse
+    !outcome %in%
+      c(
+        "Currently Not in the Labour Force",
+        "Employed Since Baseline"
+      ),
+    # drop outcome domains that are included for network stability
+    !outcome_domain %in%
+      c(
+        "Total Income",
+        "Labour Market Transitions"
+      )
+  ) |>
+  # order outcomes
+  mutate(
+    outcome = factor(
+      outcome,
+      levels = c(
+        "Apprenticeship Participation",
+        "Occupational Licence Obtained",
+        "Secondary School (ISCED 3) Completion",
+        "Secondary School (ISCED 3) Participation",
+        "Post-Secondary Non-Tertiary (ISCED 4) Completion",
+        "Post-Secondary Non-Tertiary (ISCED 4) Participation",
+        "Short-Cycle Tertiary (ISCED 5) Completion",
+        "Short-Cycle Tertiary (ISCED 5) Participation",
+        "Bachelors Degree (ISCED 6) Participation",
+        "Bachelors Degree (ISCED 6) Completion",
+        "Currently Employed",
+        "Recent Employment",
+        "Currently Self-Employed",
+        "Currently Unemployed",
+        "Currently NEET",
+        "Hours Worked",
+        "Period Employed",
+        "Labour Earnings",
+        "Wages"
+      ),
+      ordered = TRUE
+    )
+  )
+
+almp_nma_model_thirteen_differential_treatment_effect_sex_summary_filtered <- almp_nma_model_thirteen_differential_treatment_effect_sex_summary |>
+  left_join(
+    posterior_flags,
+    by = c(
+      "outcome",
+      "component"
+    )
+  ) |>
+  # drop data we're not interested in
+  filter(
+    # not reporting other components
+    !component == "Other Active Components",
+    # filter outcomes where posterior is not different to prior
+    posterior_different_prior_flag == "Yes",
+    # drop outcome's that are otherwise sparse
+    !outcome %in%
+      c(
+        "Currently Not in the Labour Force",
+        "Employed Since Baseline"
+      ),
+    # drop outcome domains that are included for network stability
+    !outcome_domain %in%
+      c(
+        "Total Income",
+        "Labour Market Transitions"
+      )
+  ) |>
+  # order outcomes
+  mutate(
+    outcome = factor(
+      outcome,
+      levels = c(
+        "Apprenticeship Participation",
+        "Occupational Licence Obtained",
+        "Secondary School (ISCED 3) Completion",
+        "Secondary School (ISCED 3) Participation",
+        "Post-Secondary Non-Tertiary (ISCED 4) Completion",
+        "Post-Secondary Non-Tertiary (ISCED 4) Participation",
+        "Short-Cycle Tertiary (ISCED 5) Completion",
+        "Short-Cycle Tertiary (ISCED 5) Participation",
+        "Bachelors Degree (ISCED 6) Participation",
+        "Bachelors Degree (ISCED 6) Completion",
+        "Currently Employed",
+        "Recent Employment",
+        "Currently Self-Employed",
+        "Currently Unemployed",
+        "Currently NEET",
+        "Hours Worked",
+        "Period Employed",
+        "Labour Earnings",
+        "Wages"
+      ),
+      ordered = TRUE
+    )
+  )
+
 #-------------------------------------------------------------------------------
 # 1. Basic Skills Training x study-level subgroup
 #-------------------------------------------------------------------------------

@@ -245,9 +245,10 @@ get_comp_outcome_draws <- function(comp, n_draws = NULL) {
     )
 }
 
-# ---------------------------------------------------------
+# -------------------------------------------------------------------------
 # 8. Get draw-level differences for one component x proportion female
-# ---------------------------------------------------------
+# -------------------------------------------------------------------------
+
 component_effect_x_proportion_female <- function(
   proportion_female_centred_value,
   draw_ids = NULL
@@ -298,6 +299,56 @@ component_effect_x_proportion_female <- function(
           1,
           0
         )
+      )
+  })
+}
+
+# -------------------------------------------------------------------------
+# 9. Get draw-level differences for one component x mean study age
+# -------------------------------------------------------------------------
+
+component_effect_x_mean_study_age <- function(age_raw_value, draw_ids = NULL) {
+  # convert raw years -> z-scored centred scale used in the model
+  age_z <- (age_raw_value - study_age_mean) / study_age_sd
+
+  new_data <- base_outcome_grid
+  new_data$study_age_mean_centred <- age_z
+
+  purrr::map_dfr(component_vars, function(component) {
+    new_data_1 <- new_data
+    new_data_1[[component]] <- 1
+    new_data_0 <- new_data
+    new_data_0[[component]] <- 0
+
+    # predictions: matrix [draws × n_outcomes]
+    mu_1 <- posterior_linpred(
+      almp_nma_model_thirteen_results,
+      newdata = new_data_1,
+      re_formula = NA,
+      transform = FALSE,
+      draw_ids = draw_ids
+    )
+    mu_0 <- posterior_linpred(
+      almp_nma_model_thirteen_results,
+      newdata = new_data_0,
+      re_formula = NA,
+      transform = FALSE,
+      draw_ids = draw_ids
+    )
+
+    # draws × outcomes
+    effect <- mu_1 - mu_0
+    colnames(effect) <- as.character(outcome_levels)
+
+    as_tibble(effect) |>
+      mutate(.draw = seq_len(nrow(effect))) |>
+      pivot_longer(-.draw, names_to = "outcome", values_to = "estimate") |>
+      mutate(
+        component = component,
+        # interpretable scale
+        age_group = age_raw_value,
+        # model scale
+        age_z = age_z
       )
   })
 }

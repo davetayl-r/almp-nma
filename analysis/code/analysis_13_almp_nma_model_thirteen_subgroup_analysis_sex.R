@@ -310,20 +310,20 @@ almp_nma_model_thirteen_differential_treatment_effect_sex_summary <- almp_nma_mo
 
 saveRDS(
   almp_nma_model_thirteen_study_level_subgroup_sex_draws,
-  "./visualisation/inputs/almp_nma_model_thirteen_study_level_subgroup_sex_draws.RDS"
+  "./visualisation/inputs/prototype_models/almp_nma_model_thirteen_study_level_subgroup_sex_draws.RDS"
 )
 
 saveRDS(
   almp_nma_model_thirteen_study_level_subgroup_sex_summary,
-  "./visualisation/inputs/almp_nma_model_thirteen_study_level_subgroup_sex_summary.RDS"
+  "./visualisation/inputs/prototype_models/almp_nma_model_thirteen_study_level_subgroup_sex_summary.RDS"
 )
 
 saveRDS(
   almp_nma_model_thirteen_differential_treatment_effect_sex_draws,
-  "./visualisation/inputs/almp_nma_model_thirteen_differential_treatment_effect_sex_draws.RDS"
+  "./visualisation/inputs/prototype_models/almp_nma_model_thirteen_differential_treatment_effect_sex_draws.RDS"
 )
 
 saveRDS(
   almp_nma_model_thirteen_differential_treatment_effect_sex_summary,
-  "./visualisation/inputs/almp_nma_model_thirteen_differential_treatment_effect_sex_summary.RDS"
+  "./visualisation/inputs/prototype_models/almp_nma_model_thirteen_differential_treatment_effect_sex_summary.RDS"
 )

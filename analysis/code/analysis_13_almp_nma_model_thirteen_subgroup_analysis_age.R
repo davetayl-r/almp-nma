@@ -1,8 +1,8 @@
 #============================================================================================#
 # Project: ALMP NMA                                                                          #
 # Author: David Taylor                                                                       #
-# Date: 24/09/2025                                                                           #
-# Purpose: NMA model #13 — subgroup analysis x sex                                           #
+# Date: 25/09/2025                                                                           #
+# Purpose: NMA model #13 — subgroup analysis x age                                           #
 #============================================================================================#
 
 # load required packages
@@ -46,15 +46,18 @@ study_design_levels <- levels(
   almp_nma_model_thirteen_results$data$study_design_type
 )
 
-# We need the raw female share to recover the centering constant
-study_mean_proportion_female <- mean(
-  almp_nma_model_thirteen_data$prop_female, # this needs to be changed for the final model
+# We mean age and sd to recover the centering constant
+study_age_mean <- mean(
+  almp_nma_model_thirteen_data$study_age_mean,
   na.rm = TRUE
 )
+study_age_sd <- sd(almp_nma_model_thirteen_data$study_age_mean, na.rm = TRUE)
 
-# Convert desired raw values (0 and 1) to the centred scale used in the model
-proportion_female_0_centred_scale <- 0 - study_mean_proportion_female # raw 0%
-proportion_female_1_centred_scale <- 1 - study_mean_proportion_female # raw 100%
+# select raw ages to visualise
+mean_study_age_cuts <- c(16, 18, 20, 22, 24)
+
+# convert to z-scored centred scale to matche model input
+mean_study_age_scaled <- (mean_study_age_cuts - study_age_mean) / study_age_sd
 
 # A reasonable placeholder for delta_se (required because y|se(delta_se))
 delta_se_placeholder <- mean(
@@ -70,8 +73,8 @@ base_outcome_grid <- tibble(
   study_design_soo = 0,
   study_design_dbi = 0,
   low_study_quality = 0,
-  # placeholder will be overwritten
   prop_female_centred = 0,
+  # placeholder will be overwritten
   study_age_mean_centred = 0,
   # placeholder
   delta = 0,
@@ -83,38 +86,20 @@ base_outcome_grid <- tibble(
   as.data.frame()
 
 #-------------------------------------------------------------------------------
-# 2. Extract draws for study-level subgroup effects x sex
+# 2. Extract draws for study-level subgroup effects x age
 #-------------------------------------------------------------------------------
 
-# where proportion_female = 0 i.e., male
-study_level_subgroup_sex_male_draws <- component_effect_x_proportion_female(
-  proportion_female_0_centred_scale,
-  draw_ids = NULL
-)
-
-# where proportion_female = 1 i.e., male
-study_level_subgroup_sex_female_draws <- component_effect_x_proportion_female(
-  proportion_female_1_centred_scale,
-  draw_ids = NULL
-)
-
-almp_nma_model_thirteen_study_level_subgroup_sex_draws <- bind_rows(
-  study_level_subgroup_sex_male_draws,
-  study_level_subgroup_sex_female_draws
+almp_nma_model_thirteen_study_level_subgroup_age_draws <- map_dfr(
+  mean_study_age_cuts,
+  component_effect_x_mean_study_age
 ) |>
   rename(
     theta = estimate
   ) |>
-  mutate(
-    subgroup = case_when(
-      prop_female_raw == 1 ~ "female",
-      TRUE ~ "male"
-    )
-  ) |>
   group_by(
     outcome,
     component,
-    subgroup
+    age_group
   ) |>
   mutate(
     probability_greater_zero = mean(theta > 0, na.rm = TRUE),
@@ -231,12 +216,12 @@ almp_nma_model_thirteen_study_level_subgroup_sex_draws <- bind_rows(
   )
 
 # Posterior summaries for subgroup effects
-almp_nma_model_thirteen_study_level_subgroup_sex_summary <- almp_nma_model_thirteen_study_level_subgroup_sex_draws |>
+almp_nma_model_thirteen_study_level_subgroup_age_summary <- almp_nma_model_thirteen_study_level_subgroup_age_draws |>
   group_by(
     outcome,
     outcome_domain,
     component,
-    subgroup
+    age_group
   ) |>
   median_qi(
     theta,
@@ -250,80 +235,15 @@ almp_nma_model_thirteen_study_level_subgroup_sex_summary <- almp_nma_model_thirt
   )
 
 #-------------------------------------------------------------------------------
-# 3. Extract draws for study-level differential treatment effect x sex
-#-------------------------------------------------------------------------------
-
-almp_nma_model_thirteen_differential_treatment_effect_sex_draws <- almp_nma_model_thirteen_study_level_subgroup_sex_draws |>
-  select(
-    .draw,
-    outcome,
-    outcome_domain,
-    component,
-    prop_female_raw,
-    theta
-  ) |>
-  pivot_wider(
-    names_from = prop_female_raw,
-    values_from = theta,
-    names_prefix = "proportion_female_"
-  ) |>
-  group_by(
-    .draw,
-    outcome,
-    component
-  ) |>
-  mutate(
-    contrast_1_minus_0 = proportion_female_1 - proportion_female_0
-  ) |>
-  ungroup() |>
-  group_by(
-    outcome,
-    component
-  ) |>
-  mutate(
-    probability_greater_for_female = mean(contrast_1_minus_0 > 0, na.rm = TRUE),
-    probability_greater_for_male = mean(contrast_1_minus_0 < 0, na.rm = TRUE)
-  )
-
-almp_nma_model_thirteen_differential_treatment_effect_sex_summary <- almp_nma_model_thirteen_differential_treatment_effect_sex_draws |>
-  group_by(
-    outcome,
-    outcome_domain,
-    component,
-    probability_greater_for_female,
-    probability_greater_for_male
-  ) |>
-  median_qi(
-    contrast_1_minus_0,
-    .width = .95
-  ) |>
-  ungroup() |>
-  select(
-    -.width,
-    -.point,
-    -.interval
-  )
-
-#-------------------------------------------------------------------------------
-# 4. Export results for visualisation
+# 3. Export results for visualisation
 #-------------------------------------------------------------------------------
 
 saveRDS(
-  almp_nma_model_thirteen_study_level_subgroup_sex_draws,
-  "./visualisation/inputs/almp_nma_model_thirteen_study_level_subgroup_sex_draws.RDS"
+  almp_nma_model_thirteen_study_level_subgroup_age_draws,
+  "./visualisation/inputs/prototype_models/almp_nma_model_thirteen_study_level_subgroup_age_draws.RDS"
 )
 
 saveRDS(
-  almp_nma_model_thirteen_study_level_subgroup_sex_summary,
-  "./visualisation/inputs/almp_nma_model_thirteen_study_level_subgroup_sex_summary.RDS"
-)
-
-saveRDS(
-  almp_nma_model_thirteen_differential_treatment_effect_sex_draws,
-  "./visualisation/inputs/almp_nma_model_thirteen_differential_treatment_effect_sex_draws.RDS"
-)
-
-saveRDS(
-  almp_nma_model_thirteen_differential_treatment_effect_sex_summary,
-  "./visualisation/inputs/almp_nma_model_thirteen_differential_treatment_effect_sex_summary.RDS"
+  almp_nma_model_thirteen_study_level_subgroup_age_summary,
+  "./visualisation/inputs/prototype_models/almp_nma_model_thirteen_study_level_subgroup_age_summary.RDS"
 )
