@@ -1,7 +1,7 @@
 #============================================================================================#
 # Project: ALMP NMA                                                                          #
 # Author: David Taylor                                                                       #
-# Date: 19/09/2025                                                                           #
+# Date: 25/09/2025                                                                           #
 # Purpose: Visualise additive NMA model                                                      #
 #============================================================================================#
 
@@ -10,1137 +10,1316 @@ library(tidyverse)
 library(ggplot2)
 library(ggdist)
 library(scales)
-library(ggh4x)
 
-# load data
-almp_nma_additive_model_component_draws_location <- "./visualisation/inputs/almp_nma_additive_model_component_draws.RDS"
-almp_nma_additive_model_component_draws <- readRDS(
-  almp_nma_additive_model_component_draws_location
-)
-
-almp_nma_additive_model_component_summary_location <- "./visualisation/inputs/almp_nma_additive_model_component_summary.RDS"
-almp_nma_additive_model_component_summary <- readRDS(
-  almp_nma_additive_model_component_summary_location
-)
-
-almp_nma_additive_model_tau_draws_location <- "./visualisation/inputs/almp_nma_additive_model_tau_draws.RDS"
-almp_nma_additive_model_tau_draws <- readRDS(
-  almp_nma_additive_model_tau_draws_location
-)
-
-almp_nma_additive_model_tau_summary_location <- "./visualisation/inputs/almp_nma_additive_model_tau_summary.RDS"
-almp_nma_additive_model_tau_summary <- readRDS(
-  almp_nma_additive_model_tau_summary_location
-)
+# load custom functions
+source("./visualisation/code/visualisation_functions.R")
 
 #-------------------------------------------------------------------------------
-# 1. Visualise Labour Force Status outcomes
+# 1. Load and clean data
 #-------------------------------------------------------------------------------
 
-# subset data
-almp_nma_additive_model_forest_plot_data_labour_market_outcomes <- almp_nma_additive_model_component_draws |>
+almp_nma_model_thirteen_component_draws_location <- "./visualisation/inputs/prototype_models/almp_nma_model_thirteen_component_draws.RDS"
+almp_nma_model_thirteen_component_draws <- readRDS(
+  almp_nma_model_thirteen_component_draws_location
+)
+
+almp_nma_model_thirteen_component_summary_location <- "./visualisation/inputs/prototype_models/almp_nma_model_thirteen_component_summary.RDS"
+almp_nma_model_thirteen_component_summary <- readRDS(
+  almp_nma_model_thirteen_component_summary_location
+)
+
+almp_nma_model_thirteen_tau_component_design_draws_location <- "./visualisation/inputs/prototype_models/almp_nma_model_thirteen_tau_component_design_draws.RDS"
+almp_nma_model_thirteen_tau_component_design_draws <- readRDS(
+  almp_nma_model_thirteen_tau_component_design_draws_location
+)
+
+almp_nma_model_thirteen_tau_component_design_summary_location <- "./visualisation/inputs/prototype_models/almp_nma_model_thirteen_tau_component_design_summary.RDS"
+almp_nma_model_thirteen_tau_component_design_draws <- readRDS(
+  almp_nma_model_thirteen_tau_component_design_summary_location
+)
+
+almp_nma_model_thirteen_component_draws_filtered <- almp_nma_model_thirteen_component_draws |>
+  # drop data we're not interested in
   filter(
-    outcome_domain == "Labour Force Status",
+    # not reporting other components
     !component == "Other Active Components",
-    posterior_different_prior_flag == "Yes"
-  ) |>
-  mutate(
-    outcome = fct_drop(outcome),
-    outcome = factor(
-      outcome,
-      levels = c(
-        "Currently Employed",
-        "Recent Employment",
-        "Employed Since Baseline",
+    # filter outcomes where posterior is not different to prior
+    posterior_different_prior_flag == "Yes",
+    # drop outcome's that are otherwise sparse
+    !outcome %in%
+      c(
         "Currently Not in the Labour Force",
-        "Currently Unemployed",
-        "Currently NEET",
-        "Currently Self-Employed"
+        "Employed Since Baseline"
       ),
-      ordered = TRUE
-    )
-  )
-
-almp_nma_additive_model_forest_plot_labels_labour_market_outcomes <- almp_nma_additive_model_component_summary |>
-  filter(
-    outcome_domain == "Labour Force Status",
-    !component == "Other Active Components",
-    posterior_different_prior_flag == "Yes"
+    # drop outcome domains that are included for network stability
+    !outcome_domain %in%
+      c(
+        "Total Income",
+        "Labour Market Transitions"
+      )
   ) |>
+  # order outcomes
   mutate(
-    outcome = fct_drop(outcome),
-    outcome = factor(
-      outcome,
-      levels = c(
-        "Currently Employed",
-        "Recent Employment",
-        "Employed Since Baseline",
-        "Currently Not in the Labour Force",
-        "Currently Unemployed",
-        "Currently NEET",
-        "Currently Self-Employed"
-      ),
-      ordered = TRUE
-    )
-  )
-
-# create forest plot
-almp_nma_additive_model_forest_plot_labour_market_outcomes <- almp_nma_additive_model_forest_plot_data_labour_market_outcomes |>
-  ggplot(
-    aes(
-      x = theta,
-      y = reorder(outcome, as.numeric(outcome), decreasing = TRUE)
-    )
-  ) +
-  # Zero reference line
-  geom_vline(
-    xintercept = 0,
-    linewidth = 0.25,
-    linetype = "dashed",
-    alpha = 0.5,
-    color = "gray50"
-  ) +
-  # Half-eye plots showing posterior distributions
-  stat_halfeye(
-    data = . %>%
-      filter(
-        outcome %in%
-          c(
-            "Currently Unemployed",
-            "Currently NEET"
-          )
-      ),
-    aes(
-      fill = after_stat(ifelse(
-        x >= -0.0,
-        "negative_outcome",
-        "positive_outcome"
-      ))
-    ),
-    .width = c(0.95),
-    colour = "#000000",
-    alpha = 0.7,
-    point_interval = "median_qi"
-  ) +
-  stat_halfeye(
-    data = . %>%
-      filter(
-        !outcome %in%
-          c(
-            "Currently Unemployed",
-            "Currently NEET"
-          )
-      ),
-    aes(
-      fill = after_stat(ifelse(
-        x <= -0.0,
-        "negative_outcome",
-        "positive_outcome"
-      ))
-    ),
-    .width = c(0.95),
-    colour = "#000000",
-    alpha = 0.7,
-    point_interval = "median_qi"
-  ) +
-  # Add summary text labels
-  geom_text(
-    data = mutate_if(
-      almp_nma_additive_model_forest_plot_labels_labour_market_outcomes,
-      is.numeric,
-      round,
-      3
-    ),
-    aes(
-      label = str_glue("{theta} [{.lower},{.upper}]"),
-      x = 0
-    ),
-    hjust = "centre",
-    nudge_y = -0.2,
-    size = 3,
-    color = "black"
-  ) +
-  # wrap y-axis labels
-  scale_y_discrete(
-    labels = label_wrap(20)
-  ) +
-  scale_x_continuous(
-    limits = c(-2, 2),
-    breaks = c(-1, 0, 1)
-  ) +
-  # wrap facets
-  facet_grid(
-    . ~ component,
-    labeller = label_wrap_gen(width = 15)
-  ) +
-  # specify colour scheme
-  scale_fill_manual(
-    values = c(
-      "positive_outcome" = "#008744",
-      "negative_outcome" = "#9e9b9bff"
-    ),
-    name = "Outcome Direction",
-    labels = c(
-      "positive_outcome" = "Favours Intervention",
-      "negative_outcome" = "Favours Services as Usual"
-    )
-  ) +
-  # specify labels
-  labs(
-    title = "Component-level effects of Active Labour Market Programs for young people in high-income countries at 24 months (± 6 months) on Labour Force Status outcomes from a\nBayesian CNMA for Employment and Education outcomes",
-    subtitle = "Posterior distributions with 95% credible intervals",
-    x = "Effect Size (Hedges' g)",
-    y = "Outcome",
-    caption = "Values show median effect size [95% Cr I]"
-  ) +
-  # set theme
-  theme_minimal() +
-  theme(
-    plot.background = element_rect(fill = "#FFFFFF"),
-    panel.grid.major.y = element_blank(),
-    panel.grid.minor = element_blank(),
-    plot.title = element_text(
-      hjust = 0.5,
-      size = 14,
-      face = "bold"
-    ),
-    plot.subtitle = element_text(
-      hjust = 0.5,
-      size = 11
-    ),
-    axis.title = element_text(
-      size = 12
-    ),
-    axis.text = element_text(
-      size = 10
-    ),
-    strip.text = element_text(
-      size = 10
-    ),
-    legend.position = "bottom",
-    strip.clip = "off"
-  )
-
-# export plot
-ggsave(
-  plot = almp_nma_additive_model_forest_plot_labour_market_outcomes,
-  filename = "./visualisation/output/almp_nma_additive_model_forest_plot_labour_market_outcomes.png",
-  height = 10,
-  width = 18,
-  device = "png",
-  type = "cairo-png"
-)
-
-#-------------------------------------------------------------------------------
-# 2. Visualise Employment compensation outcomes
-#-------------------------------------------------------------------------------
-
-# subset data
-almp_nma_additive_model_forest_plot_data_employment_compensation_outcomes <- almp_nma_additive_model_component_draws |>
-  filter(
-    outcome_domain == "Employment Compensation",
-    !component == "Other Active Components",
-    posterior_different_prior_flag == "Yes"
-  )
-
-almp_nma_additive_model_forest_plot_labels_employment_compensation_outcomes <- almp_nma_additive_model_component_summary |>
-  filter(
-    outcome_domain == "Employment Compensation",
-    !component == "Other Active Components",
-    posterior_different_prior_flag == "Yes"
-  )
-
-# create forest plot
-almp_nma_additive_model_forest_plot_employment_compensation_outcomes <- almp_nma_additive_model_forest_plot_data_employment_compensation_outcomes |>
-  ggplot(
-    aes(
-      x = theta,
-      y = reorder(outcome, as.numeric(outcome), decreasing = TRUE)
-    )
-  ) +
-  # Zero reference line
-  geom_vline(
-    xintercept = 0,
-    linewidth = 0.25,
-    linetype = "dashed",
-    alpha = 0.5,
-    color = "gray50"
-  ) +
-  # Half-eye plots showing posterior distributions
-  stat_halfeye(
-    aes(
-      fill = after_stat(ifelse(
-        x <= -0.0,
-        "negative_outcome",
-        "positive_outcome"
-      ))
-    ),
-    .width = c(0.95),
-    colour = "#000000",
-    alpha = 0.7,
-    point_interval = "median_qi"
-  ) +
-  # Add summary text labels
-  geom_text(
-    data = mutate_if(
-      almp_nma_additive_model_forest_plot_labels_employment_compensation_outcomes,
-      is.numeric,
-      round,
-      3
-    ),
-    aes(
-      label = str_glue("{theta} [{.lower},{.upper}]"),
-      x = 0
-    ),
-    hjust = "centre",
-    nudge_y = -0.2,
-    size = 3,
-    color = "black"
-  ) +
-  # wrap y-axis labels
-  scale_y_discrete(
-    labels = label_wrap(20)
-  ) +
-  scale_x_continuous(
-    limits = c(-2, 2),
-    breaks = c(-1, 0, 1)
-  ) +
-  # wrap facets
-  facet_grid(
-    . ~ component,
-    labeller = label_wrap_gen(width = 15)
-  ) +
-  # specify colour scheme
-  scale_fill_manual(
-    values = c(
-      "positive_outcome" = "#008744",
-      "negative_outcome" = "#9e9b9bff"
-    ),
-    name = "Outcome Direction",
-    labels = c(
-      "positive_outcome" = "Favours Intervention",
-      "negative_outcome" = "Favours Services as Usual"
-    )
-  ) +
-  # specify labels
-  labs(
-    title = "Component-level effects of Active Labour Market Programs for young people in high-income countries at 24 months (± 6 months) on Employment Compensation outcomes from a\nBayesian CNMA for Employment and Education outcomes",
-    subtitle = "Posterior distributions with 95% credible intervals",
-    x = "Effect Size (Hedges' g)",
-    y = "Outcome",
-    caption = "Values show median effect size [95% Cr I]"
-  ) +
-  # set theme
-  theme_minimal() +
-  theme(
-    plot.background = element_rect(fill = "#FFFFFF"),
-    panel.grid.major.y = element_blank(),
-    panel.grid.minor = element_blank(),
-    plot.title = element_text(
-      hjust = 0.5,
-      size = 14,
-      face = "bold"
-    ),
-    plot.subtitle = element_text(
-      hjust = 0.5,
-      size = 11
-    ),
-    axis.title = element_text(
-      size = 12
-    ),
-    axis.text = element_text(
-      size = 10
-    ),
-    strip.text = element_text(
-      size = 10
-    ),
-    legend.position = "bottom"
-  )
-
-# export plot
-ggsave(
-  plot = almp_nma_additive_model_forest_plot_employment_compensation_outcomes,
-  filename = "./visualisation/output/almp_nma_additive_model_forest_plot_employment_compensation_outcomes.png",
-  height = 6,
-  width = 18,
-  device = "png",
-  type = "cairo-png"
-)
-
-#-------------------------------------------------------------------------------
-# 3. Visualise Employment Duration outcomes
-#-------------------------------------------------------------------------------
-
-# subset data
-almp_nma_additive_model_forest_plot_data_employment_duration_outcomes <- almp_nma_additive_model_component_draws |>
-  filter(
-    outcome_domain == "Employment Duration",
-    !component == "Other Active Components",
-    posterior_different_prior_flag == "Yes"
-  )
-
-almp_nma_additive_model_forest_plot_labels_employment_duration_outcomes <- almp_nma_additive_model_component_summary |>
-  filter(
-    outcome_domain == "Employment Duration",
-    !component == "Other Active Components",
-    posterior_different_prior_flag == "Yes"
-  )
-
-# create forest plot
-almp_nma_additive_model_forest_plot_employment_duration_outcomes <- almp_nma_additive_model_forest_plot_data_employment_duration_outcomes |>
-  ggplot(
-    aes(
-      x = theta,
-      y = reorder(outcome, as.numeric(outcome), decreasing = TRUE)
-    )
-  ) +
-  # Zero reference line
-  geom_vline(
-    xintercept = 0,
-    linewidth = 0.25,
-    linetype = "dashed",
-    alpha = 0.5,
-    color = "gray50"
-  ) +
-  # Half-eye plots showing posterior distributions
-  stat_halfeye(
-    data = . %>%
-      filter(
-        !outcome %in%
-          c(
-            "Period Unemployed"
-          )
-      ),
-    aes(
-      fill = after_stat(ifelse(
-        x <= -0.0,
-        "negative_outcome",
-        "positive_outcome"
-      ))
-    ),
-    .width = c(0.95),
-    colour = "#000000",
-    alpha = 0.7,
-    point_interval = "median_qi"
-  ) +
-  stat_halfeye(
-    data = . %>%
-      filter(
-        outcome %in%
-          c(
-            "Period Unemployed"
-          )
-      ),
-    aes(
-      fill = after_stat(ifelse(
-        x >= -0.0,
-        "negative_outcome",
-        "positive_outcome"
-      ))
-    ),
-    .width = c(0.95),
-    colour = "#000000",
-    alpha = 0.7,
-    point_interval = "median_qi"
-  ) +
-  # Add summary text labels
-  geom_text(
-    data = mutate_if(
-      almp_nma_additive_model_forest_plot_labels_employment_duration_outcomes,
-      is.numeric,
-      round,
-      3
-    ),
-    aes(
-      label = str_glue("{theta} [{.lower},{.upper}]"),
-      x = 0
-    ),
-    hjust = "centre",
-    nudge_y = -0.2,
-    size = 3,
-    color = "black"
-  ) +
-  # wrap y-axis labels
-  scale_y_discrete(
-    labels = label_wrap(20)
-  ) +
-  scale_x_continuous(
-    limits = c(-2, 2),
-    breaks = c(-1, 0, 1)
-  ) +
-  # wrap facets
-  facet_grid(
-    . ~ component,
-    labeller = label_wrap_gen(width = 15)
-  ) +
-  # specify colour scheme
-  scale_fill_manual(
-    values = c(
-      "positive_outcome" = "#008744",
-      "negative_outcome" = "#9e9b9bff"
-    ),
-    name = "Outcome Direction",
-    labels = c(
-      "positive_outcome" = "Favours Intervention",
-      "negative_outcome" = "Favours Services as Usual"
-    )
-  ) +
-  # specify labels
-  labs(
-    title = "Component-level effects of Active Labour Market Programs for young people in high-income countries at 24 months (± 6 months) on Employment Duration outcomes from a\nBayesian CNMA for Employment and Education outcomes",
-    subtitle = "Posterior distributions with 95% credible intervals",
-    x = "Effect Size (Hedges' g)",
-    y = "Outcome",
-    caption = "Values show median effect size [95% Cr I]"
-  ) +
-  # set theme
-  theme_minimal() +
-  theme(
-    plot.background = element_rect(fill = "#FFFFFF"),
-    panel.grid.major.y = element_blank(),
-    panel.grid.minor = element_blank(),
-    plot.title = element_text(
-      hjust = 0.5,
-      size = 14,
-      face = "bold"
-    ),
-    plot.subtitle = element_text(
-      hjust = 0.5,
-      size = 11
-    ),
-    axis.title = element_text(
-      size = 12
-    ),
-    axis.text = element_text(
-      size = 10
-    ),
-    strip.text = element_text(
-      size = 10
-    ),
-    legend.position = "bottom"
-  )
-
-
-# export plot
-ggsave(
-  plot = almp_nma_additive_model_forest_plot_employment_duration_outcomes,
-  filename = "./visualisation/output/almp_nma_additive_model_forest_plot_employment_duration_outcomes.png",
-  height = 5,
-  width = 18,
-  device = "png",
-  type = "cairo-png"
-)
-
-#-------------------------------------------------------------------------------
-# 4. Visualise Education and Skills outcomes
-#-------------------------------------------------------------------------------
-
-# subset data
-almp_nma_additive_model_forest_plot_data_education_skills_outcomes <- almp_nma_additive_model_component_draws |>
-  filter(
-    outcome_domain == "Education and Skills",
-    !component == "Other Active Components",
-    posterior_different_prior_flag == "Yes"
-  ) |>
-  mutate(
-    outcome = fct_drop(outcome),
     outcome = factor(
       outcome,
       levels = c(
         "Apprenticeship Participation",
         "Occupational Licence Obtained",
-        "Secondary School (ISCED 3) Participation",
         "Secondary School (ISCED 3) Completion",
-        "Post-Secondary Non-Tertiary (ISCED 4) Participation",
+        "Secondary School (ISCED 3) Participation",
         "Post-Secondary Non-Tertiary (ISCED 4) Completion",
-        "Short-Cycle Tertiary (ISCED 5) Participation",
+        "Post-Secondary Non-Tertiary (ISCED 4) Participation",
         "Short-Cycle Tertiary (ISCED 5) Completion",
+        "Short-Cycle Tertiary (ISCED 5) Participation",
         "Bachelors Degree (ISCED 6) Participation",
-        "Bachelors Degree (ISCED 6) Completion"
+        "Bachelors Degree (ISCED 6) Completion",
+        "Currently Employed",
+        "Recent Employment",
+        "Currently Self-Employed",
+        "Currently Unemployed",
+        "Currently NEET",
+        "Hours Worked",
+        "Period Employed",
+        "Labour Earnings",
+        "Wages"
       ),
       ordered = TRUE
     )
-  )
-
-almp_nma_additive_model_forest_plot_labels_education_skills_outcomes <- almp_nma_additive_model_component_summary |>
-  filter(
-    outcome_domain == "Education and Skills",
-    !component == "Other Active Components",
-    posterior_different_prior_flag == "Yes"
   ) |>
+  ungroup()
+
+
+almp_nma_model_thirteen_component_summary_filtered <- almp_nma_model_thirteen_component_summary |>
+  # drop data we're not interested in
+  filter(
+    # not reporting other components
+    !component == "Other Active Components",
+    # filter outcomes where posterior is not different to prior
+    posterior_different_prior_flag == "Yes",
+    # drop outcome's that are otherwise sparse
+    !outcome %in%
+      c(
+        "Currently Not in the Labour Force",
+        "Employed Since Baseline"
+      ),
+    # drop outcome domains that are included for network stability
+    !outcome_domain %in%
+      c(
+        "Total Income",
+        "Labour Market Transitions"
+      )
+  ) |>
+  # order outcomes
   mutate(
-    outcome = fct_drop(outcome),
     outcome = factor(
       outcome,
       levels = c(
         "Apprenticeship Participation",
         "Occupational Licence Obtained",
-        "Secondary School (ISCED 3) Participation",
         "Secondary School (ISCED 3) Completion",
-        "Post-Secondary Non-Tertiary (ISCED 4) Participation",
+        "Secondary School (ISCED 3) Participation",
         "Post-Secondary Non-Tertiary (ISCED 4) Completion",
-        "Short-Cycle Tertiary (ISCED 5) Participation",
+        "Post-Secondary Non-Tertiary (ISCED 4) Participation",
         "Short-Cycle Tertiary (ISCED 5) Completion",
+        "Short-Cycle Tertiary (ISCED 5) Participation",
         "Bachelors Degree (ISCED 6) Participation",
-        "Bachelors Degree (ISCED 6) Completion"
-      ),
-      ordered = TRUE
-    )
-  )
-
-# create forest plot
-almp_nma_additive_model_forest_plot_education_skills_outcomes <- almp_nma_additive_model_forest_plot_data_education_skills_outcomes |>
-  ggplot(
-    aes(
-      x = theta,
-      y = reorder(outcome, as.numeric(outcome), decreasing = TRUE)
-    )
-  ) +
-  # Zero reference line
-  geom_vline(
-    xintercept = 0,
-    linewidth = 0.25,
-    linetype = "dashed",
-    alpha = 0.5,
-    color = "gray50"
-  ) +
-  # Half-eye plots showing posterior distributions
-  stat_halfeye(
-    aes(
-      fill = after_stat(ifelse(
-        x <= -0.0,
-        "negative_outcome",
-        "positive_outcome"
-      ))
-    ),
-    .width = c(0.95),
-    colour = "#000000",
-    alpha = 0.7,
-    point_interval = "median_qi"
-  ) +
-  # Add summary text labels
-  geom_text(
-    data = mutate_if(
-      almp_nma_additive_model_forest_plot_labels_education_skills_outcomes,
-      is.numeric,
-      round,
-      3
-    ),
-    aes(
-      label = str_glue("{theta} [{.lower},{.upper}]"),
-      x = 0
-    ),
-    hjust = "centre",
-    nudge_y = -0.2,
-    size = 3,
-    color = "black"
-  ) +
-  # wrap y-axis labels
-  scale_y_discrete(
-    labels = label_wrap(20)
-  ) +
-  scale_x_continuous(
-    limits = c(-2, 2),
-    breaks = c(-1, 0, 1)
-  ) +
-  # wrap facets
-  facet_grid(
-    . ~ component,
-    labeller = label_wrap_gen(width = 15)
-  ) +
-  # specify colour scheme
-  scale_fill_manual(
-    values = c(
-      "positive_outcome" = "#008744",
-      "negative_outcome" = "#9e9b9bff"
-    ),
-    name = "Outcome Direction",
-    labels = c(
-      "positive_outcome" = "Favours Intervention",
-      "negative_outcome" = "Favours Services as Usual"
-    )
-  ) +
-  # specify labels
-  labs(
-    title = "Component-level effects of Active Labour Market Programs for young people in high-income countries at 24 months (± 6 months) on Labour Force Status outcomes from a\nBayesian CNMA for Employment and Education outcomes",
-    subtitle = "Posterior distributions with 95% credible intervals",
-    x = "Effect Size (Hedges' g)",
-    y = "Outcome",
-    caption = "Values show median effect size [95% Cr I]"
-  ) +
-  # set theme
-  theme_minimal() +
-  theme(
-    plot.background = element_rect(fill = "#FFFFFF"),
-    panel.grid.major.y = element_blank(),
-    panel.grid.minor = element_blank(),
-    plot.title = element_text(
-      hjust = 0.5,
-      size = 14,
-      face = "bold"
-    ),
-    plot.subtitle = element_text(
-      hjust = 0.5,
-      size = 11
-    ),
-    axis.title = element_text(
-      size = 12
-    ),
-    axis.text = element_text(
-      size = 10
-    ),
-    strip.text = element_text(
-      size = 10
-    ),
-    legend.position = "bottom"
-  )
-
-
-# export plot
-ggsave(
-  plot = almp_nma_additive_model_forest_plot_education_skills_outcomes,
-  filename = "./visualisation/output/almp_nma_additive_model_forest_plot_education_skills_outcomes.png",
-  height = 12,
-  width = 18,
-  device = "png",
-  type = "cairo-png"
-)
-
-#-------------------------------------------------------------------------------
-# 5. Visualise Hours Worked outcomes
-#-------------------------------------------------------------------------------
-
-# subset data
-almp_nma_additive_model_forest_plot_data_hours_worked_outcomes <- almp_nma_additive_model_component_draws |>
-  filter(
-    outcome_domain == "Hours Worked",
-    !component == "Other Active Components",
-    posterior_different_prior_flag == "Yes"
-  )
-
-almp_nma_additive_model_forest_plot_labels_hours_worked_outcomes <- almp_nma_additive_model_component_summary |>
-  filter(
-    outcome_domain == "Hours Worked",
-    !component == "Other Active Components",
-    posterior_different_prior_flag == "Yes"
-  )
-
-# create forest plot
-almp_nma_additive_model_forest_plot_hours_worked_outcomes <- almp_nma_additive_model_forest_plot_data_hours_worked_outcomes |>
-  ggplot(
-    aes(
-      x = theta,
-      y = outcome
-    )
-  ) +
-  # Zero reference line
-  geom_vline(
-    xintercept = 0,
-    linewidth = 0.25,
-    linetype = "dashed",
-    alpha = 0.5,
-    color = "gray50"
-  ) +
-  # Half-eye plots showing posterior distributions
-  stat_halfeye(
-    aes(
-      fill = after_stat(ifelse(
-        x <= -0.0,
-        "negative_outcome",
-        "positive_outcome"
-      ))
-    ),
-    .width = c(0.95),
-    colour = "#000000",
-    alpha = 0.7,
-    point_interval = "median_qi"
-  ) +
-  # Add summary text labels
-  geom_text(
-    data = mutate_if(
-      almp_nma_additive_model_forest_plot_labels_hours_worked_outcomes,
-      is.numeric,
-      round,
-      3
-    ),
-    aes(
-      label = str_glue("{theta} [{.lower},{.upper}]"),
-      x = 0
-    ),
-    hjust = "centre",
-    nudge_y = -0.2,
-    size = 3,
-    color = "black"
-  ) +
-  # wrap y-axis labels
-  scale_y_discrete(
-    labels = label_wrap(20)
-  ) +
-  scale_x_continuous(
-    limits = c(-2, 2),
-    breaks = c(-1, 0, 1)
-  ) +
-  # wrap facets
-  facet_grid(
-    . ~ component,
-    labeller = label_wrap_gen(width = 15)
-  ) +
-  # specify colour scheme
-  scale_fill_manual(
-    values = c(
-      "positive_outcome" = "#008744",
-      "negative_outcome" = "#9e9b9bff"
-    ),
-    name = "Outcome Direction",
-    labels = c(
-      "positive_outcome" = "Favours Intervention",
-      "negative_outcome" = "Favours Services as Usual"
-    )
-  ) +
-  # specify labels
-  labs(
-    title = "Component-level effects of Active Labour Market Programs for young people in high-income countries at 24 months (± 6 months) on Hours Worked outcomes from a\nBayesian CNMA for Employment and Education outcomes",
-    subtitle = "Posterior distributions with 95% credible intervals",
-    x = "Effect Size (Hedges' g)",
-    y = "Outcome",
-    caption = "Values show median effect size [95% Cr I]"
-  ) +
-  # set theme
-  theme_minimal() +
-  theme(
-    plot.background = element_rect(fill = "#FFFFFF"),
-    panel.grid.major.y = element_blank(),
-    panel.grid.minor = element_blank(),
-    plot.title = element_text(
-      hjust = 0.5,
-      size = 14,
-      face = "bold"
-    ),
-    plot.subtitle = element_text(
-      hjust = 0.5,
-      size = 11
-    ),
-    axis.title = element_text(
-      size = 12
-    ),
-    axis.text = element_text(
-      size = 10
-    ),
-    strip.text = element_text(
-      size = 10
-    ),
-    legend.position = "bottom"
-  )
-
-
-# export plot
-ggsave(
-  plot = almp_nma_additive_model_forest_plot_hours_worked_outcomes,
-  filename = "./visualisation/output/almp_nma_additive_model_forest_plot_hours_worked_outcomes.png",
-  height = 4,
-  width = 18,
-  device = "png",
-  type = "cairo-png"
-)
-
-#-------------------------------------------------------------------------------
-# 6. Visualise Labour Market Transitions outcomes
-#-------------------------------------------------------------------------------
-
-# subset data
-almp_nma_additive_model_forest_plot_data_labour_market_transitions <- almp_nma_additive_model_component_draws |>
-  filter(
-    outcome_domain == "Labour Market Transitions",
-    !component == "Other Active Components",
-    posterior_different_prior_flag == "Yes"
-  )
-
-almp_nma_additive_model_forest_plot_labels_labour_market_transitions_outcomes <- almp_nma_additive_model_component_summary |>
-  filter(
-    outcome_domain == "Labour Market Transitions",
-    !component == "Other Active Components",
-    posterior_different_prior_flag == "Yes"
-  )
-
-# create forest plot
-almp_nma_additive_model_forest_plot_labour_market_transitions <- almp_nma_additive_model_forest_plot_data_labour_market_transitions |>
-  ggplot(
-    aes(
-      x = theta,
-      y = outcome
-    )
-  ) +
-  # Zero reference line
-  geom_vline(
-    xintercept = 0,
-    linewidth = 0.25,
-    linetype = "dashed",
-    alpha = 0.5,
-    color = "gray50"
-  ) +
-  # Half-eye plots showing posterior distributions
-  stat_halfeye(
-    aes(
-      fill = after_stat(ifelse(
-        x <= -0.0,
-        "negative_outcome",
-        "positive_outcome"
-      ))
-    ),
-    .width = c(0.95),
-    colour = "#000000",
-    alpha = 0.7,
-    point_interval = "median_qi"
-  ) +
-  # Add summary text labels
-  geom_text(
-    data = mutate_if(
-      almp_nma_additive_model_forest_plot_labels_labour_market_transitions_outcomes,
-      is.numeric,
-      round,
-      3
-    ),
-    aes(
-      label = str_glue("{theta} [{.lower},{.upper}]"),
-      x = 0
-    ),
-    hjust = "centre",
-    nudge_y = -0.2,
-    size = 3,
-    color = "black"
-  ) +
-  # wrap y-axis labels
-  scale_y_discrete(
-    labels = label_wrap(20)
-  ) +
-  scale_x_continuous(
-    limits = c(-2, 2),
-    breaks = c(-1, 0, 1)
-  ) +
-  # wrap facets
-  facet_grid(
-    . ~ component,
-    labeller = label_wrap_gen(width = 15)
-  ) +
-  # specify colour scheme
-  scale_fill_manual(
-    values = c(
-      "positive_outcome" = "#008744",
-      "negative_outcome" = "#9e9b9bff"
-    ),
-    name = "Outcome Direction",
-    labels = c(
-      "positive_outcome" = "Favours Intervention",
-      "negative_outcome" = "Favours Services as Usual"
-    )
-  ) +
-  # specify labels
-  labs(
-    title = "Component-level effects of Active Labour Market Programs for young people in high-income countries at 24 months (± 6 months) on Labour Market Transitions from a\nBayesian CNMA for Employment and Education outcomes",
-    subtitle = "Posterior distributions with 95% credible intervals",
-    x = "Effect Size (Hedges' g)",
-    y = "Outcome",
-    caption = "Values show median effect size [95% Cr I]"
-  ) +
-  # set theme
-  theme_minimal() +
-  theme(
-    plot.background = element_rect(fill = "#FFFFFF"),
-    panel.grid.major.y = element_blank(),
-    panel.grid.minor = element_blank(),
-    plot.title = element_text(
-      hjust = 0.5,
-      size = 14,
-      face = "bold"
-    ),
-    plot.subtitle = element_text(
-      hjust = 0.5,
-      size = 11
-    ),
-    axis.title = element_text(
-      size = 12
-    ),
-    axis.text = element_text(
-      size = 10
-    ),
-    strip.text = element_text(
-      size = 10
-    ),
-    legend.position = "bottom"
-  )
-
-
-# export plot
-ggsave(
-  plot = almp_nma_additive_model_forest_plot_labour_market_transitions,
-  filename = "./visualisation/output/almp_nma_additive_model_forest_plot_labour_market_transitions.png",
-  height = 4,
-  width = 18,
-  device = "png",
-  type = "cairo-png"
-)
-
-#-------------------------------------------------------------------------------
-# 7. Visualise study-level heterogeneity
-#-------------------------------------------------------------------------------
-
-# summarise tau for plotting
-almp_nma_additive_model_tau_summary_label <- almp_nma_additive_model_tau_summary |>
-  mutate(
-    group = factor(
-      group,
-      levels = c(
-        "Overall",
-        "Randomised design",
-        "Selection on observables",
-        "Design-based identification"
+        "Bachelors Degree (ISCED 6) Completion",
+        "Currently Employed",
+        "Recent Employment",
+        "Currently Self-Employed",
+        "Currently Unemployed",
+        "Currently NEET",
+        "Hours Worked",
+        "Period Employed",
+        "Labour Earnings",
+        "Wages"
       ),
       ordered = TRUE
     )
   ) |>
-  rename(
-    lower = .lower,
-    upper = .upper
-  ) |>
-  # create label
-  mutate(
-    facet_label = sprintf(
-      "paste('%s', '\n', tau==%.3f, ' (95%% CrI [', %.3f, ', ', %.3f, '])')",
-      as.character(group),
-      tau,
-      lower,
-      upper
-    )
-  )
+  ungroup()
 
-# merge plot data label to the draws
-almp_nma_additive_model_tau_plot_data <- almp_nma_additive_model_tau_draws |>
-  left_join(
-    almp_nma_additive_model_tau_summary_label |>
-      select(
-        group,
-        facet_label
-      ),
-    by = "group"
-  ) |>
-  mutate(
-    facet_label = factor(
-      facet_label,
-      levels = c(
-        "paste('Overall', '\n', tau==0.087, ' (95% CrI [', 0.052, ', ', 0.131, '])')",
-        "paste('Randomised design', '\n', tau==0.074, ' (95% CrI [', 0.028, ', ', 0.134, '])')",
-        "paste('Selection on observables', '\n', tau==0.102, ' (95% CrI [', 0.039, ', ', 0.195, '])')",
-        "paste('Design-based identification', '\n', tau==0.092, ' (95% CrI [', 0.032, ', ', 0.197, '])')"
-      ),
-      ordered = TRUE
-    )
-  )
+#-------------------------------------------------------------------------------
+# 2. Basic Skills Training
+#-------------------------------------------------------------------------------
 
-# plot tau distribution: each panel shows the posterior for study-level heterogeneity (τ) by study design
-almp_nma_additive_model_tau_distribution_plot <- almp_nma_additive_model_tau_plot_data |>
-  ggplot(
-    aes(
-      x = tau,
-      #group = facet_label,
-      fill = facet_label
-    )
-  ) +
-  stat_halfeye(
-    .width = 0.95,
-    colour = "#2d3239ff",
-    point_interval = median_qi,
-    slab_alpha = 0.5
-  ) +
-  geom_vline(
-    data = almp_nma_additive_model_tau_summary_label,
-    aes(xintercept = tau),
-    colour = "#2d3239ff",
-    linetype = "dashed",
-    linewidth = 0.5
-  ) +
-  facet_wrap(
-    ~ forcats::fct_relevel(
-      facet_label,
-      "paste('Overall', '\n', tau==0.087, ' (95% CrI [', 0.052, ', ', 0.131, '])')"
-    ),
-    ncol = 1,
-    labeller = label_parsed
-  ) +
-  scale_fill_manual(
-    values = c(
-      "#9d9494ff",
-      "#7D2248",
-      "#69C2C9",
-      "#BFB800"
-    )
-  ) +
-  lims(x = c(0, 0.5)) +
-  labs(
-    x = expression(tau),
-    y = "Posterior density"
-  ) +
-  theme_minimal(base_size = 11) +
-  theme(
-    plot.background = element_rect(fill = "#FFFFFF", colour = NA),
-    panel.grid.major.y = element_blank(),
-    panel.grid.minor = element_blank(),
-    legend.position = "none"
-  )
+# Labour Force outcomes
+almp_nma_additive_model_forest_plot_basic_skills_training_labour_force_status_outcomes <- create_forest_plot(
+  component_name = "Basic Skills Training",
+  outcome_domain_name = "Labour Force Status"
+)
 
-# export plot
 ggsave(
-  plot = almp_nma_additive_model_tau_distribution_plot,
-  filename = "./visualisation/output/almp_nma_additive_model_tau_distribution_plot.png",
+  plot = almp_nma_additive_model_forest_plot_basic_skills_training_labour_force_status_outcomes,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_basic_skills_training_labour_force_status_outcomes.png",
   height = 6,
-  width = 8,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+# Education and Skills outcomes
+almp_nma_additive_model_forest_plot_basic_skills_training_education_skills <- create_forest_plot(
+  component_name = "Basic Skills Training",
+  outcome_domain_name = "Education and Skills"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_basic_skills_training_education_skills,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_basic_skills_training_education_skills.png",
+  height = 11,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+# Employment Compensation outcomes
+almp_nma_additive_model_forest_plot_basic_skills_training_employment_compensation <- create_forest_plot(
+  component_name = "Basic Skills Training",
+  outcome_domain_name = "Employment Compensation"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_basic_skills_training_employment_compensation,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_basic_skills_training_employment_compensation.png",
+  height = 4,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+# Employment Duration outcomes
+almp_nma_additive_model_forest_plot_basic_skills_training_employment_duration <- create_forest_plot(
+  component_name = "Basic Skills Training",
+  outcome_domain_name = "Employment Duration"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_basic_skills_training_employment_duration,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_basic_skills_training_employment_duration.png",
+  height = 3,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+# Hours worked outcomes
+almp_nma_additive_model_forest_plot_basic_skills_training_hours_worked <- create_forest_plot(
+  component_name = "Basic Skills Training",
+  outcome_domain_name = "Hours Worked"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_basic_skills_training_hours_worked,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_basic_skills_training_hours_worked.png",
+  height = 3,
+  width = 7,
   device = "png",
   type = "cairo-png"
 )
 
 #-------------------------------------------------------------------------------
-# 7. Summary outcome matrix
+# 3. Behavioural Skills Training
 #-------------------------------------------------------------------------------
 
-almp_nma_additive_model_component_outcome_matrix <- almp_nma_additive_model_component_summary |>
-  na.omit() |>
-  ggplot(
-    aes(
-      x = component,
-      y = outcome,
-      fill = posterior_different_prior_flag
-    )
-  ) +
-  geom_tile(
-    color = "white"
-  ) +
-  facet_wrap(
-    . ~ outcome_domain,
-    scales = "free_y",
-    ncol = 1
-  ) +
-  scale_fill_manual(
-    values = c("Yes" = "#008744", "No" = "#D62d20"),
-    name = "Posterior different from prior"
-  ) +
-  labs(
-    x = "Component",
-    y = "Outcome",
-    title = "Posterior differences by outcome × component"
-  ) +
-  theme_minimal(base_size = 12) +
-  theme(
-    plot.background = element_rect(fill = "#FFFFFF", colour = NA),
-    axis.text.x = element_text(angle = 45, hjust = 1),
-    panel.grid = element_blank(),
-    legend.position = "bottom"
-  )
+# Labour Force outcomes
+almp_nma_additive_model_forest_plot_behavioural_skills_training_labour_force_status_outcomes <- create_forest_plot(
+  component_name = "Behavioural Skills Training",
+  outcome_domain_name = "Labour Force Status"
+)
 
-# export plot
 ggsave(
-  plot = almp_nma_additive_model_component_outcome_matrix,
-  filename = "./visualisation/output/almp_nma_additive_model_component_outcome_matrix.png",
-  height = 15,
-  width = 12,
+  plot = almp_nma_additive_model_forest_plot_behavioural_skills_training_labour_force_status_outcomes,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_behavioural_skills_training_labour_force_status_outcomes.png",
+  height = 6,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+# Education and Skills outcomes
+almp_nma_additive_model_forest_plot_behavioural_skills_training_education_skills <- create_forest_plot(
+  component_name = "Behavioural Skills Training",
+  outcome_domain_name = "Education and Skills"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_behavioural_skills_training_education_skills,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_behavioural_skills_training_education_skills.png",
+  height = 11,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+# Employment Compensation outcomes
+almp_nma_additive_model_forest_plot_behavioural_skills_training_employment_compensation <- create_forest_plot(
+  component_name = "Behavioural Skills Training",
+  outcome_domain_name = "Employment Compensation"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_behavioural_skills_training_employment_compensation,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_behavioural_skills_training_employment_compensation.png",
+  height = 4,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+# Employment Duration outcomes
+almp_nma_additive_model_forest_plot_behavioural_skills_training_employment_duration <- create_forest_plot(
+  component_name = "Behavioural Skills Training",
+  outcome_domain_name = "Employment Duration"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_behavioural_skills_training_employment_duration,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_behavioural_skills_training_employment_duration.png",
+  height = 3,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+# Hours worked outcomes
+almp_nma_additive_model_forest_plot_behavioural_skills_training_hours_worked <- create_forest_plot(
+  component_name = "Behavioural Skills Training",
+  outcome_domain_name = "Hours Worked"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_behavioural_skills_training_hours_worked,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_behavioural_skills_training_hours_worked.png",
+  height = 3,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+#-------------------------------------------------------------------------------
+# 4. Employment Coaching
+#-------------------------------------------------------------------------------
+
+# Labour Force outcomes
+almp_nma_additive_model_forest_plot_employment_coaching_labour_force_status_outcomes <- create_forest_plot(
+  component_name = "Employment Coaching",
+  outcome_domain_name = "Labour Force Status"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_employment_coaching_labour_force_status_outcomes,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_employment_coaching_labour_force_status_outcomes.png",
+  height = 6,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+# Education and Skills outcomes
+almp_nma_additive_model_forest_plot_employment_coaching_education_skills <- create_forest_plot(
+  component_name = "Employment Coaching",
+  outcome_domain_name = "Education and Skills"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_employment_coaching_education_skills,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_employment_coaching_education_skills.png",
+  height = 11,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+# Employment Compensation outcomes
+almp_nma_additive_model_forest_plot_employment_coaching_employment_compensation <- create_forest_plot(
+  component_name = "Employment Coaching",
+  outcome_domain_name = "Employment Compensation"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_employment_coaching_employment_compensation,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_employment_coaching_employment_compensation.png",
+  height = 4,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+# Employment Duration outcomes
+almp_nma_additive_model_forest_plot_employment_coaching_employment_duration <- create_forest_plot(
+  component_name = "Employment Coaching",
+  outcome_domain_name = "Employment Duration"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_employment_coaching_employment_duration,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_employment_coaching_employment_duration.png",
+  height = 3,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+# Hours worked outcomes
+almp_nma_additive_model_forest_plot_employment_coaching_hours_worked <- create_forest_plot(
+  component_name = "Employment Coaching",
+  outcome_domain_name = "Hours Worked"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_employment_coaching_hours_worked,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_employment_coaching_hours_worked.png",
+  height = 3,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+#-------------------------------------------------------------------------------
+# 5. Employment Counselling
+#-------------------------------------------------------------------------------
+
+# Labour Force outcomes
+almp_nma_additive_model_forest_plot_employment_counselling_labour_force_status_outcomes <- create_forest_plot(
+  component_name = "Employment Counselling",
+  outcome_domain_name = "Labour Force Status"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_employment_counselling_labour_force_status_outcomes,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_employment_counselling_labour_force_status_outcomes.png",
+  height = 6,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+# Education and Skills outcomes
+almp_nma_additive_model_forest_plot_employment_counselling_education_skills <- create_forest_plot(
+  component_name = "Employment Counselling",
+  outcome_domain_name = "Education and Skills"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_employment_counselling_education_skills,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_employment_counselling_education_skills.png",
+  height = 11,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+# Employment Compensation outcomes
+almp_nma_additive_model_forest_plot_employment_counselling_employment_compensation <- create_forest_plot(
+  component_name = "Employment Counselling",
+  outcome_domain_name = "Employment Compensation"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_employment_counselling_employment_compensation,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_employment_counselling_employment_compensation.png",
+  height = 4,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+# Employment Duration outcomes
+almp_nma_additive_model_forest_plot_employment_counselling_employment_duration <- create_forest_plot(
+  component_name = "Employment Counselling",
+  outcome_domain_name = "Employment Duration"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_employment_counselling_employment_duration,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_employment_counselling_employment_duration.png",
+  height = 3,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+# Hours worked outcomes
+almp_nma_additive_model_forest_plot_employment_counselling_hours_worked <- create_forest_plot(
+  component_name = "Employment Counselling",
+  outcome_domain_name = "Hours Worked"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_employment_counselling_hours_worked,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_employment_counselling_hours_worked.png",
+  height = 3,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+#-------------------------------------------------------------------------------
+# 6. Financial Assistance
+#-------------------------------------------------------------------------------
+
+# Labour Force outcomes
+almp_nma_additive_model_forest_plot_financial_assistance_labour_force_status_outcomes <- create_forest_plot(
+  component_name = "Financial Assistance",
+  outcome_domain_name = "Labour Force Status"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_financial_assistance_labour_force_status_outcomes,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_financial_assistance_labour_force_status_outcomes.png",
+  height = 6,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+# Education and Skills outcomes
+almp_nma_additive_model_forest_plot_financial_assistance_education_skills <- create_forest_plot(
+  component_name = "Financial Assistance",
+  outcome_domain_name = "Education and Skills"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_financial_assistance_education_skills,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_financial_assistance_education_skills.png",
+  height = 11,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+# Employment Compensation outcomes
+almp_nma_additive_model_forest_plot_financial_assistance_employment_compensation <- create_forest_plot(
+  component_name = "Financial Assistance",
+  outcome_domain_name = "Employment Compensation"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_financial_assistance_employment_compensation,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_financial_assistance_employment_compensation.png",
+  height = 4,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+# Employment Duration outcomes
+almp_nma_additive_model_forest_plot_financial_assistance_employment_duration <- create_forest_plot(
+  component_name = "Financial Assistance",
+  outcome_domain_name = "Employment Duration"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_financial_assistance_employment_duration,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_financial_assistance_employment_duration.png",
+  height = 3,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+# Hours worked outcomes
+almp_nma_additive_model_forest_plot_financial_assistance_hours_worked <- create_forest_plot(
+  component_name = "Financial Assistance",
+  outcome_domain_name = "Hours Worked"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_financial_assistance_hours_worked,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_financial_assistance_hours_worked.png",
+  height = 3,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+#-------------------------------------------------------------------------------
+# 7. Job Search Assistance
+#-------------------------------------------------------------------------------
+
+# Labour Force outcomes
+almp_nma_additive_model_forest_plot_job_search_assistance_labour_force_status_outcomes <- create_forest_plot(
+  component_name = "Job Search Assistance",
+  outcome_domain_name = "Labour Force Status"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_job_search_assistance_labour_force_status_outcomes,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_job_search_assistance_labour_force_status_outcomes.png",
+  height = 6,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+# Education and Skills outcomes
+almp_nma_additive_model_forest_plot_job_search_assistance_education_skills <- create_forest_plot(
+  component_name = "Job Search Assistance",
+  outcome_domain_name = "Education and Skills"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_job_search_assistance_education_skills,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_job_search_assistance_education_skills.png",
+  height = 11,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+# Employment Compensation outcomes
+almp_nma_additive_model_forest_plot_job_search_assistance_employment_compensation <- create_forest_plot(
+  component_name = "Job Search Assistance",
+  outcome_domain_name = "Employment Compensation"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_job_search_assistance_employment_compensation,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_job_search_assistance_employment_compensation.png",
+  height = 4,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+# Employment Duration outcomes
+almp_nma_additive_model_forest_plot_job_search_assistance_employment_duration <- create_forest_plot(
+  component_name = "Job Search Assistance",
+  outcome_domain_name = "Employment Duration"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_job_search_assistance_employment_duration,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_job_search_assistance_employment_duration.png",
+  height = 3,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+# Hours worked outcomes
+almp_nma_additive_model_forest_plot_job_search_assistance_hours_worked <- create_forest_plot(
+  component_name = "Job Search Assistance",
+  outcome_domain_name = "Hours Worked"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_job_search_assistance_hours_worked,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_job_search_assistance_hours_worked.png",
+  height = 3,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+#-------------------------------------------------------------------------------
+# 8. Job Search Preparation
+#-------------------------------------------------------------------------------
+
+# Labour Force outcomes
+almp_nma_additive_model_forest_plot_job_search_preparation_labour_force_status_outcomes <- create_forest_plot(
+  component_name = "Job Search Preparation",
+  outcome_domain_name = "Labour Force Status"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_job_search_preparation_labour_force_status_outcomes,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_job_search_preparation_labour_force_status_outcomes.png",
+  height = 6,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+# Education and Skills outcomes
+almp_nma_additive_model_forest_plot_job_search_preparation_education_skills <- create_forest_plot(
+  component_name = "Job Search Preparation",
+  outcome_domain_name = "Education and Skills"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_job_search_preparation_education_skills,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_job_search_preparation_education_skills.png",
+  height = 11,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+# Employment Compensation outcomes
+almp_nma_additive_model_forest_plot_job_search_preparation_employment_compensation <- create_forest_plot(
+  component_name = "Job Search Preparation",
+  outcome_domain_name = "Employment Compensation"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_job_search_preparation_employment_compensation,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_job_search_preparation_employment_compensation.png",
+  height = 4,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+# Employment Duration outcomes
+almp_nma_additive_model_forest_plot_job_search_preparation_employment_duration <- create_forest_plot(
+  component_name = "Job Search Preparation",
+  outcome_domain_name = "Employment Duration"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_job_search_preparation_employment_duration,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_job_search_preparation_employment_duration.png",
+  height = 3,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+# Hours worked outcomes
+almp_nma_additive_model_forest_plot_job_search_preparation_hours_worked <- create_forest_plot(
+  component_name = "Job Search Preparation",
+  outcome_domain_name = "Hours Worked"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_job_search_preparation_hours_worked,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_job_search_preparation_hours_worked.png",
+  height = 3,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+#-------------------------------------------------------------------------------
+# 9. Paid Temporary Work Experience
+#-------------------------------------------------------------------------------
+
+# Labour Force outcomes
+almp_nma_additive_model_forest_plot_paid_temporary_work_experience_labour_force_status_outcomes <- create_forest_plot(
+  component_name = "Paid Temporary Work Experience",
+  outcome_domain_name = "Labour Force Status"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_paid_temporary_work_experience_labour_force_status_outcomes,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_paid_temporary_work_experience_labour_force_status_outcomes.png",
+  height = 6,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+# Education and Skills outcomes
+almp_nma_additive_model_forest_plot_paid_temporary_work_experience_education_skills <- create_forest_plot(
+  component_name = "Paid Temporary Work Experience",
+  outcome_domain_name = "Education and Skills"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_paid_temporary_work_experience_education_skills,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_paid_temporary_work_experience_education_skills.png",
+  height = 11,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+# Employment Compensation outcomes
+almp_nma_additive_model_forest_plot_paid_temporary_work_experience_employment_compensation <- create_forest_plot(
+  component_name = "Paid Temporary Work Experience",
+  outcome_domain_name = "Employment Compensation"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_paid_temporary_work_experience_employment_compensation,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_paid_temporary_work_experience_employment_compensation.png",
+  height = 4,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+# Employment Duration outcomes
+almp_nma_additive_model_forest_plot_paid_temporary_work_experience_employment_duration <- create_forest_plot(
+  component_name = "Paid Temporary Work Experience",
+  outcome_domain_name = "Employment Duration"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_paid_temporary_work_experience_employment_duration,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_paid_temporary_work_experience_employment_duration.png",
+  height = 3,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+# Hours worked outcomes
+almp_nma_additive_model_forest_plot_paid_temporary_work_experience_hours_worked <- create_forest_plot(
+  component_name = "Paid Temporary Work Experience",
+  outcome_domain_name = "Hours Worked"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_paid_temporary_work_experience_hours_worked,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_paid_temporary_work_experience_hours_worked.png",
+  height = 3,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+#-------------------------------------------------------------------------------
+# 10. Public Works
+#-------------------------------------------------------------------------------
+
+# Labour Force outcomes
+almp_nma_additive_model_forest_plot_public_works_labour_force_status_outcomes <- create_forest_plot(
+  component_name = "Public Works",
+  outcome_domain_name = "Labour Force Status"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_public_works_labour_force_status_outcomes,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_public_works_labour_force_status_outcomes.png",
+  height = 6,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+# Education and Skills outcomes
+#almp_nma_additive_model_forest_plot_public_works_education_skills <- create_forest_plot(
+#  component_name = "Public Works",
+#  outcome_domain_name = "Education and Skills"
+#)
+
+#ggsave(
+#  plot = almp_nma_additive_model_forest_plot_public_works_education_skills,
+#  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_public_works_education_skills.png",
+#  height = 11,
+#  width = 7,
+#  device = "png",
+#  type = "cairo-png"
+#)
+
+# Employment Compensation outcomes
+almp_nma_additive_model_forest_plot_public_works_employment_compensation <- create_forest_plot(
+  component_name = "Public Works",
+  outcome_domain_name = "Employment Compensation"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_public_works_employment_compensation,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_public_works_employment_compensation.png",
+  height = 4,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+# Employment Duration outcomes
+almp_nma_additive_model_forest_plot_public_works_employment_duration <- create_forest_plot(
+  component_name = "Public Works",
+  outcome_domain_name = "Employment Duration"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_public_works_employment_duration,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_public_works_employment_duration.png",
+  height = 3,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+# Hours worked outcomes
+#almp_nma_additive_model_forest_plot_public_works_hours_worked <- create_forest_plot(
+#  component_name = "Public Works",
+#  outcome_domain_name = "Hours Worked"
+#)
+
+#ggsave(
+#  plot = almp_nma_additive_model_forest_plot_public_works_hours_worked,
+#  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_public_works_hours_worked.png",
+#  height = 3,
+#  width = 7,
+#  device = "png",
+#  type = "cairo-png"
+#)
+
+#-------------------------------------------------------------------------------
+# 11. Self-Employment Support
+#-------------------------------------------------------------------------------
+
+# Labour Force outcomes
+almp_nma_additive_model_forest_plot_self_employment_support_labour_force_status_outcomes <- create_forest_plot(
+  component_name = "Self-Employment Support",
+  outcome_domain_name = "Labour Force Status"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_self_employment_support_labour_force_status_outcomes,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_self_employment_support_labour_force_status_outcomes.png",
+  height = 6,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+# Education and Skills outcomes
+almp_nma_additive_model_forest_plot_self_employment_support_education_skills <- create_forest_plot(
+  component_name = "Self-Employment Support",
+  outcome_domain_name = "Education and Skills"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_self_employment_support_education_skills,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_self_employment_support_education_skills.png",
+  height = 11,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+# Employment Compensation outcomes
+#almp_nma_additive_model_forest_plot_self_employment_support_employment_compensation <- create_forest_plot(
+#  component_name = "Self-Employment Support",
+#  outcome_domain_name = "Employment Compensation"
+#)
+
+#ggsave(
+#  plot = almp_nma_additive_model_forest_plot_self_employment_support_employment_compensation,
+#  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_self_employment_support_employment_compensation.png",
+#  height = 4,
+#  width = 7,
+#  device = "png",
+#  type = "cairo-png"
+#)
+
+# Employment Duration outcomes
+almp_nma_additive_model_forest_plot_self_employment_support_employment_duration <- create_forest_plot(
+  component_name = "Self-Employment Support",
+  outcome_domain_name = "Employment Duration"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_self_employment_support_employment_duration,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_self_employment_support_employment_duration.png",
+  height = 3,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+# Hours worked outcomes
+#almp_nma_additive_model_forest_plot_self_employment_support_hours_worked <- create_forest_plot(
+#  component_name = "Self-Employment Support",
+#  outcome_domain_name = "Hours Worked"
+#)
+
+#ggsave(
+#  plot = almp_nma_additive_model_forest_plot_self_employment_support_hours_worked,
+#  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_self_employment_support_hours_worked.png",
+#  height = 3,
+#  width = 7,
+#  device = "png",
+#  type = "cairo-png"
+#)
+
+#-------------------------------------------------------------------------------
+# 12. Soft Skills Training
+#-------------------------------------------------------------------------------
+
+# Labour Force outcomes
+almp_nma_additive_model_forest_plot_soft_skills_training_labour_force_status_outcomes <- create_forest_plot(
+  component_name = "Soft Skills Training",
+  outcome_domain_name = "Labour Force Status"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_soft_skills_training_labour_force_status_outcomes,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_soft_skills_training_labour_force_status_outcomes.png",
+  height = 6,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+# Education and Skills outcomes
+almp_nma_additive_model_forest_plot_soft_skills_training_education_skills <- create_forest_plot(
+  component_name = "Soft Skills Training",
+  outcome_domain_name = "Education and Skills"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_soft_skills_training_education_skills,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_soft_skills_training_education_skills.png",
+  height = 11,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+# Employment Compensation outcomes
+almp_nma_additive_model_forest_plot_soft_skills_training_employment_compensation <- create_forest_plot(
+  component_name = "Soft Skills Training",
+  outcome_domain_name = "Employment Compensation"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_soft_skills_training_employment_compensation,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_soft_skills_training_employment_compensation.png",
+  height = 4,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+# Employment Duration outcomes
+almp_nma_additive_model_forest_plot_soft_skills_training_employment_duration <- create_forest_plot(
+  component_name = "Soft Skills Training",
+  outcome_domain_name = "Employment Duration"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_soft_skills_training_employment_duration,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_soft_skills_training_employment_duration.png",
+  height = 3,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+# Hours worked outcomes
+almp_nma_additive_model_forest_plot_soft_skills_training_hours_worked <- create_forest_plot(
+  component_name = "Soft Skills Training",
+  outcome_domain_name = "Hours Worked"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_soft_skills_training_hours_worked,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_soft_skills_training_hours_worked.png",
+  height = 3,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+#-------------------------------------------------------------------------------
+# 13. Technical Skills Training (Off-the-Job)
+#-------------------------------------------------------------------------------
+
+# Labour Force outcomes
+almp_nma_additive_model_forest_plot_technical_skills_training_off_the_job_labour_force_status_outcomes <- create_forest_plot(
+  component_name = "Technical Skills Training (Off-the-Job)",
+  outcome_domain_name = "Labour Force Status"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_technical_skills_training_off_the_job_labour_force_status_outcomes,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_technical_skills_training_off_the_job_labour_force_status_outcomes.png",
+  height = 6,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+# Education and Skills outcomes
+almp_nma_additive_model_forest_plot_technical_skills_training_off_the_job_education_skills <- create_forest_plot(
+  component_name = "Technical Skills Training (Off-the-Job)",
+  outcome_domain_name = "Education and Skills"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_technical_skills_training_off_the_job_education_skills,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_technical_skills_training_off_the_job_education_skills.png",
+  height = 11,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+# Employment Compensation outcomes
+almp_nma_additive_model_forest_plot_technical_skills_training_off_the_job_employment_compensation <- create_forest_plot(
+  component_name = "Technical Skills Training (Off-the-Job)",
+  outcome_domain_name = "Employment Compensation"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_technical_skills_training_off_the_job_employment_compensation,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_technical_skills_training_off_the_job_employment_compensation.png",
+  height = 4,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+# Employment Duration outcomes
+almp_nma_additive_model_forest_plot_technical_skills_training_off_the_job_employment_duration <- create_forest_plot(
+  component_name = "Technical Skills Training (Off-the-Job)",
+  outcome_domain_name = "Employment Duration"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_technical_skills_training_off_the_job_employment_duration,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_technical_skills_training_off_the_job_employment_duration.png",
+  height = 3,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+# Hours worked outcomes
+almp_nma_additive_model_forest_plot_technical_skills_training_off_the_job_hours_worked <- create_forest_plot(
+  component_name = "Technical Skills Training (Off-the-Job)",
+  outcome_domain_name = "Hours Worked"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_technical_skills_training_off_the_job_hours_worked,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_technical_skills_training_off_the_job_hours_worked.png",
+  height = 3,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+#-------------------------------------------------------------------------------
+# 14. Technical Skills Training (On-the-Job)
+#-------------------------------------------------------------------------------
+
+# Labour Force outcomes
+almp_nma_additive_model_forest_plot_technical_skills_training_on_the_job_labour_force_status_outcomes <- create_forest_plot(
+  component_name = "Technical Skills Training (On-the-Job)",
+  outcome_domain_name = "Labour Force Status"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_technical_skills_training_on_the_job_labour_force_status_outcomes,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_technical_skills_training_on_the_job_labour_force_status_outcomes.png",
+  height = 6,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+# Education and Skills outcomes
+almp_nma_additive_model_forest_plot_technical_skills_training_on_the_job_education_skills <- create_forest_plot(
+  component_name = "Technical Skills Training (On-the-Job)",
+  outcome_domain_name = "Education and Skills"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_technical_skills_training_on_the_job_education_skills,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_technical_skills_training_on_the_job_education_skills.png",
+  height = 11,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+# Employment Compensation outcomes
+almp_nma_additive_model_forest_plot_technical_skills_training_on_the_job_employment_compensation <- create_forest_plot(
+  component_name = "Technical Skills Training (On-the-Job)",
+  outcome_domain_name = "Employment Compensation"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_technical_skills_training_on_the_job_employment_compensation,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_technical_skills_training_on_the_job_employment_compensation.png",
+  height = 4,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+# Employment Duration outcomes
+almp_nma_additive_model_forest_plot_technical_skills_training_on_the_job_employment_duration <- create_forest_plot(
+  component_name = "Technical Skills Training (On-the-Job)",
+  outcome_domain_name = "Employment Duration"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_technical_skills_training_on_the_job_employment_duration,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_technical_skills_training_on_the_job_employment_duration.png",
+  height = 3,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+# Hours worked outcomes
+almp_nma_additive_model_forest_plot_technical_skills_training_on_the_job_hours_worked <- create_forest_plot(
+  component_name = "Technical Skills Training (On-the-Job)",
+  outcome_domain_name = "Hours Worked"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_technical_skills_training_on_the_job_hours_worked,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_technical_skills_training_on_the_job_hours_worked.png",
+  height = 3,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+#-------------------------------------------------------------------------------
+# 15. Unpaid Temporary Work Experience
+#-------------------------------------------------------------------------------
+
+# Labour Force outcomes
+almp_nma_additive_model_forest_plot_unpaid_temporary_work_experience_labour_force_status_outcomes <- create_forest_plot(
+  component_name = "Unpaid Temporary Work Experience",
+  outcome_domain_name = "Labour Force Status"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_unpaid_temporary_work_experience_labour_force_status_outcomes,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_unpaid_temporary_work_experience_labour_force_status_outcomes.png",
+  height = 6,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+# Education and Skills outcomes
+almp_nma_additive_model_forest_plot_unpaid_temporary_work_experience_education_skills <- create_forest_plot(
+  component_name = "Unpaid Temporary Work Experience",
+  outcome_domain_name = "Education and Skills"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_unpaid_temporary_work_experience_education_skills,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_unpaid_temporary_work_experience_education_skills.png",
+  height = 11,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+# Employment Compensation outcomes
+almp_nma_additive_model_forest_plot_unpaid_temporary_work_experience_employment_compensation <- create_forest_plot(
+  component_name = "Unpaid Temporary Work Experience",
+  outcome_domain_name = "Employment Compensation"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_unpaid_temporary_work_experience_employment_compensation,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_unpaid_temporary_work_experience_employment_compensation.png",
+  height = 4,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+# Employment Duration outcomes
+almp_nma_additive_model_forest_plot_unpaid_temporary_work_experience_employment_duration <- create_forest_plot(
+  component_name = "Unpaid Temporary Work Experience",
+  outcome_domain_name = "Employment Duration"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_unpaid_temporary_work_experience_employment_duration,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_unpaid_temporary_work_experience_employment_duration.png",
+  height = 3,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+# Hours worked outcomes
+almp_nma_additive_model_forest_plot_unpaid_temporary_work_experience_hours_worked <- create_forest_plot(
+  component_name = "Unpaid Temporary Work Experience",
+  outcome_domain_name = "Hours Worked"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_unpaid_temporary_work_experience_hours_worked,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_unpaid_temporary_work_experience_hours_worked.png",
+  height = 3,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+#-------------------------------------------------------------------------------
+# 16. Wage Subsidies
+#-------------------------------------------------------------------------------
+
+# Labour Force outcomes
+almp_nma_additive_model_forest_plot_wage_subsidies_labour_force_status_outcomes <- create_forest_plot(
+  component_name = "Wage Subsidies",
+  outcome_domain_name = "Labour Force Status"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_wage_subsidies_labour_force_status_outcomes,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_wage_subsidies_labour_force_status_outcomes.png",
+  height = 6,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+# Education and Skills outcomes
+almp_nma_additive_model_forest_plot_wage_subsidies_education_skills <- create_forest_plot(
+  component_name = "Wage Subsidies",
+  outcome_domain_name = "Education and Skills"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_wage_subsidies_education_skills,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_wage_subsidies_education_skills.png",
+  height = 11,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+# Employment Compensation outcomes
+almp_nma_additive_model_forest_plot_wage_subsidies_employment_compensation <- create_forest_plot(
+  component_name = "Wage Subsidies",
+  outcome_domain_name = "Employment Compensation"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_wage_subsidies_employment_compensation,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_wage_subsidies_employment_compensation.png",
+  height = 4,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+# Employment Duration outcomes
+almp_nma_additive_model_forest_plot_wage_subsidies_employment_duration <- create_forest_plot(
+  component_name = "Wage Subsidies",
+  outcome_domain_name = "Employment Duration"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_wage_subsidies_employment_duration,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_wage_subsidies_employment_duration.png",
+  height = 3,
+  width = 7,
+  device = "png",
+  type = "cairo-png"
+)
+
+# Hours worked outcomes
+almp_nma_additive_model_forest_plot_wage_subsidies_hours_worked <- create_forest_plot(
+  component_name = "Wage Subsidies",
+  outcome_domain_name = "Hours Worked"
+)
+
+ggsave(
+  plot = almp_nma_additive_model_forest_plot_wage_subsidies_hours_worked,
+  filename = "./visualisation/output/meta_results/almp_nma_additive_model_forest_plot_wage_subsidies_hours_worked.png",
+  height = 3,
+  width = 7,
   device = "png",
   type = "cairo-png"
 )

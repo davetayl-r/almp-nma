@@ -1,7 +1,7 @@
 #============================================================================================#
 # Project: ALMP NMA                                                                          #
 # Author: David Taylor                                                                       #
-# Date: 24/09/2025                                                                           #
+# Date: 25/09/2025                                                                           #
 # Purpose: Visualise subgroup results x sex NMA model #13                                    #
 #============================================================================================#
 
@@ -11,7 +11,6 @@ library(ggplot2)
 library(patchwork)
 library(ggdist)
 library(scales)
-#library(ggh4x)
 
 # load custom functions
 source("./visualisation/code/visualisation_functions.R")

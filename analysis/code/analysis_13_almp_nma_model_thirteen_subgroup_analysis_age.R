@@ -102,6 +102,14 @@ almp_nma_model_thirteen_study_level_subgroup_age_draws <- map_dfr(
     age_group
   ) |>
   mutate(
+    age_group = recode(
+      age_group,
+      `16` = "Age 16",
+      `18` = "Age 18",
+      `20` = "Age 20",
+      `22` = "Age 22",
+      `24` = "Age 24"
+    ),
     probability_greater_zero = mean(theta > 0, na.rm = TRUE),
     probability_low_impact = mean(theta > 0 & theta <= 0.1, na.rm = TRUE),
     probability_medium_impact = mean(
