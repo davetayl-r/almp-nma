@@ -107,8 +107,8 @@ almp_nma_model_thirteen_study_level_subgroup_sex_draws <- bind_rows(
   ) |>
   mutate(
     subgroup = case_when(
-      prop_female_raw == 1 ~ "Female",
-      TRUE ~ "Male"
+      prop_female_raw == 1 ~ "Females",
+      TRUE ~ "Males"
     )
   ) |>
   group_by(
