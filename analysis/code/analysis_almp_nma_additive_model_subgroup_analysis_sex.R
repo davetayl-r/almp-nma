@@ -1,8 +1,8 @@
 #============================================================================================#
 # Project: ALMP NMA                                                                          #
 # Author: David Taylor                                                                       #
-# Date: 24/09/2025                                                                           #
-# Purpose: NMA model #13 — subgroup analysis x sex                                           #
+# Date: 26/09/2025                                                                           #
+# Purpose: NMA additive model — subgroup analysis x sex                                      #
 #============================================================================================#
 
 # load required packages
@@ -14,13 +14,10 @@ library(posterior)
 # load custom functions
 source("./analysis/code/analysis_functions.R")
 
-# load model data and results
-almp_nma_model_thirteen_data_location <- "./analysis/output/almp_nma_model_thirteen_data.RDS"
-almp_nma_model_thirteen_data <- readRDS(almp_nma_model_thirteen_data_location)
-
-almp_nma_model_thirteen_results_location <- "./analysis/output/almp_nma_model_thirteen.RDS"
-almp_nma_model_thirteen_results <- readRDS(
-  almp_nma_model_thirteen_results_location
+# load model results
+almp_nma_additive_model_results_location <- "./analysis/output/almp_nma_additive_model.RDS"
+almp_nma_additive_model_results <- readRDS(
+  almp_nma_additive_model_results_location
 )
 
 # set seed
@@ -33,22 +30,22 @@ set.seed(2204)
 # Component dummies present in the fitted model’s data
 component_vars <- grep(
   "^comp_",
-  names(almp_nma_model_thirteen_results$data),
+  names(almp_nma_additive_model_results$data),
   value = TRUE
 )
 
 # Outcome & design levels
-outcome_levels <- levels(almp_nma_model_thirteen_results$data$outcome)
-almp_nma_model_thirteen_results$data$study_design_type <- factor(
-  almp_nma_model_thirteen_results$data$study_design_type
+outcome_levels <- levels(almp_nma_additive_model_results$data$outcome)
+almp_nma_additive_model_results$data$study_design_type <- factor(
+  almp_nma_additive_model_results$data$study_design_type
 )
 study_design_levels <- levels(
-  almp_nma_model_thirteen_results$data$study_design_type
+  almp_nma_additive_model_results$data$study_design_type
 )
 
 # We need the raw female share to recover the centering constant
 study_mean_proportion_female <- mean(
-  almp_nma_model_thirteen_data$prop_female, # this needs to be changed for the final model
+  almp_nma_additive_model_results$data$prop_female,
   na.rm = TRUE
 )
 
@@ -58,7 +55,7 @@ proportion_female_1_centred_scale <- 1 - study_mean_proportion_female # raw 100%
 
 # A reasonable placeholder for delta_se (required because y|se(delta_se))
 delta_se_placeholder <- mean(
-  almp_nma_model_thirteen_results$data$delta_se,
+  almp_nma_additive_model_results$data$delta_se,
   na.rm = TRUE
 )
 
@@ -98,7 +95,7 @@ study_level_subgroup_sex_female_draws <- component_effect_x_proportion_female(
   draw_ids = NULL
 )
 
-almp_nma_model_thirteen_study_level_subgroup_sex_draws <- bind_rows(
+almp_nma_additive_model_study_level_subgroup_sex_draws <- bind_rows(
   study_level_subgroup_sex_male_draws,
   study_level_subgroup_sex_female_draws
 ) |>
@@ -231,7 +228,7 @@ almp_nma_model_thirteen_study_level_subgroup_sex_draws <- bind_rows(
   )
 
 # Posterior summaries for subgroup effects
-almp_nma_model_thirteen_study_level_subgroup_sex_summary <- almp_nma_model_thirteen_study_level_subgroup_sex_draws |>
+almp_nma_additive_model_study_level_subgroup_sex_summary <- almp_nma_additive_model_study_level_subgroup_sex_draws |>
   group_by(
     outcome,
     outcome_domain,
@@ -253,7 +250,7 @@ almp_nma_model_thirteen_study_level_subgroup_sex_summary <- almp_nma_model_thirt
 # 3. Extract draws for study-level differential treatment effect x sex
 #-------------------------------------------------------------------------------
 
-almp_nma_model_thirteen_differential_treatment_effect_sex_draws <- almp_nma_model_thirteen_study_level_subgroup_sex_draws |>
+almp_nma_additive_model_differential_treatment_effect_sex_draws <- almp_nma_additive_model_study_level_subgroup_sex_draws |>
   select(
     .draw,
     outcome,
@@ -285,7 +282,7 @@ almp_nma_model_thirteen_differential_treatment_effect_sex_draws <- almp_nma_mode
     probability_greater_for_male = mean(contrast_1_minus_0 < 0, na.rm = TRUE)
   )
 
-almp_nma_model_thirteen_differential_treatment_effect_sex_summary <- almp_nma_model_thirteen_differential_treatment_effect_sex_draws |>
+almp_nma_additive_model_differential_treatment_effect_sex_summary <- almp_nma_additive_model_differential_treatment_effect_sex_draws |>
   group_by(
     outcome,
     outcome_domain,
@@ -309,21 +306,21 @@ almp_nma_model_thirteen_differential_treatment_effect_sex_summary <- almp_nma_mo
 #-------------------------------------------------------------------------------
 
 saveRDS(
-  almp_nma_model_thirteen_study_level_subgroup_sex_draws,
-  "./visualisation/inputs/prototype_models/almp_nma_model_thirteen_study_level_subgroup_sex_draws.RDS"
+  almp_nma_additive_model_study_level_subgroup_sex_draws,
+  "./visualisation/inputs/almp_nma_additive_model_study_level_subgroup_sex_draws.RDS"
 )
 
 saveRDS(
-  almp_nma_model_thirteen_study_level_subgroup_sex_summary,
-  "./visualisation/inputs/prototype_models/almp_nma_model_thirteen_study_level_subgroup_sex_summary.RDS"
+  almp_nma_additive_model_study_level_subgroup_sex_summary,
+  "./visualisation/inputs/almp_nma_additive_model_study_level_subgroup_sex_summary.RDS"
 )
 
 saveRDS(
-  almp_nma_model_thirteen_differential_treatment_effect_sex_draws,
-  "./visualisation/inputs/prototype_models/almp_nma_model_thirteen_differential_treatment_effect_sex_draws.RDS"
+  almp_nma_additive_model_differential_treatment_effect_sex_draws,
+  "./visualisation/inputs/almp_nma_additive_model_differential_treatment_effect_sex_draws.RDS"
 )
 
 saveRDS(
-  almp_nma_model_thirteen_differential_treatment_effect_sex_summary,
-  "./visualisation/inputs/prototype_models/almp_nma_model_thirteen_differential_treatment_effect_sex_summary.RDS"
+  almp_nma_additive_model_differential_treatment_effect_sex_summary,
+  "./visualisation/inputs/almp_nma_additive_model_differential_treatment_effect_sex_summary.RDS"
 )

@@ -1,8 +1,8 @@
 #============================================================================================#
 # Project: ALMP NMA                                                                          #
 # Author: David Taylor                                                                       #
-# Date: 25/09/2025                                                                           #
-# Purpose: NMA model #13 — subgroup analysis x age                                           #
+# Date: 26/09/2025                                                                           #
+# Purpose: NMA additive model — subgroup analysis x age                                      #
 #============================================================================================#
 
 # load required packages
@@ -14,13 +14,10 @@ library(posterior)
 # load custom functions
 source("./analysis/code/analysis_functions.R")
 
-# load model data and results
-almp_nma_model_thirteen_data_location <- "./analysis/output/almp_nma_model_thirteen_data.RDS"
-almp_nma_model_thirteen_data <- readRDS(almp_nma_model_thirteen_data_location)
-
-almp_nma_model_thirteen_results_location <- "./analysis/output/almp_nma_model_thirteen.RDS"
-almp_nma_model_thirteen_results <- readRDS(
-  almp_nma_model_thirteen_results_location
+# load model results
+almp_nma_additive_model_results_location <- "./analysis/output/almp_nma_additive_model.RDS"
+almp_nma_additive_model_results <- readRDS(
+  almp_nma_additive_model_results_location
 )
 
 # set seed
@@ -33,25 +30,29 @@ set.seed(2204)
 # Component dummies present in the fitted model’s data
 component_vars <- grep(
   "^comp_",
-  names(almp_nma_model_thirteen_results$data),
+  names(almp_nma_additive_model_results$data),
   value = TRUE
 )
 
 # Outcome & design levels
-outcome_levels <- levels(almp_nma_model_thirteen_results$data$outcome)
-almp_nma_model_thirteen_results$data$study_design_type <- factor(
-  almp_nma_model_thirteen_results$data$study_design_type
+outcome_levels <- levels(almp_nma_additive_model_results$data$outcome)
+almp_nma_additive_model_results$data$study_design_type <- factor(
+  almp_nma_additive_model_results$data$study_design_type
 )
 study_design_levels <- levels(
-  almp_nma_model_thirteen_results$data$study_design_type
+  almp_nma_additive_model_results$data$study_design_type
 )
 
-# We mean age and sd to recover the centering constant
+# Get mean age and sd to recover the centering constant
 study_age_mean <- mean(
-  almp_nma_model_thirteen_data$study_age_mean,
+  almp_nma_additive_model_results$data$study_age_mean,
   na.rm = TRUE
 )
-study_age_sd <- sd(almp_nma_model_thirteen_data$study_age_mean, na.rm = TRUE)
+
+study_age_sd <- sd(
+  almp_nma_additive_model_results$data$study_age_mean,
+  na.rm = TRUE
+)
 
 # select raw ages to visualise
 mean_study_age_cuts <- c(16, 18, 20, 22, 24)
@@ -61,7 +62,7 @@ mean_study_age_scaled <- (mean_study_age_cuts - study_age_mean) / study_age_sd
 
 # A reasonable placeholder for delta_se (required because y|se(delta_se))
 delta_se_placeholder <- mean(
-  almp_nma_model_thirteen_results$data$delta_se,
+  almp_nma_additive_model_results$data$delta_se,
   na.rm = TRUE
 )
 
@@ -89,7 +90,7 @@ base_outcome_grid <- tibble(
 # 2. Extract draws for study-level subgroup effects x age
 #-------------------------------------------------------------------------------
 
-almp_nma_model_thirteen_study_level_subgroup_age_draws <- map_dfr(
+almp_nma_additive_model_study_level_subgroup_age_draws <- map_dfr(
   mean_study_age_cuts,
   component_effect_x_mean_study_age
 ) |>
@@ -224,7 +225,7 @@ almp_nma_model_thirteen_study_level_subgroup_age_draws <- map_dfr(
   )
 
 # Posterior summaries for subgroup effects
-almp_nma_model_thirteen_study_level_subgroup_age_summary <- almp_nma_model_thirteen_study_level_subgroup_age_draws |>
+almp_nma_additive_model_study_level_subgroup_age_summary <- almp_nma_additive_model_study_level_subgroup_age_draws |>
   group_by(
     outcome,
     outcome_domain,
@@ -247,11 +248,11 @@ almp_nma_model_thirteen_study_level_subgroup_age_summary <- almp_nma_model_thirt
 #-------------------------------------------------------------------------------
 
 saveRDS(
-  almp_nma_model_thirteen_study_level_subgroup_age_draws,
-  "./visualisation/inputs/prototype_models/almp_nma_model_thirteen_study_level_subgroup_age_draws.RDS"
+  almp_nma_additive_model_study_level_subgroup_age_draws,
+  "./visualisation/inputs/almp_nma_additive_model_study_level_subgroup_age_draws.RDS"
 )
 
 saveRDS(
-  almp_nma_model_thirteen_study_level_subgroup_age_summary,
-  "./visualisation/inputs/prototype_models/almp_nma_model_thirteen_study_level_subgroup_age_summary.RDS"
+  almp_nma_additive_model_study_level_subgroup_age_summary,
+  "./visualisation/inputs/almp_nma_additive_model_study_level_subgroup_age_summary.RDS"
 )

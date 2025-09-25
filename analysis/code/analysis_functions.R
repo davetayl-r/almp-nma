@@ -264,14 +264,14 @@ component_effect_x_proportion_female <- function(
 
     # predictions: matrix [draws × n_outcomes]
     mu_1 <- posterior_linpred(
-      almp_nma_model_thirteen_results,
+      almp_nma_additive_model_results,
       newdata = new_data_1,
       re_formula = NA,
       transform = FALSE,
       draw_ids = draw_ids
     )
     mu_0 <- posterior_linpred(
-      almp_nma_model_thirteen_results,
+      almp_nma_additive_model_results,
       newdata = new_data_0,
       re_formula = NA,
       transform = FALSE,
@@ -322,14 +322,14 @@ component_effect_x_mean_study_age <- function(age_raw_value, draw_ids = NULL) {
 
     # predictions: matrix [draws × n_outcomes]
     mu_1 <- posterior_linpred(
-      almp_nma_model_thirteen_results,
+      almp_nma_additive_model_results,
       newdata = new_data_1,
       re_formula = NA,
       transform = FALSE,
       draw_ids = draw_ids
     )
     mu_0 <- posterior_linpred(
-      almp_nma_model_thirteen_results,
+      almp_nma_additive_model_results,
       newdata = new_data_0,
       re_formula = NA,
       transform = FALSE,
