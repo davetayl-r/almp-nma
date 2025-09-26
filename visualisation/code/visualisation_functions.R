@@ -56,6 +56,7 @@ create_forest_plot <- function(
       effect = theta
     ) |>
     mutate(
+      effect = as.numeric(effect),
       outcome = maintain_factor_order(outcome)
     )
 
@@ -94,7 +95,7 @@ create_forest_plot <- function(
       ),
       .width = c(0.95),
       colour = "#000000",
-      alpha = 0.8,
+      alpha = 0.7,
       point_interval = "median_qi"
     ) +
     stat_halfeye(
@@ -115,7 +116,7 @@ create_forest_plot <- function(
       ),
       .width = c(0.95),
       colour = "#000000",
-      alpha = 0.8,
+      alpha = 0.7,
       point_interval = "median_qi"
     ) +
     # Add summary text labels
@@ -133,9 +134,12 @@ create_forest_plot <- function(
         x = effect
       ),
       hjust = "centre",
-      nudge_y = -0.1,
-      size = 3,
+      nudge_y = +0.15,
+      size = 4,
       color = "black"
+    ) +
+    facet_wrap(
+      ~"Posterior distribution of\ncomponent x outcome effects",
     ) +
     # wrap y-axis labels
     scale_y_discrete(
@@ -173,9 +177,8 @@ create_forest_plot <- function(
     # specify labels
     labs(
       subtitle = "",
-      x = "Posterior distributions with 95% credible intervals (Hedges' g)",
-      y = "",
-      caption = "Values report median effect size [95% Credible Interval]"
+      x = "Hedges' g",
+      y = ""
     ) +
     # set theme
     theme(
@@ -190,7 +193,8 @@ create_forest_plot <- function(
       ),
       axis.text.y = element_text(
         size = 10,
-        colour = "#000000"
+        colour = "#000000",
+        face = "bold"
       ),
       axis.text.x = element_text(
         size = 9,
@@ -205,22 +209,153 @@ create_forest_plot <- function(
       legend.direction = "horizontal",
       legend.title = element_blank(),
       strip.clip = "off",
-      strip.text.y = element_text(angle = 0, hjust = 0),
+      strip.text.y = element_text(
+        angle = 0,
+        hjust = 0
+      ),
       strip.placement = "outside",
       axis.title.y = element_blank(),
       plot.subtitle = element_blank(),
       plot.title = element_blank(),
       panel.border = element_blank(),
-      plot.caption = element_text(
-        size = 10,
-        margin = margin(t = 5)
-      ),
       strip.background = element_blank(),
       axis.ticks = element_blank(),
-      plot.margin = margin(t = 2, r = 15, b = 2, l = 2, unit = "pt")
+      plot.margin = margin(t = 2, r = 10, b = 2, l = 2, unit = "pt")
     )
 
-  return(main_plot)
+  # Create probability summary plot
+  probability_summary_plot <- summary_data |>
+    select(
+      outcome,
+      component,
+      starts_with("probability")
+    ) |>
+    pivot_longer(
+      cols = starts_with("probability_"),
+      names_to = "probability_type",
+      values_to = "probability_value"
+    ) %>%
+    # Clean up the probability type names for better labels
+    mutate(
+      probability_type = case_when(
+        probability_type == "probability_greater_zero" ~ "Any\nImpact",
+        probability_type == "probability_low_impact" ~ "Low\nImpact",
+        probability_type == "probability_medium_impact" ~ "Medium\nImpact",
+        probability_type == "probability_high_impact" ~ "High\nImpact",
+        TRUE ~ probability_type
+      ),
+      # Reorder probability types for logical display
+      probability_type = factor(
+        probability_type,
+        levels = c(
+          "Any\nImpact",
+          "Low\nImpact",
+          "Medium\nImpact",
+          "High\nImpact"
+        )
+      )
+    ) |>
+    # create plot
+    ggplot() +
+    aes(
+      x = probability_value,
+      y = fct_rev(outcome)
+    ) +
+    geom_col(
+      aes(
+        fill = probability_type,
+      ),
+      alpha = 0.7
+    ) +
+    geom_text(
+      aes(
+        label = sprintf("%.2f", probability_value),
+        x = 0
+      ),
+      hjust = 0,
+      color = "black",
+      size = 4
+    ) +
+    facet_wrap(
+      ~probability_type,
+      scales = "fixed",
+      ncol = 4
+    ) +
+    labs(
+      x = "Probability of postive outcome\nfavouring the intervention",
+      y = "",
+      fill = "Probability Type"
+    ) +
+    scale_fill_manual(
+      values = c(
+        "Any\nImpact" = "#6FAADB",
+        "Low\nImpact" = "#95C47C",
+        "Medium\nImpact" = "#E8A87C",
+        "High\nImpact" = "#8B4B6B"
+      )
+    ) +
+    scale_x_continuous(
+      limits = c(0, 1),
+      breaks = seq(0, 1)
+    ) +
+    coord_cartesian(
+      expand = FALSE,
+      clip = "off"
+    ) +
+    # set theme
+    theme(
+      plot.background = element_rect(fill = "#FFFFFF"),
+      panel.background = element_rect(fill = "#FFFFFF"),
+      panel.grid.major.y = element_blank(),
+      panel.grid.minor = element_blank(),
+      axis.title.x = element_text(
+        size = 10,
+        colour = "#000000",
+        margin = margin(t = 10, r = 0, b = 0, l = 0)
+      ),
+      axis.text.x = element_text(
+        size = 9,
+        colour = "#323030ff",
+        vjust = -0.75
+      ),
+      strip.text = element_text(
+        size = 10,
+        face = "bold"
+      ),
+      legend.position = "none",
+      legend.title = element_blank(),
+      strip.clip = "off",
+      strip.text.y = element_text(angle = 0, hjust = 0),
+      strip.placement = "outside",
+      axis.title.y = element_blank(),
+      plot.subtitle = element_blank(),
+      plot.title = element_blank(),
+      axis.text.y = element_blank(),
+      panel.border = element_blank(),
+      strip.background = element_blank(),
+      plot.margin = margin(t = 2, r = 2, b = 2, l = 2, unit = "pt"),
+      axis.ticks = element_blank()
+    )
+
+  # Combine the plots
+  combined_plot <- main_plot +
+    probability_summary_plot +
+    # aligns axis titles
+    plot_layout(
+      axis_titles = "collect_x",
+      widths = c(1, 2)
+    ) +
+    plot_annotation(
+      caption = "Values report median effect size [95% Credible Interval]",
+      theme = theme(
+        plot.caption = element_text(
+          size = 9,
+          margin = margin(t = 1)
+        )
+      )
+    )
+
+  return(combined_plot)
 }
 
 #-------------------------------------------------------------------------------
