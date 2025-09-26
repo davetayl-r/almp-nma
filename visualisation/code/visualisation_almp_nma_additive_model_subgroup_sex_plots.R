@@ -300,7 +300,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_basic_skills_training_labour_force_status_outcomes,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_basic_skills_training_labour_force_status_outcomes.png",
   height = 6,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -319,7 +319,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_basic_skills_training_education_skills,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_basic_skills_training_education_skills.png",
   height = 11,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -338,7 +338,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_basic_skills_training_employment_compensation,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_basic_skills_training_employment_compensation.png",
   height = 4,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -357,7 +357,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_basic_skills_training_employment_duration,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_basic_skills_training_employment_duration.png",
   height = 3,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -376,7 +376,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_basic_skills_training_hours_worked,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_basic_skills_training_hours_worked.png",
   height = 3,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -399,7 +399,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_behavioural_skills_training_labour_force_status_outcomes,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_behavioural_skills_training_labour_force_status_outcomes.png",
   height = 6,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -418,7 +418,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_behavioural_skills_training_education_skills,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_behavioural_skills_training_education_skills.png",
   height = 11,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -437,7 +437,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_behavioural_skills_training_employment_compensation,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_behavioural_skills_training_employment_compensation.png",
   height = 4,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -456,7 +456,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_behavioural_skills_training_employment_duration,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_behavioural_skills_training_employment_duration.png",
   height = 3,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -475,7 +475,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_behavioural_skills_training_hours_worked,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_behavioural_skills_training_hours_worked.png",
   height = 3,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -498,7 +498,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_employment_coaching_labour_force_status_outcomes,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_employment_coaching_labour_force_status_outcomes.png",
   height = 6,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -517,7 +517,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_employment_coaching_education_skills,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_employment_coaching_education_skills.png",
   height = 11,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -536,7 +536,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_employment_coaching_employment_compensation,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_employment_coaching_employment_compensation.png",
   height = 4,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -555,7 +555,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_employment_coaching_employment_duration,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_employment_coaching_employment_duration.png",
   height = 3,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -574,7 +574,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_employment_coaching_hours_worked,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_employment_coaching_hours_worked.png",
   height = 3,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -597,7 +597,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_employment_counselling_labour_force_status_outcomes,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_employment_counselling_labour_force_status_outcomes.png",
   height = 6,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -616,7 +616,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_employment_counselling_education_skills,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_employment_counselling_education_skills.png",
   height = 11,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -635,7 +635,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_employment_counselling_employment_compensation,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_employment_counselling_employment_compensation.png",
   height = 4,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -654,7 +654,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_employment_counselling_employment_duration,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_employment_counselling_employment_duration.png",
   height = 3,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -673,7 +673,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_employment_counselling_hours_worked,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_employment_counselling_hours_worked.png",
   height = 3,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -696,7 +696,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_financial_assistance_labour_force_status_outcomes,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_financial_assistance_labour_force_status_outcomes.png",
   height = 6,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -715,7 +715,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_financial_assistance_education_skills,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_financial_assistance_education_skills.png",
   height = 11,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -734,7 +734,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_financial_assistance_employment_compensation,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_financial_assistance_employment_compensation.png",
   height = 4,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -753,7 +753,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_financial_assistance_employment_duration,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_financial_assistance_employment_duration.png",
   height = 3,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -772,7 +772,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_financial_assistance_hours_worked,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_financial_assistance_hours_worked.png",
   height = 3,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -795,7 +795,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_job_search_assistance_labour_force_status_outcomes,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_job_search_assistance_labour_force_status_outcomes.png",
   height = 6,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -814,7 +814,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_job_search_assistance_education_skills,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_job_search_assistance_education_skills.png",
   height = 11,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -833,7 +833,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_job_search_assistance_employment_compensation,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_job_search_assistance_employment_compensation.png",
   height = 4,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -852,7 +852,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_job_search_assistance_employment_duration,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_job_search_assistance_employment_duration.png",
   height = 3,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -871,7 +871,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_job_search_assistance_hours_worked,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_job_search_assistance_hours_worked.png",
   height = 3,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -894,7 +894,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_job_search_preparation_labour_force_status_outcomes,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_job_search_preparation_labour_force_status_outcomes.png",
   height = 6,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -913,7 +913,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_job_search_preparation_education_skills,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_job_search_preparation_education_skills.png",
   height = 11,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -932,7 +932,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_job_search_preparation_employment_compensation,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_job_search_preparation_employment_compensation.png",
   height = 4,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -951,7 +951,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_job_search_preparation_employment_duration,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_job_search_preparation_employment_duration.png",
   height = 3,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -970,7 +970,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_job_search_preparation_hours_worked,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_job_search_preparation_hours_worked.png",
   height = 3,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -993,7 +993,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_paid_temporary_work_experience_labour_force_status_outcomes,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_paid_temporary_work_experience_labour_force_status_outcomes.png",
   height = 6,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -1012,7 +1012,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_paid_temporary_work_experience_education_skills,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_paid_temporary_work_experience_education_skills.png",
   height = 11,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -1031,7 +1031,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_paid_temporary_work_experience_employment_compensation,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_paid_temporary_work_experience_employment_compensation.png",
   height = 4,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -1050,7 +1050,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_paid_temporary_work_experience_employment_duration,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_paid_temporary_work_experience_employment_duration.png",
   height = 3,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -1069,7 +1069,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_paid_temporary_work_experience_hours_worked,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_paid_temporary_work_experience_hours_worked.png",
   height = 3,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -1091,8 +1091,8 @@ almp_nma_additive_model_study_level_subgroup_sex_forest_plot_public_works_labour
 ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_public_works_labour_force_status_outcomes,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_public_works_labour_force_status_outcomes.png",
-  height = 6,
-  width = 7,
+  height = 3,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -1111,7 +1111,7 @@ ggsave(
 #  plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_public_works_education_skills,
 #  filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_public_works_education_skills.png",
 #  height = 11,
-#  width = 7,
+#  width = 8,
 #  device = "png",
 #  type = "cairo-png"
 #)
@@ -1129,8 +1129,8 @@ almp_nma_additive_model_study_level_subgroup_sex_forest_plot_public_works_employ
 ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_public_works_employment_compensation,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_public_works_employment_compensation.png",
-  height = 4,
-  width = 7,
+  height = 3,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -1149,7 +1149,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_public_works_employment_duration,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_public_works_employment_duration.png",
   height = 3,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -1168,7 +1168,7 @@ ggsave(
 #  plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_public_works_hours_worked,
 #  filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_public_works_hours_worked.png",
 #  height = 3,
-#  width = 7,
+#  width = 8,
 #  device = "png",
 #  type = "cairo-png"
 #)
@@ -1191,7 +1191,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_self_employment_support_labour_force_status_outcomes,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_self_employment_support_labour_force_status_outcomes.png",
   height = 6,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -1209,8 +1209,8 @@ almp_nma_additive_model_study_level_subgroup_sex_forest_plot_self_employment_sup
 ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_self_employment_support_education_skills,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_self_employment_support_education_skills.png",
-  height = 11,
-  width = 7,
+  height = 3,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -1229,7 +1229,7 @@ ggsave(
 #  plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_self_employment_support_employment_compensation,
 #  filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_self_employment_support_employment_compensation.png",
 #  height = 4,
-#  width = 7,
+#  width = 8,
 #  device = "png",
 #  type = "cairo-png"
 #)
@@ -1248,7 +1248,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_self_employment_support_employment_duration,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_self_employment_support_employment_duration.png",
   height = 3,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -1267,7 +1267,7 @@ ggsave(
 #  plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_self_employment_support_hours_worked,
 #  filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_self_employment_support_hours_worked.png",
 #  height = 3,
-#  width = 7,
+#  width = 8,
 #  device = "png",
 #  type = "cairo-png"
 #)
@@ -1290,7 +1290,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_soft_skills_training_labour_force_status_outcomes,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_soft_skills_training_labour_force_status_outcomes.png",
   height = 6,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -1309,7 +1309,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_soft_skills_training_education_skills,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_soft_skills_training_education_skills.png",
   height = 11,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -1328,7 +1328,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_soft_skills_training_employment_compensation,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_soft_skills_training_employment_compensation.png",
   height = 4,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -1347,7 +1347,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_soft_skills_training_employment_duration,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_soft_skills_training_employment_duration.png",
   height = 3,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -1366,7 +1366,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_soft_skills_training_hours_worked,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_soft_skills_training_hours_worked.png",
   height = 3,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -1389,7 +1389,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_technical_skills_training_off_the_job_labour_force_status_outcomes,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_technical_skills_training_off_the_job_labour_force_status_outcomes.png",
   height = 6,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -1408,7 +1408,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_technical_skills_training_off_the_job_education_skills,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_technical_skills_training_off_the_job_education_skills.png",
   height = 11,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -1427,7 +1427,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_technical_skills_training_off_the_job_employment_compensation,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_technical_skills_training_off_the_job_employment_compensation.png",
   height = 4,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -1446,7 +1446,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_technical_skills_training_off_the_job_employment_duration,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_technical_skills_training_off_the_job_employment_duration.png",
   height = 3,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -1465,7 +1465,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_technical_skills_training_off_the_job_hours_worked,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_technical_skills_training_off_the_job_hours_worked.png",
   height = 3,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -1488,7 +1488,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_technical_skills_training_on_the_job_labour_force_status_outcomes,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_technical_skills_training_on_the_job_labour_force_status_outcomes.png",
   height = 6,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -1507,7 +1507,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_technical_skills_training_on_the_job_education_skills,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_technical_skills_training_on_the_job_education_skills.png",
   height = 11,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -1526,7 +1526,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_technical_skills_training_on_the_job_employment_compensation,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_technical_skills_training_on_the_job_employment_compensation.png",
   height = 4,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -1545,7 +1545,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_technical_skills_training_on_the_job_employment_duration,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_technical_skills_training_on_the_job_employment_duration.png",
   height = 3,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -1564,7 +1564,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_technical_skills_training_on_the_job_hours_worked,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_technical_skills_training_on_the_job_hours_worked.png",
   height = 3,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -1587,7 +1587,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_unpaid_temporary_work_experience_labour_force_status_outcomes,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_unpaid_temporary_work_experience_labour_force_status_outcomes.png",
   height = 6,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -1605,8 +1605,8 @@ almp_nma_additive_model_study_level_subgroup_sex_forest_plot_unpaid_temporary_wo
 ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_unpaid_temporary_work_experience_education_skills,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_unpaid_temporary_work_experience_education_skills.png",
-  height = 11,
-  width = 7,
+  height = 5,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -1625,7 +1625,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_unpaid_temporary_work_experience_employment_compensation,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_unpaid_temporary_work_experience_employment_compensation.png",
   height = 4,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -1644,7 +1644,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_unpaid_temporary_work_experience_employment_duration,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_unpaid_temporary_work_experience_employment_duration.png",
   height = 3,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -1663,7 +1663,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_unpaid_temporary_work_experience_hours_worked,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_unpaid_temporary_work_experience_hours_worked.png",
   height = 3,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -1686,7 +1686,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_wage_subsidies_labour_force_status_outcomes,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_wage_subsidies_labour_force_status_outcomes.png",
   height = 6,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -1704,8 +1704,8 @@ almp_nma_additive_model_study_level_subgroup_sex_forest_plot_wage_subsidies_educ
 ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_wage_subsidies_education_skills,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_wage_subsidies_education_skills.png",
-  height = 11,
-  width = 7,
+  height = 4,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -1724,7 +1724,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_wage_subsidies_employment_compensation,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_wage_subsidies_employment_compensation.png",
   height = 4,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -1743,7 +1743,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_wage_subsidies_employment_duration,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_wage_subsidies_employment_duration.png",
   height = 3,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )
@@ -1762,7 +1762,7 @@ ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_sex_forest_plot_wage_subsidies_hours_worked,
   filename = "./visualisation/output/subgroup_sex/almp_nma_additive_model_study_level_subgroup_sex_forest_plot_wage_subsidies_hours_worked.png",
   height = 3,
-  width = 7,
+  width = 8,
   device = "png",
   type = "cairo-png"
 )

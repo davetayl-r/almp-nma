@@ -134,8 +134,8 @@ create_forest_plot <- function(
         x = effect
       ),
       hjust = "centre",
-      nudge_y = +0.15,
-      size = 4,
+      nudge_y = 0.15,
+      size = 3.5,
       color = "black"
     ) +
     facet_wrap(
@@ -457,7 +457,7 @@ create_subgroup_sex_forest_plot <- function(
       ),
       .width = c(0.95),
       colour = "#000000",
-      alpha = 0.8,
+      alpha = 0.7,
       point_interval = "median_qi"
     ) +
     stat_halfeye(
@@ -478,7 +478,7 @@ create_subgroup_sex_forest_plot <- function(
       ),
       .width = c(0.95),
       colour = "#000000",
-      alpha = 0.8,
+      alpha = 0.7,
       point_interval = "median_qi"
     ) +
     # Add summary text labels
@@ -496,8 +496,8 @@ create_subgroup_sex_forest_plot <- function(
         x = effect
       ),
       hjust = "centre",
-      nudge_y = -0.1,
-      size = 3,
+      nudge_y = 0.15,
+      size = 3.5,
       color = "black"
     ) +
     # wrap y-axis labels
@@ -559,7 +559,8 @@ create_subgroup_sex_forest_plot <- function(
       ),
       axis.text.y = element_text(
         size = 10,
-        colour = "#000000"
+        colour = "#000000",
+        face = "bold"
       ),
       axis.text.x = element_text(
         size = 9,
@@ -620,7 +621,7 @@ create_subgroup_sex_forest_plot <- function(
       ),
       .width = c(0.95),
       colour = "#000000",
-      alpha = 0.8,
+      alpha = 0.7,
       point_interval = "median_qi"
     ) +
     stat_halfeye(
@@ -641,7 +642,7 @@ create_subgroup_sex_forest_plot <- function(
       ),
       .width = c(0.95),
       colour = "#000000",
-      alpha = 0.8,
+      alpha = 0.7,
       point_interval = "median_qi"
     ) +
     # Add summary text labels
@@ -659,8 +660,8 @@ create_subgroup_sex_forest_plot <- function(
         x = effect
       ),
       hjust = "centre",
-      nudge_y = -0.1,
-      size = 3,
+      nudge_y = 0.15,
+      size = 3.5,
       color = "black"
     ) +
     # wrap facets
@@ -674,7 +675,7 @@ create_subgroup_sex_forest_plot <- function(
     scale_x_continuous(
       limits = c(-0.6, 0.6),
       breaks = c(-0.5, 0, 0.5),
-      labels = c("-1", "0", "1")
+      labels = c("-.5", "0", ".5")
     ) +
     # specify colour scheme
     scale_fill_manual(
@@ -834,7 +835,7 @@ create_subgroup_age_forest_plot <- function(
       ),
       .width = c(0.95),
       colour = "#000000",
-      alpha = 0.8,
+      alpha = 0.7,
       point_interval = "median_qi"
     ) +
     stat_halfeye(
@@ -855,7 +856,7 @@ create_subgroup_age_forest_plot <- function(
       ),
       .width = c(0.95),
       colour = "#000000",
-      alpha = 0.8,
+      alpha = 0.7,
       point_interval = "median_qi"
     ) +
     # Add summary text labels
@@ -873,8 +874,8 @@ create_subgroup_age_forest_plot <- function(
         x = effect
       ),
       hjust = "centre",
-      nudge_y = -0.1,
-      size = 3,
+      nudge_y = 0.15,
+      size = 3.5,
       color = "black"
     ) +
     # wrap y-axis labels
@@ -937,7 +938,8 @@ create_subgroup_age_forest_plot <- function(
       ),
       axis.text.y = element_text(
         size = 10,
-        colour = "#000000"
+        colour = "#000000",
+        face = "bold"
       ),
       axis.text.x = element_text(
         size = 9,
