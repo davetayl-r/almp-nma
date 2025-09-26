@@ -170,7 +170,6 @@ almp_nma_additive_model_study_level_subgroup_age_forest_plot_basic_skills_traini
   summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
   plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
-almp_nma_additive_model_study_level_subgroup_age_forest_plot_basic_skills_training_labour_force_status_outcomes
 
 ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_age_forest_plot_basic_skills_training_labour_force_status_outcomes,
@@ -887,7 +886,7 @@ almp_nma_additive_model_study_level_subgroup_age_forest_plot_public_works_labour
 ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_age_forest_plot_public_works_labour_force_status_outcomes,
   filename = "./visualisation/output/subgroup_age/almp_nma_additive_model_study_level_subgroup_age_forest_plot_public_works_labour_force_status_outcomes.png",
-  height = 6,
+  height = 3,
   width = 8,
   device = "png",
   type = "cairo-png"
@@ -921,7 +920,7 @@ almp_nma_additive_model_study_level_subgroup_age_forest_plot_public_works_employ
 ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_age_forest_plot_public_works_employment_compensation,
   filename = "./visualisation/output/subgroup_age/almp_nma_additive_model_study_level_subgroup_age_forest_plot_public_works_employment_compensation.png",
-  height = 4,
+  height = 3,
   width = 8,
   device = "png",
   type = "cairo-png"
@@ -993,7 +992,7 @@ almp_nma_additive_model_study_level_subgroup_age_forest_plot_self_employment_sup
 ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_age_forest_plot_self_employment_support_education_skills,
   filename = "./visualisation/output/subgroup_age/almp_nma_additive_model_study_level_subgroup_age_forest_plot_self_employment_support_education_skills.png",
-  height = 11,
+  height = 3,
   width = 8,
   device = "png",
   type = "cairo-png"
@@ -1349,7 +1348,7 @@ almp_nma_additive_model_study_level_subgroup_age_forest_plot_unpaid_temporary_wo
 ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_age_forest_plot_unpaid_temporary_work_experience_education_skills,
   filename = "./visualisation/output/subgroup_age/almp_nma_additive_model_study_level_subgroup_age_forest_plot_unpaid_temporary_work_experience_education_skills.png",
-  height = 11,
+  height = 5,
   width = 8,
   device = "png",
   type = "cairo-png"
