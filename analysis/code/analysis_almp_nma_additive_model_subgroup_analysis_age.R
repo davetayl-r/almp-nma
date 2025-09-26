@@ -14,6 +14,10 @@ library(posterior)
 # load custom functions
 source("./analysis/code/analysis_functions.R")
 
+# load model input data
+almp_nma_additive_model_data_location <- "./analysis/output/almp_nma_additive_model_data.RDS"
+almp_nma_additive_model_data <- readRDS(almp_nma_additive_model_data_location)
+
 # load model results
 almp_nma_additive_model_results_location <- "./analysis/output/almp_nma_additive_model.RDS"
 almp_nma_additive_model_results <- readRDS(
@@ -45,12 +49,12 @@ study_design_levels <- levels(
 
 # Get mean age and sd to recover the centering constant
 study_age_mean <- mean(
-  almp_nma_additive_model_results$data$study_age_mean,
+  almp_nma_additive_model_data$study_age_mean,
   na.rm = TRUE
 )
 
 study_age_sd <- sd(
-  almp_nma_additive_model_results$data$study_age_mean,
+  almp_nma_additive_model_data$study_age_mean,
   na.rm = TRUE
 )
 

@@ -1,9 +1,13 @@
 #============================================================================================#
 # Project: ALMP NMA                                                                          #
 # Author: David Taylor                                                                       #
-# Date: 24/09/2025                                                                           #
+# Date: 26/09/2025                                                                           #
 # Purpose: Helper functions for NMA visualisation                                            #
 #============================================================================================#
+
+# load required packages
+library(ggplot2)
+library(patchwork)
 
 #-------------------------------------------------------------------------------
 # 1. Order factor variables after filtering
@@ -22,10 +26,12 @@ maintain_factor_order <- function(x) {
 
 create_forest_plot <- function(
   component_name,
-  outcome_domain_name
+  outcome_domain_name,
+  summary_data_input,
+  plot_data_input
 ) {
   # Subset summary data
-  summary_data <- almp_nma_model_thirteen_component_summary_filtered |>
+  summary_data <- summary_data_input |>
     filter(
       component == component_name,
       outcome_domain == outcome_domain_name
@@ -41,7 +47,7 @@ create_forest_plot <- function(
     )
 
   # Subset plot data
-  plot_data <- almp_nma_model_thirteen_component_draws_filtered |>
+  plot_data <- plot_data_input |>
     filter(
       component == component_name,
       outcome_domain == outcome_domain_name
@@ -223,10 +229,14 @@ create_forest_plot <- function(
 
 create_subgroup_sex_forest_plot <- function(
   component_name,
-  outcome_domain_name
+  outcome_domain_name,
+  summary_data_input,
+  contrast_summmary_data_input,
+  plot_data_input,
+  contrast_plot_data_input
 ) {
   # Subset summary data
-  summary_data <- almp_nma_model_thirteen_study_level_subgroup_sex_summary_filtered |>
+  summary_data <- summary_data_input |>
     filter(
       component == component_name,
       outcome_domain == outcome_domain_name
@@ -239,7 +249,7 @@ create_subgroup_sex_forest_plot <- function(
     )
 
   # Subset summary contrast data
-  contrast_summary_data <- almp_nma_model_thirteen_differential_treatment_effect_sex_summary_filtered |>
+  contrast_summary_data <- contrast_summmary_data_input |>
     filter(
       component == component_name,
       outcome_domain == outcome_domain_name
@@ -252,7 +262,7 @@ create_subgroup_sex_forest_plot <- function(
     )
 
   # Subset plot data
-  plot_data <- almp_nma_model_thirteen_study_level_subgroup_sex_draws_filtered |>
+  plot_data <- plot_data_input |>
     filter(
       component == component_name,
       outcome_domain == outcome_domain_name
@@ -265,7 +275,7 @@ create_subgroup_sex_forest_plot <- function(
     )
 
   # Subset contrast plot data
-  contrast_plot_data <- almp_nma_model_thirteen_differential_treatment_effect_sex_draws_filtered |>
+  contrast_plot_data <- contrast_plot_data_input |>
     filter(
       component == component_name,
       outcome_domain == outcome_domain_name
@@ -624,10 +634,12 @@ create_subgroup_sex_forest_plot <- function(
 
 create_subgroup_age_forest_plot <- function(
   component_name,
-  outcome_domain_name
+  outcome_domain_name,
+  summary_data_input,
+  plot_data_input
 ) {
   # Subset summary data
-  summary_data <- almp_nma_model_thirteen_study_level_subgroup_age_summary_filtered |>
+  summary_data <- summary_data_input |>
     filter(
       component == component_name,
       outcome_domain == outcome_domain_name
@@ -640,7 +652,7 @@ create_subgroup_age_forest_plot <- function(
     )
 
   # Subset plot data
-  plot_data <- almp_nma_model_thirteen_study_level_subgroup_age_draws_filtered |>
+  plot_data <- plot_data_input |>
     filter(
       component == component_name,
       outcome_domain == outcome_domain_name

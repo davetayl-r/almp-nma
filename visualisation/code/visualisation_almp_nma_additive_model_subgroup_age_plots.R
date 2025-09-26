@@ -20,24 +20,24 @@ source("./visualisation/code/visualisation_functions.R")
 #-------------------------------------------------------------------------------
 
 # load plot data
-almp_nma_model_thirteen_study_level_subgroup_age_draws_location <- "./visualisation/inputs/prototype_models/almp_nma_model_thirteen_study_level_subgroup_age_draws.RDS"
-almp_nma_model_thirteen_study_level_subgroup_age_draws <- readRDS(
-  almp_nma_model_thirteen_study_level_subgroup_age_draws_location
+almp_nma_additive_model_study_level_subgroup_age_draws_location <- "./visualisation/inputs/almp_nma_additive_model_study_level_subgroup_age_draws.RDS"
+almp_nma_additive_model_study_level_subgroup_age_draws <- readRDS(
+  almp_nma_additive_model_study_level_subgroup_age_draws_location
 )
 
-almp_nma_model_thirteen_study_level_subgroup_age_summary_location <- "./visualisation/inputs/prototype_models/almp_nma_model_thirteen_study_level_subgroup_age_summary.RDS"
-almp_nma_model_thirteen_study_level_subgroup_age_summary <- readRDS(
-  almp_nma_model_thirteen_study_level_subgroup_age_summary_location
+almp_nma_additive_model_study_level_subgroup_age_summary_location <- "./visualisation/inputs/almp_nma_additive_model_study_level_subgroup_age_summary.RDS"
+almp_nma_additive_model_study_level_subgroup_age_summary <- readRDS(
+  almp_nma_additive_model_study_level_subgroup_age_summary_location
 )
 
 # load component results to exclude where posterior_different_prior_flag == "No"
-almp_nma_model_thirteen_component_draws_location <- "./visualisation/inputs/prototype_models/almp_nma_model_thirteen_component_draws.RDS"
-almp_nma_model_thirteen_component_draws <- readRDS(
-  almp_nma_model_thirteen_component_draws_location
+almp_nma_additive_model_component_draws_location <- "./visualisation/inputs/almp_nma_additive_model_component_draws.RDS"
+almp_nma_additive_model_component_draws <- readRDS(
+  almp_nma_additive_model_component_draws_location
 )
 
 # identify outcomes to exclude
-posterior_flags <- almp_nma_model_thirteen_component_draws |>
+posterior_flags <- almp_nma_additive_model_component_draws |>
   select(
     outcome,
     component,
@@ -46,7 +46,7 @@ posterior_flags <- almp_nma_model_thirteen_component_draws |>
   distinct()
 
 # join flags to subgroup plotting data and filter
-almp_nma_model_thirteen_study_level_subgroup_age_draws_filtered <- almp_nma_model_thirteen_study_level_subgroup_age_draws |>
+almp_nma_additive_model_study_level_subgroup_age_draws_filtered <- almp_nma_additive_model_study_level_subgroup_age_draws |>
   left_join(
     posterior_flags,
     by = c(
@@ -103,7 +103,7 @@ almp_nma_model_thirteen_study_level_subgroup_age_draws_filtered <- almp_nma_mode
   )
 
 # join flags to subgroup summary data and filter
-almp_nma_model_thirteen_study_level_subgroup_age_summary_filtered <- almp_nma_model_thirteen_study_level_subgroup_age_summary |>
+almp_nma_additive_model_study_level_subgroup_age_summary_filtered <- almp_nma_additive_model_study_level_subgroup_age_summary |>
   left_join(
     posterior_flags,
     by = c(
@@ -166,7 +166,9 @@ almp_nma_model_thirteen_study_level_subgroup_age_summary_filtered <- almp_nma_mo
 # Labour Force outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_basic_skills_training_labour_force_status_outcomes <- create_subgroup_age_forest_plot(
   component_name = "Basic Skills Training",
-  outcome_domain_name = "Labour Force Status"
+  outcome_domain_name = "Labour Force Status",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -181,7 +183,9 @@ ggsave(
 # Education and Skills outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_basic_skills_training_education_skills <- create_subgroup_age_forest_plot(
   component_name = "Basic Skills Training",
-  outcome_domain_name = "Education and Skills"
+  outcome_domain_name = "Education and Skills",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -196,7 +200,9 @@ ggsave(
 # Employment Compensation outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_basic_skills_training_employment_compensation <- create_subgroup_age_forest_plot(
   component_name = "Basic Skills Training",
-  outcome_domain_name = "Employment Compensation"
+  outcome_domain_name = "Employment Compensation",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -211,7 +217,9 @@ ggsave(
 # Employment Duration outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_basic_skills_training_employment_duration <- create_subgroup_age_forest_plot(
   component_name = "Basic Skills Training",
-  outcome_domain_name = "Employment Duration"
+  outcome_domain_name = "Employment Duration",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -226,7 +234,9 @@ ggsave(
 # Hours worked outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_basic_skills_training_hours_worked <- create_subgroup_age_forest_plot(
   component_name = "Basic Skills Training",
-  outcome_domain_name = "Hours Worked"
+  outcome_domain_name = "Hours Worked",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -245,7 +255,9 @@ ggsave(
 # Labour Force outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_behavioural_skills_training_labour_force_status_outcomes <- create_subgroup_age_forest_plot(
   component_name = "Behavioural Skills Training",
-  outcome_domain_name = "Labour Force Status"
+  outcome_domain_name = "Labour Force Status",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -260,7 +272,9 @@ ggsave(
 # Education and Skills outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_behavioural_skills_training_education_skills <- create_subgroup_age_forest_plot(
   component_name = "Behavioural Skills Training",
-  outcome_domain_name = "Education and Skills"
+  outcome_domain_name = "Education and Skills",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -275,7 +289,9 @@ ggsave(
 # Employment Compensation outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_behavioural_skills_training_employment_compensation <- create_subgroup_age_forest_plot(
   component_name = "Behavioural Skills Training",
-  outcome_domain_name = "Employment Compensation"
+  outcome_domain_name = "Employment Compensation",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -290,7 +306,9 @@ ggsave(
 # Employment Duration outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_behavioural_skills_training_employment_duration <- create_subgroup_age_forest_plot(
   component_name = "Behavioural Skills Training",
-  outcome_domain_name = "Employment Duration"
+  outcome_domain_name = "Employment Duration",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -305,7 +323,9 @@ ggsave(
 # Hours worked outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_behavioural_skills_training_hours_worked <- create_subgroup_age_forest_plot(
   component_name = "Behavioural Skills Training",
-  outcome_domain_name = "Hours Worked"
+  outcome_domain_name = "Hours Worked",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -324,7 +344,9 @@ ggsave(
 # Labour Force outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_employment_coaching_labour_force_status_outcomes <- create_subgroup_age_forest_plot(
   component_name = "Employment Coaching",
-  outcome_domain_name = "Labour Force Status"
+  outcome_domain_name = "Labour Force Status",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -339,7 +361,9 @@ ggsave(
 # Education and Skills outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_employment_coaching_education_skills <- create_subgroup_age_forest_plot(
   component_name = "Employment Coaching",
-  outcome_domain_name = "Education and Skills"
+  outcome_domain_name = "Education and Skills",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -354,7 +378,9 @@ ggsave(
 # Employment Compensation outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_employment_coaching_employment_compensation <- create_subgroup_age_forest_plot(
   component_name = "Employment Coaching",
-  outcome_domain_name = "Employment Compensation"
+  outcome_domain_name = "Employment Compensation",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -369,7 +395,9 @@ ggsave(
 # Employment Duration outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_employment_coaching_employment_duration <- create_subgroup_age_forest_plot(
   component_name = "Employment Coaching",
-  outcome_domain_name = "Employment Duration"
+  outcome_domain_name = "Employment Duration",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -384,7 +412,9 @@ ggsave(
 # Hours worked outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_employment_coaching_hours_worked <- create_subgroup_age_forest_plot(
   component_name = "Employment Coaching",
-  outcome_domain_name = "Hours Worked"
+  outcome_domain_name = "Hours Worked",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -403,7 +433,9 @@ ggsave(
 # Labour Force outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_employment_counselling_labour_force_status_outcomes <- create_subgroup_age_forest_plot(
   component_name = "Employment Counselling",
-  outcome_domain_name = "Labour Force Status"
+  outcome_domain_name = "Labour Force Status",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -418,7 +450,9 @@ ggsave(
 # Education and Skills outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_employment_counselling_education_skills <- create_subgroup_age_forest_plot(
   component_name = "Employment Counselling",
-  outcome_domain_name = "Education and Skills"
+  outcome_domain_name = "Education and Skills",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -433,7 +467,9 @@ ggsave(
 # Employment Compensation outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_employment_counselling_employment_compensation <- create_subgroup_age_forest_plot(
   component_name = "Employment Counselling",
-  outcome_domain_name = "Employment Compensation"
+  outcome_domain_name = "Employment Compensation",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -448,7 +484,9 @@ ggsave(
 # Employment Duration outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_employment_counselling_employment_duration <- create_subgroup_age_forest_plot(
   component_name = "Employment Counselling",
-  outcome_domain_name = "Employment Duration"
+  outcome_domain_name = "Employment Duration",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -463,7 +501,9 @@ ggsave(
 # Hours worked outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_employment_counselling_hours_worked <- create_subgroup_age_forest_plot(
   component_name = "Employment Counselling",
-  outcome_domain_name = "Hours Worked"
+  outcome_domain_name = "Hours Worked",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -482,7 +522,9 @@ ggsave(
 # Labour Force outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_financial_assistance_labour_force_status_outcomes <- create_subgroup_age_forest_plot(
   component_name = "Financial Assistance",
-  outcome_domain_name = "Labour Force Status"
+  outcome_domain_name = "Labour Force Status",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -497,7 +539,9 @@ ggsave(
 # Education and Skills outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_financial_assistance_education_skills <- create_subgroup_age_forest_plot(
   component_name = "Financial Assistance",
-  outcome_domain_name = "Education and Skills"
+  outcome_domain_name = "Education and Skills",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -512,7 +556,9 @@ ggsave(
 # Employment Compensation outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_financial_assistance_employment_compensation <- create_subgroup_age_forest_plot(
   component_name = "Financial Assistance",
-  outcome_domain_name = "Employment Compensation"
+  outcome_domain_name = "Employment Compensation",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -527,7 +573,9 @@ ggsave(
 # Employment Duration outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_financial_assistance_employment_duration <- create_subgroup_age_forest_plot(
   component_name = "Financial Assistance",
-  outcome_domain_name = "Employment Duration"
+  outcome_domain_name = "Employment Duration",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -542,7 +590,9 @@ ggsave(
 # Hours worked outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_financial_assistance_hours_worked <- create_subgroup_age_forest_plot(
   component_name = "Financial Assistance",
-  outcome_domain_name = "Hours Worked"
+  outcome_domain_name = "Hours Worked",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -561,7 +611,9 @@ ggsave(
 # Labour Force outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_job_search_assistance_labour_force_status_outcomes <- create_subgroup_age_forest_plot(
   component_name = "Job Search Assistance",
-  outcome_domain_name = "Labour Force Status"
+  outcome_domain_name = "Labour Force Status",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -576,7 +628,9 @@ ggsave(
 # Education and Skills outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_job_search_assistance_education_skills <- create_subgroup_age_forest_plot(
   component_name = "Job Search Assistance",
-  outcome_domain_name = "Education and Skills"
+  outcome_domain_name = "Education and Skills",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -591,7 +645,9 @@ ggsave(
 # Employment Compensation outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_job_search_assistance_employment_compensation <- create_subgroup_age_forest_plot(
   component_name = "Job Search Assistance",
-  outcome_domain_name = "Employment Compensation"
+  outcome_domain_name = "Employment Compensation",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -606,7 +662,9 @@ ggsave(
 # Employment Duration outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_job_search_assistance_employment_duration <- create_subgroup_age_forest_plot(
   component_name = "Job Search Assistance",
-  outcome_domain_name = "Employment Duration"
+  outcome_domain_name = "Employment Duration",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -621,7 +679,9 @@ ggsave(
 # Hours worked outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_job_search_assistance_hours_worked <- create_subgroup_age_forest_plot(
   component_name = "Job Search Assistance",
-  outcome_domain_name = "Hours Worked"
+  outcome_domain_name = "Hours Worked",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -640,7 +700,9 @@ ggsave(
 # Labour Force outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_job_search_preparation_labour_force_status_outcomes <- create_subgroup_age_forest_plot(
   component_name = "Job Search Preparation",
-  outcome_domain_name = "Labour Force Status"
+  outcome_domain_name = "Labour Force Status",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -655,7 +717,9 @@ ggsave(
 # Education and Skills outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_job_search_preparation_education_skills <- create_subgroup_age_forest_plot(
   component_name = "Job Search Preparation",
-  outcome_domain_name = "Education and Skills"
+  outcome_domain_name = "Education and Skills",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -670,7 +734,9 @@ ggsave(
 # Employment Compensation outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_job_search_preparation_employment_compensation <- create_subgroup_age_forest_plot(
   component_name = "Job Search Preparation",
-  outcome_domain_name = "Employment Compensation"
+  outcome_domain_name = "Employment Compensation",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -685,7 +751,9 @@ ggsave(
 # Employment Duration outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_job_search_preparation_employment_duration <- create_subgroup_age_forest_plot(
   component_name = "Job Search Preparation",
-  outcome_domain_name = "Employment Duration"
+  outcome_domain_name = "Employment Duration",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -700,7 +768,9 @@ ggsave(
 # Hours worked outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_job_search_preparation_hours_worked <- create_subgroup_age_forest_plot(
   component_name = "Job Search Preparation",
-  outcome_domain_name = "Hours Worked"
+  outcome_domain_name = "Hours Worked",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -719,7 +789,9 @@ ggsave(
 # Labour Force outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_paid_temporary_work_experience_labour_force_status_outcomes <- create_subgroup_age_forest_plot(
   component_name = "Paid Temporary Work Experience",
-  outcome_domain_name = "Labour Force Status"
+  outcome_domain_name = "Labour Force Status",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -734,7 +806,9 @@ ggsave(
 # Education and Skills outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_paid_temporary_work_experience_education_skills <- create_subgroup_age_forest_plot(
   component_name = "Paid Temporary Work Experience",
-  outcome_domain_name = "Education and Skills"
+  outcome_domain_name = "Education and Skills",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -749,7 +823,9 @@ ggsave(
 # Employment Compensation outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_paid_temporary_work_experience_employment_compensation <- create_subgroup_age_forest_plot(
   component_name = "Paid Temporary Work Experience",
-  outcome_domain_name = "Employment Compensation"
+  outcome_domain_name = "Employment Compensation",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -764,7 +840,9 @@ ggsave(
 # Employment Duration outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_paid_temporary_work_experience_employment_duration <- create_subgroup_age_forest_plot(
   component_name = "Paid Temporary Work Experience",
-  outcome_domain_name = "Employment Duration"
+  outcome_domain_name = "Employment Duration",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -779,7 +857,9 @@ ggsave(
 # Hours worked outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_paid_temporary_work_experience_hours_worked <- create_subgroup_age_forest_plot(
   component_name = "Paid Temporary Work Experience",
-  outcome_domain_name = "Hours Worked"
+  outcome_domain_name = "Hours Worked",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -798,7 +878,9 @@ ggsave(
 # Labour Force outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_public_works_labour_force_status_outcomes <- create_subgroup_age_forest_plot(
   component_name = "Public Works",
-  outcome_domain_name = "Labour Force Status"
+  outcome_domain_name = "Labour Force Status",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -813,7 +895,9 @@ ggsave(
 # Education and Skills outcomes
 #almp_nma_additive_model_study_level_subgroup_age_forest_plot_public_works_education_skills <- create_subgroup_age_forest_plot(
 #  component_name = "Public Works",
-#  outcome_domain_name = "Education and Skills"
+#  outcome_domain_name = "Education and Skills",
+#  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+#  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 #)
 
 #ggsave(
@@ -828,7 +912,9 @@ ggsave(
 # Employment Compensation outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_public_works_employment_compensation <- create_subgroup_age_forest_plot(
   component_name = "Public Works",
-  outcome_domain_name = "Employment Compensation"
+  outcome_domain_name = "Employment Compensation",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -843,7 +929,9 @@ ggsave(
 # Employment Duration outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_public_works_employment_duration <- create_subgroup_age_forest_plot(
   component_name = "Public Works",
-  outcome_domain_name = "Employment Duration"
+  outcome_domain_name = "Employment Duration",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -858,7 +946,9 @@ ggsave(
 # Hours worked outcomes
 #almp_nma_additive_model_study_level_subgroup_age_forest_plot_public_works_hours_worked <- create_subgroup_age_forest_plot(
 #  component_name = "Public Works",
-#  outcome_domain_name = "Hours Worked"
+#  outcome_domain_name = "Hours Worked",
+#  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+#  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 #)
 
 #ggsave(
@@ -877,7 +967,9 @@ ggsave(
 # Labour Force outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_self_employment_support_labour_force_status_outcomes <- create_subgroup_age_forest_plot(
   component_name = "Self-Employment Support",
-  outcome_domain_name = "Labour Force Status"
+  outcome_domain_name = "Labour Force Status",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -892,7 +984,9 @@ ggsave(
 # Education and Skills outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_self_employment_support_education_skills <- create_subgroup_age_forest_plot(
   component_name = "Self-Employment Support",
-  outcome_domain_name = "Education and Skills"
+  outcome_domain_name = "Education and Skills",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -907,7 +1001,9 @@ ggsave(
 # Employment Compensation outcomes
 #almp_nma_additive_model_study_level_subgroup_age_forest_plot_self_employment_support_employment_compensation <- create_subgroup_age_forest_plot(
 #  component_name = "Self-Employment Support",
-#  outcome_domain_name = "Employment Compensation"
+#  outcome_domain_name = "Employment Compensation",
+#  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+#  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 #)
 
 #ggsave(
@@ -922,7 +1018,9 @@ ggsave(
 # Employment Duration outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_self_employment_support_employment_duration <- create_subgroup_age_forest_plot(
   component_name = "Self-Employment Support",
-  outcome_domain_name = "Employment Duration"
+  outcome_domain_name = "Employment Duration",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -937,7 +1035,9 @@ ggsave(
 # Hours worked outcomes
 #almp_nma_additive_model_study_level_subgroup_age_forest_plot_self_employment_support_hours_worked <- create_subgroup_age_forest_plot(
 #  component_name = "Self-Employment Support",
-#  outcome_domain_name = "Hours Worked"
+#  outcome_domain_name = "Hours Worked",
+#  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+#  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 #)
 
 #ggsave(
@@ -956,7 +1056,9 @@ ggsave(
 # Labour Force outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_soft_skills_training_labour_force_status_outcomes <- create_subgroup_age_forest_plot(
   component_name = "Soft Skills Training",
-  outcome_domain_name = "Labour Force Status"
+  outcome_domain_name = "Labour Force Status",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -971,7 +1073,9 @@ ggsave(
 # Education and Skills outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_soft_skills_training_education_skills <- create_subgroup_age_forest_plot(
   component_name = "Soft Skills Training",
-  outcome_domain_name = "Education and Skills"
+  outcome_domain_name = "Education and Skills",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -986,7 +1090,9 @@ ggsave(
 # Employment Compensation outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_soft_skills_training_employment_compensation <- create_subgroup_age_forest_plot(
   component_name = "Soft Skills Training",
-  outcome_domain_name = "Employment Compensation"
+  outcome_domain_name = "Employment Compensation",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -1001,7 +1107,9 @@ ggsave(
 # Employment Duration outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_soft_skills_training_employment_duration <- create_subgroup_age_forest_plot(
   component_name = "Soft Skills Training",
-  outcome_domain_name = "Employment Duration"
+  outcome_domain_name = "Employment Duration",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -1016,7 +1124,9 @@ ggsave(
 # Hours worked outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_soft_skills_training_hours_worked <- create_subgroup_age_forest_plot(
   component_name = "Soft Skills Training",
-  outcome_domain_name = "Hours Worked"
+  outcome_domain_name = "Hours Worked",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -1035,7 +1145,9 @@ ggsave(
 # Labour Force outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_technical_skills_training_off_the_job_labour_force_status_outcomes <- create_subgroup_age_forest_plot(
   component_name = "Technical Skills Training (Off-the-Job)",
-  outcome_domain_name = "Labour Force Status"
+  outcome_domain_name = "Labour Force Status",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -1050,7 +1162,9 @@ ggsave(
 # Education and Skills outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_technical_skills_training_off_the_job_education_skills <- create_subgroup_age_forest_plot(
   component_name = "Technical Skills Training (Off-the-Job)",
-  outcome_domain_name = "Education and Skills"
+  outcome_domain_name = "Education and Skills",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -1065,7 +1179,9 @@ ggsave(
 # Employment Compensation outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_technical_skills_training_off_the_job_employment_compensation <- create_subgroup_age_forest_plot(
   component_name = "Technical Skills Training (Off-the-Job)",
-  outcome_domain_name = "Employment Compensation"
+  outcome_domain_name = "Employment Compensation",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -1080,7 +1196,9 @@ ggsave(
 # Employment Duration outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_technical_skills_training_off_the_job_employment_duration <- create_subgroup_age_forest_plot(
   component_name = "Technical Skills Training (Off-the-Job)",
-  outcome_domain_name = "Employment Duration"
+  outcome_domain_name = "Employment Duration",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -1095,7 +1213,9 @@ ggsave(
 # Hours worked outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_technical_skills_training_off_the_job_hours_worked <- create_subgroup_age_forest_plot(
   component_name = "Technical Skills Training (Off-the-Job)",
-  outcome_domain_name = "Hours Worked"
+  outcome_domain_name = "Hours Worked",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -1114,7 +1234,9 @@ ggsave(
 # Labour Force outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_technical_skills_training_on_the_job_labour_force_status_outcomes <- create_subgroup_age_forest_plot(
   component_name = "Technical Skills Training (On-the-Job)",
-  outcome_domain_name = "Labour Force Status"
+  outcome_domain_name = "Labour Force Status",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -1129,7 +1251,9 @@ ggsave(
 # Education and Skills outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_technical_skills_training_on_the_job_education_skills <- create_subgroup_age_forest_plot(
   component_name = "Technical Skills Training (On-the-Job)",
-  outcome_domain_name = "Education and Skills"
+  outcome_domain_name = "Education and Skills",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -1144,7 +1268,9 @@ ggsave(
 # Employment Compensation outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_technical_skills_training_on_the_job_employment_compensation <- create_subgroup_age_forest_plot(
   component_name = "Technical Skills Training (On-the-Job)",
-  outcome_domain_name = "Employment Compensation"
+  outcome_domain_name = "Employment Compensation",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -1159,7 +1285,9 @@ ggsave(
 # Employment Duration outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_technical_skills_training_on_the_job_employment_duration <- create_subgroup_age_forest_plot(
   component_name = "Technical Skills Training (On-the-Job)",
-  outcome_domain_name = "Employment Duration"
+  outcome_domain_name = "Employment Duration",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -1174,7 +1302,9 @@ ggsave(
 # Hours worked outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_technical_skills_training_on_the_job_hours_worked <- create_subgroup_age_forest_plot(
   component_name = "Technical Skills Training (On-the-Job)",
-  outcome_domain_name = "Hours Worked"
+  outcome_domain_name = "Hours Worked",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -1193,7 +1323,9 @@ ggsave(
 # Labour Force outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_unpaid_temporary_work_experience_labour_force_status_outcomes <- create_subgroup_age_forest_plot(
   component_name = "Unpaid Temporary Work Experience",
-  outcome_domain_name = "Labour Force Status"
+  outcome_domain_name = "Labour Force Status",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -1208,7 +1340,9 @@ ggsave(
 # Education and Skills outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_unpaid_temporary_work_experience_education_skills <- create_subgroup_age_forest_plot(
   component_name = "Unpaid Temporary Work Experience",
-  outcome_domain_name = "Education and Skills"
+  outcome_domain_name = "Education and Skills",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -1223,7 +1357,9 @@ ggsave(
 # Employment Compensation outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_unpaid_temporary_work_experience_employment_compensation <- create_subgroup_age_forest_plot(
   component_name = "Unpaid Temporary Work Experience",
-  outcome_domain_name = "Employment Compensation"
+  outcome_domain_name = "Employment Compensation",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -1238,7 +1374,9 @@ ggsave(
 # Employment Duration outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_unpaid_temporary_work_experience_employment_duration <- create_subgroup_age_forest_plot(
   component_name = "Unpaid Temporary Work Experience",
-  outcome_domain_name = "Employment Duration"
+  outcome_domain_name = "Employment Duration",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -1253,7 +1391,9 @@ ggsave(
 # Hours worked outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_unpaid_temporary_work_experience_hours_worked <- create_subgroup_age_forest_plot(
   component_name = "Unpaid Temporary Work Experience",
-  outcome_domain_name = "Hours Worked"
+  outcome_domain_name = "Hours Worked",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -1272,7 +1412,9 @@ ggsave(
 # Labour Force outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_wage_subsidies_labour_force_status_outcomes <- create_subgroup_age_forest_plot(
   component_name = "Wage Subsidies",
-  outcome_domain_name = "Labour Force Status"
+  outcome_domain_name = "Labour Force Status",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -1287,7 +1429,9 @@ ggsave(
 # Education and Skills outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_wage_subsidies_education_skills <- create_subgroup_age_forest_plot(
   component_name = "Wage Subsidies",
-  outcome_domain_name = "Education and Skills"
+  outcome_domain_name = "Education and Skills",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -1302,7 +1446,9 @@ ggsave(
 # Employment Compensation outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_wage_subsidies_employment_compensation <- create_subgroup_age_forest_plot(
   component_name = "Wage Subsidies",
-  outcome_domain_name = "Employment Compensation"
+  outcome_domain_name = "Employment Compensation",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -1317,7 +1463,9 @@ ggsave(
 # Employment Duration outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_wage_subsidies_employment_duration <- create_subgroup_age_forest_plot(
   component_name = "Wage Subsidies",
-  outcome_domain_name = "Employment Duration"
+  outcome_domain_name = "Employment Duration",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(
@@ -1332,7 +1480,9 @@ ggsave(
 # Hours worked outcomes
 almp_nma_additive_model_study_level_subgroup_age_forest_plot_wage_subsidies_hours_worked <- create_subgroup_age_forest_plot(
   component_name = "Wage Subsidies",
-  outcome_domain_name = "Hours Worked"
+  outcome_domain_name = "Hours Worked",
+  summary_data_input = almp_nma_additive_model_study_level_subgroup_age_summary_filtered,
+  plot_data_input = almp_nma_additive_model_study_level_subgroup_age_draws_filtered
 )
 
 ggsave(

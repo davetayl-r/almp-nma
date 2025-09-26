@@ -14,6 +14,10 @@ library(posterior)
 # load custom functions
 source("./analysis/code/analysis_functions.R")
 
+# load model input data
+almp_nma_additive_model_data_location <- "./analysis/output/almp_nma_additive_model_data.RDS"
+almp_nma_additive_model_data <- readRDS(almp_nma_additive_model_data_location)
+
 # load model results
 almp_nma_additive_model_results_location <- "./analysis/output/almp_nma_additive_model.RDS"
 almp_nma_additive_model_results <- readRDS(
@@ -45,7 +49,7 @@ study_design_levels <- levels(
 
 # We need the raw female share to recover the centering constant
 study_mean_proportion_female <- mean(
-  almp_nma_additive_model_results$data$prop_female,
+  almp_nma_additive_model_data$prop_female,
   na.rm = TRUE
 )
 
