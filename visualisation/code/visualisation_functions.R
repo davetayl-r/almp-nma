@@ -6,8 +6,10 @@
 #============================================================================================#
 
 # load required packages
+library(tidyverse)
 library(ggplot2)
 library(patchwork)
+library(ggdist)
 
 #-------------------------------------------------------------------------------
 # 1. Order factor variables after filtering
@@ -970,4 +972,98 @@ create_subgroup_age_forest_plot <- function(
     )
 
   return(main_plot)
+}
+
+#-------------------------------------------------------------------------------
+# 4. Produce tau x study design + component distribution plot
+#-------------------------------------------------------------------------------
+
+create_tau_distribution_plot <- function(
+  component_name,
+  summary_data,
+  plot_data
+) {
+  # Create labels for plotting
+  tau_labels <- summary_data |>
+    ungroup() |>
+    filter(component == component_name) |>
+    rename(
+      median = tau,
+      lower = .lower,
+      upper = .upper
+    ) |>
+    mutate(
+      design = factor(
+        design,
+        levels = c(
+          "Randomised design",
+          "Design-based identification",
+          "Selection on observables"
+        ),
+        ordered = TRUE
+      ),
+      facet_label = sprintf(
+        "paste('%s', '\n', tau==%.3f, ' (95%% CrI [', %.3f, ', ', %.3f, '])')",
+        as.character(design),
+        median,
+        lower,
+        upper
+      ),
+      facet_label = factor(
+        facet_label,
+        levels = unique(facet_label[order(design)])
+      )
+    )
+
+  # Merge plot data with labels
+  tau_plot_data <- plot_data |>
+    filter(component == component_name) |>
+    left_join(
+      tau_labels |>
+        select(design, facet_label),
+      by = "design"
+    )
+
+  # Create the plot
+  tau_plot <- tau_plot_data |>
+    ungroup() |>
+    select(-component) |>
+    ggplot(aes(x = tau, fill = design)) +
+    stat_halfeye(
+      .width = 0.95,
+      colour = "#2d3239ff",
+      point_interval = median_qi,
+      slab_alpha = 0.7
+    ) +
+    geom_vline(
+      data = tau_labels,
+      aes(xintercept = median),
+      inherit.aes = FALSE,
+      colour = "#2d3239ff",
+      linetype = "dashed",
+      linewidth = 0.5
+    ) +
+    facet_wrap(
+      ~facet_label,
+      ncol = 1,
+      labeller = label_parsed
+    ) +
+    scale_fill_manual(
+      values = c("#8B4B6B", "#6FAADB", "#95C47C")
+    ) +
+    lims(x = c(0, 1)) +
+    labs(
+      x = expression(tau),
+      y = "Posterior density"
+    ) +
+    theme_minimal(base_size = 11) +
+    theme(
+      plot.background = element_rect(fill = "#FFFFFF", colour = NA),
+      panel.grid.major.y = element_blank(),
+      panel.grid.minor = element_blank(),
+      legend.position = "none",
+      strip.clip = "off"
+    )
+
+  return(tau_plot)
 }

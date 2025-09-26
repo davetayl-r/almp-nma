@@ -323,6 +323,12 @@ pp_check(almp_nma_additive_model, type = "intervals")
 # 6. Extract model draws
 #-------------------------------------------------------------------------------
 
+# load model if required
+almp_nma_additive_model_results_location <- "./analysis/output/almp_nma_additive_model.RDS"
+almp_nma_additive_model <- readRDS(
+  almp_nma_additive_model_results_location
+)
+
 # get all model draws as a data frame
 almp_nma_additive_model_draws <- as_draws_df(almp_nma_additive_model)
 
@@ -391,6 +397,17 @@ almp_nma_additive_model_tau_component_design_summary <- almp_nma_additive_model_
     .groups = "drop"
   )
 
+# summarise heterogeneity by design
+almp_nma_additive_model_tau_design_summary <- almp_nma_additive_model_tau_component_design_draws |>
+  group_by(design) |>
+  summarise(
+    .lower = quantile(tau, 0.05),
+    .upper = quantile(tau, 0.95),
+    tau = median(tau),
+    .groups = "drop"
+  )
+
+
 #-------------------------------------------------------------------------------
 # 8. Export heterogenity results for visualisation
 #-------------------------------------------------------------------------------
@@ -403,6 +420,11 @@ saveRDS(
 saveRDS(
   almp_nma_additive_model_tau_component_design_summary,
   "./visualisation/inputs/almp_nma_additive_model_tau_component_design_summary.RDS"
+)
+
+saveRDS(
+  almp_nma_additive_model_tau_design_summary,
+  "./visualisation/inputs/almp_nma_additive_model_tau_design_summary.RDS"
 )
 
 #-------------------------------------------------------------------------------
