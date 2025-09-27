@@ -1027,8 +1027,15 @@ create_tau_distribution_plot <- function(
   # Create the plot
   tau_plot <- tau_plot_data |>
     ungroup() |>
-    select(-component) |>
-    ggplot(aes(x = tau, fill = design)) +
+    select(
+      -component
+    ) |>
+    ggplot(
+      aes(
+        x = tau,
+        fill = design
+      )
+    ) +
     stat_halfeye(
       .width = 0.95,
       colour = "#2d3239ff",
@@ -1049,13 +1056,21 @@ create_tau_distribution_plot <- function(
       labeller = label_parsed
     ) +
     scale_fill_manual(
-      values = c("#8B4B6B", "#6FAADB", "#95C47C")
+      values = c(
+        "#8B4B6B",
+        "#6FAADB",
+        "#95C47C"
+      )
     ) +
-    lims(x = c(0, 1)) +
+    coord_cartesian(
+      xlim = c(0, 1),
+      clip = "off"
+    ) +
     labs(
       x = expression(tau),
       y = "Posterior density"
     ) +
+
     theme_minimal(base_size = 11) +
     theme(
       plot.background = element_rect(fill = "#FFFFFF", colour = NA),
