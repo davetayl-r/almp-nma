@@ -50,3 +50,8 @@ rsconnect/
 
 # hide large files 
 /analysis/output
+# Ignore large RDS model output files
+/visualisation/inputs/almp_nma_additive_model_study_level_subgroup_sex_draws.RDS
+/visualisation/inputs/almp_nma_additive_model_study_level_subgroup_age_draws.RDS
+/analysis/output/almp_nma_additive_model.RDS
+/analysis/output/almp_nma_model_thirteen.RDS
