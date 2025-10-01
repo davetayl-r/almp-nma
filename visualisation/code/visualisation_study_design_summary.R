@@ -7,7 +7,6 @@
 
 # load required packages
 library(tidyverse)
-library(sf)
 library(ggplot2)
 
 # read visualisation data
@@ -22,6 +21,10 @@ almp_nma_summary_visualisation_data <- readRDS(
 
 # prepare plot data
 almp_nma_study_design_distribution_plot_data <- almp_nma_summary_visualisation_data |>
+  # drop study that didn't make it into the final model
+  filter(
+    !study_id == "brunetti2017workplacetrainingprograms"
+  ) |>
   select(
     study_id,
     study_design_type,
@@ -108,7 +111,7 @@ almp_nma_study_type_distribution_plot <- almp_nma_study_design_distribution_plot
       study_design_type,
       levels = c(
         "Randomised design\n(n=72)",
-        "Selection on observables\n(n=71)",
+        "Selection on observables\n(n=70)",
         "Design-based identification\n(n=15)"
       ),
       ordered = TRUE
@@ -179,7 +182,7 @@ almp_nma_study_type_distribution_plot
 ggsave(
   plot = almp_nma_study_type_distribution_plot,
   filename = "./visualisation/output/almp_nma_study_type_distribution_plot.png",
-  height = 6,
+  height = 5,
   width = 8,
   device = "png",
   type = "cairo-png"

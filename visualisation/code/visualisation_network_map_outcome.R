@@ -10,13 +10,14 @@ library(tidyverse)
 library(igraph)
 library(ggplot2)
 library(graphlayouts)
+#library(ggpp)
 
 # read data
 almp_nma_network_raw_data_location <- "./visualisation/inputs/almp_nma_summary_visualisation_data.RDS"
 almp_nma_network_raw_data <- readRDS(almp_nma_network_raw_data_location)
 
 # set seed
-set.seed(2)
+set.seed(268)
 
 # prepare data for plot
 almp_nma_network_data <- almp_nma_network_raw_data |>
@@ -27,7 +28,8 @@ almp_nma_network_data <- almp_nma_network_raw_data |>
   select(
     study_id,
     intervention,
-    comparison
+    comparison,
+    outcome_domain
   ) |>
   distinct()
 
@@ -78,7 +80,7 @@ reference_intervention <- comparison_frequency$comparison[1]
 
 # Create edge list from study comparisons
 edges_raw <- almp_nma_network_data |>
-  select(study_id, intervention, comparison)
+  select(study_id, intervention, comparison, outcome_domain)
 
 # Create both directions for undirected network (optional - depends on your preference)
 edges_bidirectional <- bind_rows(
@@ -86,14 +88,15 @@ edges_bidirectional <- bind_rows(
   edges_raw |>
     select(
       study_id,
+      outcome_domain,
       intervention = comparison,
       comparison = intervention
     )
 )
 
-# Count studies for each comparison
+# Count studies for each comparison AND outcome domain
 edges <- edges_bidirectional |>
-  group_by(intervention, comparison) |>
+  group_by(intervention, comparison, outcome_domain) |>
   summarise(
     n_studies = n_distinct(study_id),
     .groups = "drop"
@@ -104,6 +107,7 @@ edges <- edges_bidirectional |>
   mutate(
     edge_id = paste(
       sort(c(intervention, comparison)),
+      outcome_domain,
       collapse = " -- "
     )
   ) |>
@@ -163,54 +167,6 @@ almp_nma_network_igraph_object <- graph_from_data_frame(
     ),
   directed = FALSE
 )
-
-# ----------------------------------------------------------------------------
-# Count loops in the network
-# ----------------------------------------------------------------------------
-
-# Get network metrics
-n_edges <- ecount(almp_nma_network_igraph_object)
-n_vertices <- vcount(almp_nma_network_igraph_object)
-n_components <- count_components(almp_nma_network_igraph_object)
-n_loops <- n_edges - n_vertices + n_components
-
-# Get component details
-comp_membership <- components(almp_nma_network_igraph_object)
-comp_sizes <- comp_membership$csize
-
-# Print summary statistics
-cat("Number of studies: k =", nrow(almp_nma_network_data), "\n")
-cat("Number of pairwise comparisons: m =", nrow(edges), "\n")
-cat("Number of treatments: n =", n_vertices, "\n")
-cat("Number of designs: d =", n_distinct(almp_nma_network_data$study_id), "\n")
-cat("Number of networks:", n_components, "\n")
-cat("Number of independent loops:", n_loops, "\n\n")
-
-# Details on subnetworks
-cat("Details on subnetworks:\n")
-subnetwork_details <- data.frame(
-  subnetwork = 1:n_components,
-  n = comp_sizes
-) %>%
-  arrange(desc(n))
-print(subnetwork_details)
-
-# Girth information
-is_tree <- is_tree(almp_nma_network_igraph_object, mode = "all")
-cat("\nIs this a tree (no loops)?", is_tree, "\n")
-
-network_girth <- girth(almp_nma_network_igraph_object)
-cat("Shortest cycle length:", network_girth$girth, "\n")
-if (network_girth$girth < Inf) {
-  cat(
-    "Shortest cycle involves:",
-    paste(
-      V(almp_nma_network_igraph_object)$name[network_girth$circle],
-      collapse = " -> "
-    ),
-    "\n"
-  )
-}
 
 # ----------------------------------------------------------------------------
 # STEP 6: Calculate layout with special positioning for reference
@@ -303,7 +259,8 @@ almp_nma_network_map <- ggplot() +
       y = y1_adj,
       xend = x2_adj,
       yend = y2_adj,
-    ),
+      color = outcome_domain
+    ), # Color by outcome domain
     linewidth = 1.5,
     alpha = 0.7
   ) +
@@ -354,7 +311,7 @@ almp_nma_network_map <- ggplot() +
 # export plot
 ggsave(
   plot = almp_nma_network_map,
-  filename = "./visualisation/output/almp_nma_simple_network_map.png",
+  filename = "./visualisation/output/almp_nma_network_map.png",
   height = 8,
   width = 10,
   device = "png",

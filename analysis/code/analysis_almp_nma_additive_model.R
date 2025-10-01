@@ -24,7 +24,7 @@ almp_nma_additive_model_data <- readRDS(almp_nma_additive_model_data_location)
 # 1. Subset data for model
 #-------------------------------------------------------------------------------
 
-almp_nma_additive_model_data <- almp_nma_additive_model_data |>
+almp_nma_additive_model_input_data <- almp_nma_additive_model_data |>
   # select closest data point to 24 month window
   filter(
     selected_primary_timepoint == 1
@@ -101,7 +101,7 @@ almp_nma_additive_model_data <- almp_nma_additive_model_data |>
   )
 
 saveRDS(
-  almp_nma_additive_model_data,
+  almp_nma_additive_model_input_data,
   "./analysis/output/almp_nma_additive_model_data.RDS"
 )
 
@@ -207,7 +207,7 @@ almp_nma_additive_model_formula <- bf(
 # inspect available names
 possible_prior_names <- get_prior(
   almp_nma_additive_model_formula,
-  data = almp_nma_additive_model_data,
+  data = almp_nma_additive_model_input_data,
   family = gaussian()
 )
 
@@ -287,7 +287,7 @@ almp_nma_additive_model_priors <- do.call(
 
 almp_nma_additive_model <- brm(
   formula = almp_nma_additive_model_formula,
-  data = almp_nma_additive_model_data,
+  data = almp_nma_additive_model_input_data,
   prior = almp_nma_additive_model_priors,
   family = gaussian(),
   chains = 4,

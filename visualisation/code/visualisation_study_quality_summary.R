@@ -18,6 +18,10 @@ qa_raw <- readRDS(qa_raw_location)
 #-------------------------------------------------------------------------------
 
 qa_randomised_raw_plot_data <- qa_raw |>
+  # drop study that didn't make it into the final model
+  filter(
+    !study_id == "brunetti2017workplacetrainingprograms"
+  ) |>
   # select randomised domains
   select(
     study_id,
@@ -140,6 +144,7 @@ qa_randomised_raw_plot <- qa_randomised_raw_summary |>
       colour = "#FFFFFF"
     ),
     legend.title = element_blank(),
+    plot.title = element_blank(),
     strip.background = element_blank(),
     panel.grid.major = element_blank(),
     panel.grid.minor = element_blank(),
@@ -163,10 +168,14 @@ ggsave(
 )
 
 #-------------------------------------------------------------------------------
-# 3. Prepare Randomised Quality Assessment data
+# 3. Prepare Non-Randomised Quality Assessment data
 #-------------------------------------------------------------------------------
 
 qa_non_randomised_raw_plot_data <- qa_raw |>
+  # drop study that didn't make it into the final model
+  filter(
+    !study_id == "brunetti2017workplacetrainingprograms"
+  ) |>
   # select non-randomised domains
   select(
     study_id,
@@ -277,6 +286,7 @@ qa_non_randomised_raw_plot <- qa_non_randomised_raw_summary |>
     ),
     legend.title = element_blank(),
     strip.background = element_blank(),
+    plot.title = element_blank(),
     panel.grid.major = element_blank(),
     panel.grid.minor = element_blank(),
     axis.ticks = element_blank(),
@@ -292,7 +302,7 @@ qa_non_randomised_raw_plot <- qa_non_randomised_raw_summary |>
 ggsave(
   plot = qa_non_randomised_raw_plot,
   filename = "./visualisation/output/almp_nma_qa_non_randomised_raw_plot.png",
-  height = 10,
+  height = 8,
   width = 8,
   device = "png",
   type = "cairo-png"
@@ -388,6 +398,7 @@ qa_summary_plot <- qa_summary_plot_data |>
       colour = "#FFFFFF"
     ),
     legend.title = element_blank(),
+    plot.title = element_blank(),
     strip.background = element_blank(),
     panel.grid.major = element_blank(),
     panel.grid.minor = element_blank(),
@@ -404,7 +415,7 @@ qa_summary_plot <- qa_summary_plot_data |>
 ggsave(
   plot = qa_summary_plot,
   filename = "./visualisation/output/almp_nma_qa_summary_plot.png",
-  height = 5,
+  height = 3.5,
   width = 8,
   device = "png",
   type = "cairo-png"

@@ -18,6 +18,10 @@ almp_nma_components_data <- readRDS(almp_nma_components_data_location)
 #-------------------------------------------------------------------------------
 
 almp_nma_components_plot_data <- almp_nma_components_data |>
+  # drop study that didn't make it into the final model
+  filter(
+    !study_id == "brunetti2017workplacetrainingprograms"
+  ) |>
   pivot_longer(
     -study_id,
     names_to = "component",
@@ -417,7 +421,7 @@ almp_nma_components_consolidated_plot <- almp_nma_components_consolidated_plot_d
 ggsave(
   plot = almp_nma_components_consolidated_plot,
   filename = "./visualisation/output/almp_nma_components_consolidated_plot.png",
-  height = 7,
+  height = 5.5,
   width = 8,
   device = "png",
   type = "cairo-png"

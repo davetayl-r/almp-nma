@@ -22,6 +22,10 @@ almp_nma_summary_visualisation_data <- readRDS(
 
 # prepare plot data
 almp_nma_location_distribution_plot_data <- almp_nma_summary_visualisation_data |>
+  # drop study that didn't make it into the final model
+  filter(
+    !study_id == "brunetti2017workplacetrainingprograms"
+  ) |>
   select(
     study_id,
     location
@@ -74,7 +78,7 @@ almp_nma_location_distribution_plot <- almp_nma_location_distribution_plot_data 
   labs(
     x = "",
     y = "Per cent of total studies",
-    caption = paste0("Total studies:", total_studies)
+    caption = paste0("Total studies: ", total_studies)
   ) +
   theme_minimal(
     base_size = 12
@@ -102,7 +106,7 @@ almp_nma_location_distribution_plot <- almp_nma_location_distribution_plot_data 
 ggsave(
   plot = almp_nma_location_distribution_plot,
   filename = "./visualisation/output/almp_nma_location_distribution_plot.png",
-  height = 6,
+  height = 4,
   width = 8,
   device = "png",
   type = "cairo-png"
