@@ -113,7 +113,10 @@ almp_nma_additive_model_tau_study_design_distribution_plot <- almp_nma_additive_
   scale_fill_manual(
     values = c("#8B4B6B", "#6FAADB", "#95C47C")
   ) +
-  lims(x = c(0, 1)) +
+  coord_cartesian(
+    xlim = c(0, 1),
+    clip = "off"
+  ) +
   labs(
     x = expression(tau),
     y = "Posterior density"
@@ -130,8 +133,8 @@ almp_nma_additive_model_tau_study_design_distribution_plot <- almp_nma_additive_
 # export plot
 ggsave(
   plot = almp_nma_additive_model_tau_study_design_distribution_plot,
-  filename = "./visualisation/output/almp_nma_additive_model_tau_study_design_distribution_plot.png",
-  height = 4,
+  filename = "./visualisation/output/heterogeneity/almp_nma_additive_model_tau_study_design_distribution_plot.png",
+  height = 3.5,
   width = 8,
   device = "png",
   type = "cairo-png"
@@ -153,7 +156,7 @@ almp_nma_additive_model_tau_basic_skills_training_study_design_plot <- create_ta
 ggsave(
   plot = almp_nma_additive_model_tau_basic_skills_training_study_design_plot,
   filename = "./visualisation/output/heterogeneity/almp_nma_additive_model_tau_basic_skills_training_study_design_plot.png",
-  height = 4,
+  height = 3.5,
   width = 8,
   device = "png",
   type = "cairo-png"
@@ -171,7 +174,7 @@ almp_nma_additive_model_tau_behavioural_skills_training_study_design_plot <- cre
 ggsave(
   plot = almp_nma_additive_model_tau_behavioural_skills_training_study_design_plot,
   filename = "./visualisation/output/heterogeneity/almp_nma_additive_model_tau_behavioural_skills_training_study_design_plot.png",
-  height = 4,
+  height = 3.5,
   width = 8,
   device = "png",
   type = "cairo-png"
@@ -189,7 +192,7 @@ almp_nma_additive_model_tau_employment_coaching_study_design_plot <- create_tau_
 ggsave(
   plot = almp_nma_additive_model_tau_employment_coaching_study_design_plot,
   filename = "./visualisation/output/heterogeneity/almp_nma_additive_model_tau_employment_coaching_study_design_plot.png",
-  height = 4,
+  height = 3.5,
   width = 8,
   device = "png",
   type = "cairo-png"
@@ -207,7 +210,7 @@ almp_nma_additive_model_tau_employment_counselling_study_design_plot <- create_t
 ggsave(
   plot = almp_nma_additive_model_tau_employment_counselling_study_design_plot,
   filename = "./visualisation/output/heterogeneity/almp_nma_additive_model_tau_employment_counselling_study_design_plot.png",
-  height = 4,
+  height = 3.5,
   width = 8,
   device = "png",
   type = "cairo-png"
@@ -225,7 +228,7 @@ almp_nma_additive_model_tau_financial_assistance_study_design_plot <- create_tau
 ggsave(
   plot = almp_nma_additive_model_tau_financial_assistance_study_design_plot,
   filename = "./visualisation/output/heterogeneity/almp_nma_additive_model_tau_financial_assistance_study_design_plot.png",
-  height = 4,
+  height = 3.5,
   width = 8,
   device = "png",
   type = "cairo-png"
@@ -243,7 +246,7 @@ almp_nma_additive_model_tau_job_search_assistance_study_design_plot <- create_ta
 ggsave(
   plot = almp_nma_additive_model_tau_job_search_assistance_study_design_plot,
   filename = "./visualisation/output/heterogeneity/almp_nma_additive_model_tau_job_search_assistance_study_design_plot.png",
-  height = 4,
+  height = 3.5,
   width = 8,
   device = "png",
   type = "cairo-png"
@@ -261,7 +264,7 @@ almp_nma_additive_model_tau_job_search_preparation_study_design_plot <- create_t
 ggsave(
   plot = almp_nma_additive_model_tau_job_search_preparation_study_design_plot,
   filename = "./visualisation/output/heterogeneity/almp_nma_additive_model_tau_job_search_preparation_study_design_plot.png",
-  height = 4,
+  height = 3.5,
   width = 8,
   device = "png",
   type = "cairo-png"
@@ -279,7 +282,7 @@ almp_nma_additive_model_tau_paid_temporary_work_experience_study_design_plot <- 
 ggsave(
   plot = almp_nma_additive_model_tau_paid_temporary_work_experience_study_design_plot,
   filename = "./visualisation/output/heterogeneity/almp_nma_additive_model_tau_paid_temporary_work_experience_study_design_plot.png",
-  height = 4,
+  height = 3.5,
   width = 8,
   device = "png",
   type = "cairo-png"
@@ -297,7 +300,7 @@ almp_nma_additive_model_tau_public_works_study_design_plot <- create_tau_distrib
 ggsave(
   plot = almp_nma_additive_model_tau_public_works_study_design_plot,
   filename = "./visualisation/output/heterogeneity/almp_nma_additive_model_tau_public_works_study_design_plot.png",
-  height = 4,
+  height = 3.5,
   width = 8,
   device = "png",
   type = "cairo-png"
@@ -315,7 +318,7 @@ almp_nma_additive_model_tau_self_employment_support_study_design_plot <- create_
 ggsave(
   plot = almp_nma_additive_model_tau_self_employment_support_study_design_plot,
   filename = "./visualisation/output/heterogeneity/almp_nma_additive_model_tau_self_employment_support_study_design_plot.png",
-  height = 4,
+  height = 3.5,
   width = 8,
   device = "png",
   type = "cairo-png"
@@ -333,7 +336,7 @@ almp_nma_additive_model_tau_soft_skills_training_study_design_plot <- create_tau
 ggsave(
   plot = almp_nma_additive_model_tau_soft_skills_training_study_design_plot,
   filename = "./visualisation/output/heterogeneity/almp_nma_additive_model_tau_soft_skills_training_study_design_plot.png",
-  height = 4,
+  height = 3.5,
   width = 8,
   device = "png",
   type = "cairo-png"
@@ -351,7 +354,7 @@ almp_nma_additive_model_tau_technical_skills_training_off_the_job_study_design_p
 ggsave(
   plot = almp_nma_additive_model_tau_technical_skills_training_off_the_job_study_design_plot,
   filename = "./visualisation/output/heterogeneity/almp_nma_additive_model_tau_technical_skills_training_off_the_job_study_design_plot.png",
-  height = 4,
+  height = 3.5,
   width = 8,
   device = "png",
   type = "cairo-png"
@@ -369,7 +372,7 @@ almp_nma_additive_model_tau_technical_skills_training_on_the_job_study_design_pl
 ggsave(
   plot = almp_nma_additive_model_tau_technical_skills_training_on_the_job_study_design_plot,
   filename = "./visualisation/output/heterogeneity/almp_nma_additive_model_tau_technical_skills_training_on_the_job_study_design_plot.png",
-  height = 4,
+  height = 3.5,
   width = 8,
   device = "png",
   type = "cairo-png"
@@ -387,7 +390,7 @@ almp_nma_additive_model_tau_unpaid_temporary_work_experience_study_design_plot <
 ggsave(
   plot = almp_nma_additive_model_tau_unpaid_temporary_work_experience_study_design_plot,
   filename = "./visualisation/output/heterogeneity/almp_nma_additive_model_tau_unpaid_temporary_work_experience_study_design_plot.png",
-  height = 4,
+  height = 3.5,
   width = 8,
   device = "png",
   type = "cairo-png"
@@ -405,7 +408,7 @@ almp_nma_additive_model_tau_wage_subsidies_study_design_plot <- create_tau_distr
 ggsave(
   plot = almp_nma_additive_model_tau_wage_subsidies_study_design_plot,
   filename = "./visualisation/output/heterogeneity/almp_nma_additive_model_tau_wage_subsidies_study_design_plot.png",
-  height = 4,
+  height = 3.5,
   width = 8,
   device = "png",
   type = "cairo-png"

@@ -324,7 +324,7 @@ pp_check(almp_nma_additive_model, type = "intervals")
 #-------------------------------------------------------------------------------
 
 # load model if required
-almp_nma_additive_model_results_location <- "./analysis/output/almp_nma_additive_model.RDS"
+almp_nma_additive_model_results_location <- "../almp-nma-backup/analysis/output/almp_nma_additive_model.RDS"
 almp_nma_additive_model <- readRDS(
   almp_nma_additive_model_results_location
 )

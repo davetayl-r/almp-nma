@@ -975,7 +975,7 @@ create_subgroup_age_forest_plot <- function(
 }
 
 #-------------------------------------------------------------------------------
-# 4. Produce tau x study design + component distribution plot
+# 5. Produce tau x study design + component distribution plot
 #-------------------------------------------------------------------------------
 
 create_tau_distribution_plot <- function(
@@ -1081,4 +1081,86 @@ create_tau_distribution_plot <- function(
     )
 
   return(tau_plot)
+}
+
+#-------------------------------------------------------------------------------
+# 6. Produce tau x study design + component distribution plot
+#-------------------------------------------------------------------------------
+
+create_evidence_profile <- function(data, intervention_col) {
+  # Convert column name to string if it's a symbol
+  intervention_col <- rlang::ensym(intervention_col)
+
+  cat("\n==========================================\n")
+  cat("EVIDENCE PROFILE FOR:", rlang::as_name(intervention_col), "\n")
+  cat("==========================================\n\n")
+
+  # Filter data for the intervention
+  filtered_data <- data |>
+    filter({{ intervention_col }} == 1)
+
+  # 1. Number of studies
+  num_studies <- filtered_data |>
+    select(-outcome, -outcome_domain) |>
+    distinct() |>
+    nrow()
+
+  cat("NUMBER OF STUDIES:", num_studies, "\n\n")
+
+  # 2. Number of effect sizes
+  num_es <- filtered_data |>
+    distinct() |>
+    nrow()
+
+  cat("NUMBER OF EFFECT SIZES:", num_es, "\n\n")
+
+  # 3. Study design breakdown
+  cat("STUDY DESIGN:\n")
+  num_study_design <- filtered_data |>
+    group_by(study_design_type) |>
+    distinct() |>
+    tally()
+
+  print(num_study_design)
+  cat("\n")
+
+  # 4. Study quality breakdown
+  cat("STUDY QUALITY:\n")
+  num_study_quality <- filtered_data |>
+    group_by(low_study_quality) |>
+    distinct() |>
+    tally()
+
+  print(num_study_quality)
+  cat("\n")
+
+  # 5. Study design x quality breakdown
+  cat("STUDY DESIGN x QUALITY:\n")
+  num_study_design_x_quality <- filtered_data |>
+    group_by(study_design_type, low_study_quality) |>
+    distinct() |>
+    tally()
+
+  print(num_study_design_x_quality)
+  cat("\n")
+
+  # 6. Outcomes breakdown
+  cat("OUTCOMES (by domain and specific outcome):\n")
+  num_outcomes <- filtered_data |>
+    group_by(outcome_domain, outcome) |>
+    distinct() |>
+    tally()
+
+  print(num_outcomes)
+  cat("\n")
+
+  # Return all results as a list (invisible) in case user wants to capture them
+  invisible(list(
+    num_studies = num_studies,
+    num_es = num_es,
+    study_design = num_study_design,
+    study_quality = num_study_quality,
+    study_design_x_quality = num_study_design_x_quality,
+    outcomes = num_outcomes
+  ))
 }
