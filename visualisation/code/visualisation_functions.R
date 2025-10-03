@@ -1118,7 +1118,7 @@ create_evidence_profile <- function(data, intervention_col) {
   cat("STUDY DESIGN:\n")
   num_study_design <- filtered_data |>
     group_by(study_design_type) |>
-    distinct() |>
+    distinct(study, study_design_type) |>
     tally()
 
   print(num_study_design)
@@ -1128,7 +1128,7 @@ create_evidence_profile <- function(data, intervention_col) {
   cat("STUDY QUALITY:\n")
   num_study_quality <- filtered_data |>
     group_by(low_study_quality) |>
-    distinct() |>
+    distinct(study, study_design_type) |>
     tally()
 
   print(num_study_quality)
@@ -1138,7 +1138,7 @@ create_evidence_profile <- function(data, intervention_col) {
   cat("STUDY DESIGN x QUALITY:\n")
   num_study_design_x_quality <- filtered_data |>
     group_by(study_design_type, low_study_quality) |>
-    distinct() |>
+    distinct(study, study_design_type) |>
     tally()
 
   print(num_study_design_x_quality)

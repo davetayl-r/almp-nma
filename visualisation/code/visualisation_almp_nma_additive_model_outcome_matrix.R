@@ -63,7 +63,7 @@ almp_nma_additive_model_component_outcome_matrix <- almp_nma_additive_model_comp
 ggsave(
   plot = almp_nma_additive_model_component_outcome_matrix,
   filename = "./visualisation/output/almp_nma_additive_model_component_outcome_matrix.png",
-  height = 8,
+  height = 9,
   width = 15,
   device = "png",
   type = "cairo-png"

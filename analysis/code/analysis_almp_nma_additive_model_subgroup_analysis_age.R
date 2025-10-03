@@ -248,7 +248,73 @@ almp_nma_additive_model_study_level_subgroup_age_summary <- almp_nma_additive_mo
   )
 
 #-------------------------------------------------------------------------------
-# 3. Export results for visualisation
+# 3. Get gradient
+#-------------------------------------------------------------------------------
+
+# get model draws
+almp_nma_additive_model_results_draws <- as_draws_df(
+  almp_nma_additive_model_results
+)
+
+# extract component x age columns names
+component_age_gradient_columns <- grep(
+  "^b_comp_.*:study_age_mean_centred$",
+  names(almp_nma_additive_model_results_draws),
+  value = TRUE
+)
+
+# get age gradient draws
+component_age_gradient_draws <- almp_nma_additive_model_results_draws |>
+  select(all_of(component_age_gradient_columns)) |>
+  mutate(.draw = row_number()) |>
+  pivot_longer(
+    -.draw,
+    names_to = "param",
+    values_to = "gradient_per_standard_deviation"
+  ) |>
+  mutate(
+    component = str_extract(
+      param,
+      "(?<=^b_comp_).*(?=:study_age_mean_centred$)"
+    ),
+    gradient_per_year = gradient_per_standard_deviation / study_age_sd,
+    contrast_24_16 = gradient_per_standard_deviation *
+      ((24 - 16) / study_age_sd)
+  ) |>
+  group_by(
+    component
+  )
+
+component_age_gradient_draws_median <- component_age_gradient_draws |>
+  median_qi(
+    gradient_per_year,
+    contrast_24_16,
+    .width = .95
+  ) |>
+  select(
+    -.width,
+    -.point,
+    -.interval
+  )
+
+component_age_gradient_draws_prob <- component_age_gradient_draws |>
+  summarise(
+    probability_gradient_greater_zero = mean(
+      gradient_per_year > 0,
+      na.rm = TRUE
+    ),
+    probability_contrast_greater_zero = mean(contrast_24_16 > 0, na.rm = TRUE),
+  )
+
+# summary results for reporting
+almp_nma_additive_model_study_level_age_gradient_summary <- component_age_gradient_draws_median |>
+  left_join(
+    component_age_gradient_draws_prob,
+    by = "component"
+  )
+
+#-------------------------------------------------------------------------------
+# 4. Export results for visualisation
 #-------------------------------------------------------------------------------
 
 saveRDS(
@@ -259,4 +325,9 @@ saveRDS(
 saveRDS(
   almp_nma_additive_model_study_level_subgroup_age_summary,
   "./visualisation/inputs/almp_nma_additive_model_study_level_subgroup_age_summary.RDS"
+)
+
+saveRDS(
+  almp_nma_additive_model_study_level_age_gradient_summary,
+  "./visualisation/inputs/almp_nma_additive_model_study_level_age_gradient_summary.RDS"
 )

@@ -1437,7 +1437,7 @@ almp_nma_additive_model_study_level_subgroup_age_forest_plot_wage_subsidies_educ
 ggsave(
   plot = almp_nma_additive_model_study_level_subgroup_age_forest_plot_wage_subsidies_education_skills,
   filename = "./visualisation/output/subgroup_age/almp_nma_additive_model_study_level_subgroup_age_forest_plot_wage_subsidies_education_skills.png",
-  height = 11,
+  height = 4,
   width = 8,
   device = "png",
   type = "cairo-png"

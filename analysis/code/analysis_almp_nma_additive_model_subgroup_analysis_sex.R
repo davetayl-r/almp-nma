@@ -305,6 +305,17 @@ almp_nma_additive_model_differential_treatment_effect_sex_summary <- almp_nma_ad
     -.interval
   )
 
+# summary details for report
+almp_nma_additive_model_differential_treatment_effect_sex_summary_report_details <- almp_nma_additive_model_differential_treatment_effect_sex_summary |>
+  select(
+    -outcome,
+    -outcome_domain
+  ) |>
+  distinct(
+    component,
+    .keep_all = TRUE
+  )
+
 #-------------------------------------------------------------------------------
 # 4. Export results for visualisation
 #-------------------------------------------------------------------------------
